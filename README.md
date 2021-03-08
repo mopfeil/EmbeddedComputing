@@ -1,6 +1,9 @@
 # EmbeddedComputing
 Github für die Embedded Computing Vorlesung / Lab
 
+Das Image sollte hier drin findbar sein. Git geht nicht mit den großen Dateien. 
+https://www.dropbox.com/sh/c3ss9gy1flxizae/AACQ88QjqSV6r5k94v7Ws9dha?dl=0
+
 Das Image für den Pi macht einen Access Point auf. 
 Wifi connection:
 SSID: PiEmbedded
