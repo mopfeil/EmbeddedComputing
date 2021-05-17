@@ -1,0 +1,11 @@
+\subsection*{\Large Observation }
+    \begin{itemize}
+        \item  Robot moves quite a distance.\\ 
+        $\implies$ Almost 2 meters.
+        \item To perfect the circular movement of the robot, it would be better to reduce the PWM.
+        \item Whilst accelerating the robot forward and backward in the same path, one would notice slight shifts to the left or right. This is simply due to the small time gap before before both motors run with the same PWM.
+        \item Closing all connections is a useful practice.\\
+        It sets all GPIO pins to normal state at the end of the program.\\
+        RPi.GPIO library $\implies$  GPIO.cleanup() .\\
+        GPIOzero library $\implies$ GPIO.close().\\
+        \end{itemize}

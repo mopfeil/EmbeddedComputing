@@ -1,0 +1,51 @@
+\subsection*{\Large Motor Control: Speed Control }
+    \begin{itemize}
+        \item  By changing PWM values of the motors, one can accelerate or decelerate the Robot.\\ 
+        $\implies$ A while or for loop should be suitable.
+      
+        \item \textbf{In this Solution  below, the robot accelerates forward and then decelerates}
+        \end{itemize}
+
+ \begin{lstlisting}[language=Python]
+    #Speed Limit set at 80
+    def Robot_ACLT(a):
+        PWM_1.ChangeDutyCycle(30)
+        Robot_M1_FW()
+        PWM_2.ChangeDutyCycle(30)
+        Robot_M2_FW()
+        x = 30              # Start Speed
+        while(x < 80):
+            print(x)
+            x += 10
+            PWM_1.ChangeDutyCycle(x)
+            PWM_2.ChangeDutyCycle(x)
+            time.sleep(0.5)
+        
+        Robot_DCLT(x)     # Decelerate motor
+
+    def Robot_DCLT(x):
+        PWM_1.ChangeDutyCycle(x)
+        Robot_M1_FW()
+        PWM_2.ChangeDutyCycle(x)
+        Robot_M2_FW()
+        time.sleep(0.5)
+        while(x > 10):
+            print(x)
+            x -= 10
+            PWM_1.ChangeDutyCycle(x)
+            PWM_2.ChangeDutyCycle(x)
+            time.sleep(0.5)
+         Robot_STOP()
+         
+    if button.is_pressed:
+        start = time.time()
+            Robot_ACLT()   # Accelerate motor
+        fin = time.time()
+        print(str(fin-start)+'sec')
+
+
+   
+        \end{lstlisting}
+
+    
+\newpage
