@@ -33,7 +33,7 @@ GPIO.setup(Motor2_IN2, GPIO.OUT)
 PWM_2 = GPIO.PWM(Motor2_PWM, 90)  # PWM value set to 90
 PWM_2.start(0)
 
-# Speed setting: 28, 40, 50 \\Slower speeds for better measurement
+# Speed setting:  \\Slower speed PWMs for better measurement
 SpeedArr = [30, 40, 45];
 
 
