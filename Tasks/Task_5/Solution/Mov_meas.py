@@ -34,7 +34,7 @@ PWM_2 = GPIO.PWM(Motor2_PWM, 90)  # PWM value set to 90
 PWM_2.start(0)
 
 # Speed setting: 28, 40, 50 \\Slower speeds for better measurement
-SpeedArr = [28, 40, 50];
+SpeedArr = [30, 40, 45];
 
 
 def Robot_STOP():
@@ -54,7 +54,6 @@ def Robot_M2_FW():
 
 # Measure time and Distance
 def Time_Dist_Meas(start):
-    time.sleep(1)
     meas = str(round((time.time() - start), 2))
     len = str(round(sensor.distance * 100, 2))
     x.write(meas + ',' + len + '\n')
@@ -70,12 +69,11 @@ def Robot_Drive(a):
 
 def Robot_Meas(p):
     start = time.time()
-
+    Robot_Drive(p)
     # threshold distance = 20cm, Max.distance = 1m
-    while round(sensor.distance * 100, 2) > 20 and round(sensor.distance * 100, 2) < 100:
+    while round(sensor.distance * 100, 2) > 20 :
         Time_Dist_Meas(start)
-        Robot_Drive(p)
-
+       
     end = time.time()
     Robot_STOP()
 
