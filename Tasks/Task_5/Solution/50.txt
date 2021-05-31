@@ -1,6 +1,0 @@
-#Distance - Time Measurement: 50cycle/seconds
-# Time, Distance
-1.0,76.54
-2.0,54.49
-3.0,15.74
-4.01,4.83
