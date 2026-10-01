@@ -2178,7 +2178,7 @@ output.close() & Manual close  \\ \hline
 
 \begin{figure}[!hbtp]
      \begin{center}
-	  \epsfig{file=figures/nodejs_1.jpg,width=0.8\textwidth}\\
+	  \epsfig{file=figures/Nodejs_1.jpg,width=0.8\textwidth}\\
 	  \caption{Common Languages}
      \end{center}
 \end{figure}
@@ -2557,11 +2557,7 @@ Console.log(results);
 \section{Rust}
 \begin{description}
 
-\section{Getting Started}
-
-\subsection{Installing Rust}
-
-\item[{\rot\bf Rustup}]~\\[-3ex]
+\item[{\rot\bf Rustup}]~\\
 	The best way to install and update the Rust toolchain is rustup
 	(\url{https://rustup.rs/}). Among other things, it handles:
 
@@ -2575,21 +2571,20 @@ Console.log(results);
 
 	To download the installer script:
 
-\begin{minted}{sh}
+\begin{lstlisting}[language=bash]
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
   -o rustup.sh
-\end{minted}
+\end{lstlisting}
 
 	\vspace{1em}
 
 	(\ldots{}or if you just want to try Rust without installing, use \url{play.rust-lang.org})
 \os{\newpage}
 
-\subsection{Cargo, Rust's Package Manager}
 \item[{\rot\bf Cargo}]~\\[-3ex]
     \begin{itemize}
         \item Project and package manager
-        \item Fetches and builds your project’s dependencies
+        \item Fetches and builds your project's dependencies
         \item Invokes rustc or another build tool with the correct parameters
             to build your project
         \item Has built-in support for cross-compilation
@@ -2597,20 +2592,20 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
 \os{\newpage}
 
 \item[{\rot\bf Cargo -- Create a New Project}]~\\[-3ex]
-\begin{minted}{sh}
+\begin{lstlisting}[language=bash]
 $ cargo new hello_world --bin
 $ cd hello_world
 $ tree
 .
-├── Cargo.toml
-└── src
-    └── main.rs
+|-- Cargo.toml
+`-- src
+    `-- main.rs
 1 directory, 2 files
-\end{minted}
+\end{lstlisting}
 \os{\newpage}
 
 \item[{\rot\bf Cargo -- Compile and Run}]~\\[-3ex]
-\begin{minted}{sh}
+\begin{lstlisting}[language=bash]
 $ cargo build
    Compiling hello_world v0.1.0 (file:///path/to/project/hello_world)
 
@@ -2620,30 +2615,30 @@ $ cargo run
    Compiling hello_world v0.1.0 (file:///path/to/project/hello_world)
    Running `target/debug/hello_world`
 Hello, world!
-\end{minted}
+\end{lstlisting}
 \os{\newpage}
 
 \item[{\rot\bf Cargo -- Dependencies}]~\\[-3ex]
 \begin{itemize}
     \item Cargo generated a manifest for us:
-\begin{minted}{ini}
+\begin{lstlisting}[language={}]
 [package]
 name = "hello_world"
 version = "0.1.0"
 authors = ["Your Name <you@example.com>"]
-\end{minted}
+\end{lstlisting}
     \item To add a dependency (from \url{https://crates.io} or github) we add it to the manifest:
-\begin{minted}{ini}
+\begin{lstlisting}[language={}]
 [dependencies]
 time = "0.1"
-\end{minted}
+\end{lstlisting}
     \item Cargo uses semantic versioning\footnote{\url{http://semver.org/}}
     $\rightarrow$ we get the latest 0.1.x version
 \end{itemize}
 \os{\newpage}
 
 \item[{\rot\bf Cargo -- Dependencies}]~\\[-3ex]
-\begin{minted}{text}
+\begin{lstlisting}[language={}]
 $ cargo build
     Updating registry `https://github.com/rust-lang/crates.io-index`
  Downloading winapi v0.2.7
@@ -2653,12 +2648,12 @@ $ cargo build
    Compiling kernel32-sys v0.2.2
    Compiling time v0.1.35
    Compiling hello_world v0.1.0 (file:///path/to/project/hello_world)
-\end{minted}
+\end{lstlisting}
 \os{\newpage}
 
-\item[{\rot\bf Cargo -- Testing}]~\\[-3ex]
+\item[{\rot\bf Cargo -- Testing}]~\\
 	Rust has integrated unit testing\footnote{\url{https://doc.rust-lang.org/book/ch11-00-testing.html}}
-\begin{minted}{rust}
+\begin{lstlisting}[language=Rust]
 #[test]
 fn it_works() {
     assert_eq!(1, 1);
@@ -2667,10 +2662,10 @@ fn it_works() {
 fn it_fails() {
     assert_eq!(1, 2);
 }
-\end{minted}
+\end{lstlisting}
 \os{\newpage}
-\begin{frame}[fragile,c]{Cargo -- Testing}
-\begin{minted}{text}
+\item[{\rot\bf Cargo -- Testing}]~\\[-3ex]
+\begin{lstlisting}[language={}]
 $ cargo test
 
 running 2 tests
@@ -2680,7 +2675,7 @@ test it_works ... ok
 ...
 
 test result: FAILED. 1 passed; 1 failed; 0 ignored; 0 measured
-\end{minted}
+\end{lstlisting}
 \os{\newpage} 
 
 \end{description}

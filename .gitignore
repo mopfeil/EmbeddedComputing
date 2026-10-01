@@ -11,7 +11,6 @@
 *.blg
 *.fls
 *.fdb_latexmk
-*-eps-converted-to.pdf
 docu.pdf
 slides.pdf
 

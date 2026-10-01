@@ -1,29 +1,27 @@
-Skript zu Grundlagen der Informatik, W. Ertel, 6.2.06
--------------------------------------------------------------------------------
+Lecture Embedded Computing - script and slides
+===============================================================================
 
-Inklude-Struktur der Latex-Dateien:
+Build
+  make            builds docu.pdf (script) and slides.pdf (slides)
+  make script     only the script
+  make slides     only the slides
+  make clean      removes LaTeX build artifacts
 
-mit "pdflatex docu" wird das Skript "docu.pdf" erzeugt
-mit "pdflatex slides" werden die Folien "slides.pdf" erzeugt
+Structure
 
-Die beiden Root-Dateien sind slides.tex und docu.tex. Der Graph soll
-die Struktur verdeutlichen.
+  docu.tex (script, A4)        slides.tex (slides, A5 landscape)
+        \                        /
+         +---- preamble.tex ----+      common packages, listings setup
+         +---- mathmacros.tex --+      macros (\bi, \ite, \defn, \qbox, ...)
+         |                      +--    mathmacros-sl.tex (slide overrides)
+         +---- text.tex --------+      list of chapters
+                  |
+   Intro, Modelling, Cyber_Physical_Systems, Processors, Programming,
+   Interfaces, tcp_ip_serial, OperatingSystems   (*.tex)
 
-                    -------------------------
-                    |                       |
-                slides.tex       docu.tex   |
-                /       \        /     \    |                       
-               /         \      /       \   |                       
-        macros-sl.tex    text.tex     macros.tex
-    mathmacros-sl.tex       |     mathmacros.tex                               
-                            |             
-                            |             
-  ----------------------------------------------------------------------------------
-  |              |              |              |           |         |             |
-einf.tex speicher.tex sekundaer_speicher.tex bus.tex einf8086.tex pentium.tex assembler.tex
+Script vs. slides
+  \nsl{...}   text only in the script
+  \os{...}    text only on the slides (typically \os{\newpage} = slide break)
 
-Um Teilausdrucke (z.B. Kapitel) zu realisieren kann folgendes Programm Helfen:
-
-pdftk docu.pdf cat 1-5 output docu_1_5.pdf	"Die ersten 5 Seiten werden in die Datei docu_1_5.pdf geschrieben"
-
-
+Figures live in figures/; the figures of tcp_ip_serial.tex in images/.
+All sources are UTF-8 with LF line endings.

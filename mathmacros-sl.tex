@@ -1,6 +1,6 @@
 %************************************************************************
-% Spezielle Macros für Folien
-% - viele Macros (renewcommand) überschreiben Macros aus ./macros.tex
+% Spezielle Macros fÃ¼r Folien
+% - viele Macros (renewcommand) Ã¼berschreiben Macros aus ./macros.tex
 % - daher zuerst: input macros.tex
 %         danach: input macros-sl.tex
 %************************************************************************
@@ -82,7 +82,7 @@
                 \vspace*{4mm}}
 
 %---------------------------------------------------------------------- 
-% Makro für Beispiel
+% Makro fÃ¼r Beispiel
 %---------------------------------------------------------------------- 
 %\newcounter{example}
 %\newtheorem{example}{Beispiel}[chapter]
@@ -102,13 +102,13 @@
 }
 }
 
-%%%%%%%%% für Programmtexte, siehe a. Ginf2 %%%%%%
+%%%%%%%%% fÃ¼r Programmtexte, siehe a. Ginf2 %%%%%%
 \renewcommand{\programmlist}[1]{\begin{quote}\colorbox{\tboxcolor}{\begin{tabular}{|@{\tt~}l|}\hline #1 \hline\end{tabular}}\end{quote}}
 
 %---------------------------------------------------------------------- 
 % Itemize
 %---------------------------------------------------------------------- 
-%%%%% item mit grünem Punkt
+%%%%% item mit grÃ¼nem Punkt
 \renewcommand{\ite}{\item[\textcolor{headcol}{$\bullet$~}]}
 \renewcommand{\itee}{\item[\textcolor{headcol}{$\circ$~}]}
 \renewcommand{\bi}{\begin{itemize}}
@@ -116,7 +116,7 @@
 \renewcommand{\itd}[1]{\item[\textcolor{headcol}{\bfseries #1~}]}
 \renewcommand{\bd}{\begin{description}}
 \renewcommand{\ed}{\end{description}}
-%%%%% item mit grünem Punkt nur für Folien (im Skript unsichtbar)
+%%%%% item mit grÃ¼nem Punkt nur fÃ¼r Folien (im Skript unsichtbar)
 \renewcommand{\itef}{\item[\textcolor{headcol}{$\bullet$~}]}
 \renewcommand{\iteef}{\item[\textcolor{headcol}{$\circ$~}]}
 \renewcommand{\bif}{\begin{itemize}}
@@ -151,7 +151,7 @@
 
 %\renewcommand{\baselinestretch}{1.2}
 
-\renewcommand{\familydefault}{cmss}
+\renewcommand{\familydefault}{\sfdefault}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %               HEADINGS
@@ -175,7 +175,7 @@
 \renewcommand{\demo}[2]{\fcolorbox{gruen}{hellgruen}{Demo:\pdflaunchlink{#1}{#2}}}
 \renewcommand{\demoneu}[2]{\fcolorbox{gruen}{hellgruen}{Demo:\href{run:#1}{#2}}}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%               Überschriften
+%               Ãœberschriften
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % \renewcommand{\chapter}[1]{\refstepcounter{chapter}\newpage
