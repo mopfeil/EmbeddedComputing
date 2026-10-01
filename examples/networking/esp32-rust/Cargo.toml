@@ -1,0 +1,33 @@
+[package]
+name         = "esp32-networking"
+version      = "0.1.0"
+edition      = "2024"
+rust-version = "1.95"
+description  = "Rust examples for the chapter 'Networking' (ESP32-C3, simulated in Wokwi)"
+
+[dependencies]
+esp-hal                = { version = "~1.2.2", features = ["esp32c3", "log-04", "unstable"] }
+esp-rtos               = { version = "0.4.0", features = ["embassy", "esp-alloc", "esp-radio", "esp32c3", "log-04"] }
+esp-radio              = { version = "1.0.0-beta.1", features = ["esp-alloc", "esp32c3", "log-04", "unstable", "wifi"] }
+esp-bootloader-esp-idf = { version = "0.6.0", features = ["esp32c3", "log-04"] }
+esp-alloc              = { version = "0.11.0", features = ["esp32c3"] }
+esp-backtrace          = { version = "0.20.0", features = ["esp32c3", "panic-handler", "println"] }
+esp-println            = { version = "0.18.0", features = ["esp32c3", "log-04"] }
+log                    = "0.4.27"
+
+embassy-executor  = { version = "0.10.0", features = ["log"] }
+embassy-time      = { version = "0.5.0", features = ["log"] }
+embassy-futures   = "0.1.2"
+embassy-net       = { version = "0.9.1", features = ["dhcpv4", "dns", "medium-ethernet", "tcp", "udp", "log"] }
+embedded-io-async = "0.7.0"
+static_cell       = "2.1.1"
+nb                = "1.1.0"
+
+[profile.dev]
+opt-level = "s"       # unoptimised code is too big and too slow for the radio
+
+[profile.release]
+codegen-units = 1
+debug         = 2     # keep symbols for the Wokwi debugger
+lto           = "fat"
+opt-level     = "s"

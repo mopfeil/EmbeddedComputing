@@ -1,0 +1,7 @@
+[package]
+name = "host-sockets"
+version = "0.1.0"
+edition = "2024"
+description = "TCP echo server and client with the Rust standard library (runs on a PC or Replit)"
+
+[dependencies]
