@@ -75,9 +75,7 @@
       "id": "logic1",
       "top": -180,
       "left": 300,
-      "attrs": {
-        "channelNames": "UART_TX,SDA,SCL,SCK,COPI,LATCH,LED_PWM,BUTTON"
-      }
+      "attrs": {}
     }
   ],
   "connections": [

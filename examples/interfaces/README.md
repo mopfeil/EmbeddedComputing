@@ -13,7 +13,8 @@ The C and the Rust examples use the same circuit (`diagram.json`):
 | GP26 | Potentiometer (ADC0) | adc_uart |
 | GP25 | On-board LED | gpio_blink_registers (Rust) |
 
-A logic analyzer records UART_TX, SDA, SCL, SCK, COPI, LATCH, LED_PWM and BUTTON.
+A logic analyzer records on channels D0..D7: UART_TX (GP0), SDA (GP4), SCL (GP5),
+SCK (GP18), COPI (GP19), LATCH (GP17), LED/PWM (GP15) and BUTTON (GP14).
 
 ## C (in the browser)
 
@@ -52,3 +53,27 @@ GDB to port 3333.
 | `i2c_mpu6050` | I2C register read/write, repeated start |
 | `spi_shift_register` | SPI mode 0, 74HC595 |
 | `watchdog` | watchdog timeout and reset reason |
+
+## Tested in the simulator
+
+Checked with `wokwi-cli` 0.27 in October 2026 (C and Rust unless noted):
+
+| Example | Check | Result |
+|---|---|---|
+| gpio_blink | LED pin level over time | toggles every 500 ms |
+| button_debounce | scenario: press twice | LED on, then off |
+| button_irq (C) | scenario: one press | > 30 interrupts (bouncing!) |
+| adc_uart | serial output | values printed, see below |
+| uart_echo | serial output | ready message |
+| i2c_mpu6050 | serial output | WHO_AM_I = 0x68, az = 1000 mg |
+| spi_shift_register | 74HC595 outputs | exactly one output high |
+| watchdog | scenario: hold button | no reset, see below |
+
+Not run in the simulator: `gpio_blink_registers`, `pwm_fade`, `button_irq` (Rust).
+
+Two limitations of the simulation showed up:
+
+* The RP2040 **temperature sensor** is not simulated: it reads 0, which the
+  formula turns into about 437 degrees C. A nice reason to check values for plausibility.
+* The **watchdog reset** did not happen in the simulation (the program keeps
+  hanging in the loop). Run `watchdog` on a real Pico to see the reset.
