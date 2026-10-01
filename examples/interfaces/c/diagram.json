@@ -1,0 +1,362 @@
+{
+  "version": 1,
+  "author": "Embedded Computing lecture",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "type": "wokwi-pi-pico",
+      "id": "pico",
+      "top": 0,
+      "left": 0,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led1",
+      "top": -80,
+      "left": 150,
+      "attrs": {
+        "color": "red",
+        "label": "GP15"
+      }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r1",
+      "top": -10,
+      "left": 140,
+      "rotate": 90,
+      "attrs": {
+        "value": "220"
+      }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "btn1",
+      "top": 120,
+      "left": 160,
+      "attrs": {
+        "color": "green",
+        "label": "GP14"
+      }
+    },
+    {
+      "type": "wokwi-potentiometer",
+      "id": "pot1",
+      "top": -110,
+      "left": -130,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-mpu6050",
+      "id": "imu1",
+      "top": 230,
+      "left": -140,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-74hc595",
+      "id": "sr1",
+      "top": 260,
+      "left": 120,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-led-bar-graph",
+      "id": "bar1",
+      "top": 330,
+      "left": 300,
+      "attrs": {
+        "color": "GYR"
+      }
+    },
+    {
+      "type": "wokwi-logic-analyzer",
+      "id": "logic1",
+      "top": -180,
+      "left": 300,
+      "attrs": {
+        "channelNames": "UART_TX,SDA,SCL,SCK,COPI,LATCH,LED_PWM,BUTTON"
+      }
+    }
+  ],
+  "connections": [
+    [
+      "$serialMonitor:RX",
+      "pico:GP0",
+      "",
+      []
+    ],
+    [
+      "$serialMonitor:TX",
+      "pico:GP1",
+      "",
+      []
+    ],
+    [
+      "pico:GP15",
+      "r1:1",
+      "orange",
+      []
+    ],
+    [
+      "r1:2",
+      "led1:A",
+      "orange",
+      []
+    ],
+    [
+      "led1:C",
+      "pico:GND.8",
+      "black",
+      []
+    ],
+    [
+      "pico:GP14",
+      "btn1:1.l",
+      "blue",
+      []
+    ],
+    [
+      "btn1:2.l",
+      "pico:GND.7",
+      "black",
+      []
+    ],
+    [
+      "pot1:VCC",
+      "pico:3V3",
+      "red",
+      []
+    ],
+    [
+      "pot1:GND",
+      "pico:GND.6",
+      "black",
+      []
+    ],
+    [
+      "pot1:SIG",
+      "pico:GP26",
+      "purple",
+      []
+    ],
+    [
+      "imu1:VCC",
+      "pico:3V3",
+      "red",
+      []
+    ],
+    [
+      "imu1:GND",
+      "pico:GND.3",
+      "black",
+      []
+    ],
+    [
+      "imu1:SDA",
+      "pico:GP4",
+      "cyan",
+      []
+    ],
+    [
+      "imu1:SCL",
+      "pico:GP5",
+      "yellow",
+      []
+    ],
+    [
+      "sr1:VCC",
+      "pico:3V3",
+      "red",
+      []
+    ],
+    [
+      "sr1:GND",
+      "pico:GND.5",
+      "black",
+      []
+    ],
+    [
+      "sr1:MR",
+      "pico:3V3",
+      "red",
+      []
+    ],
+    [
+      "sr1:OE",
+      "pico:GND.5",
+      "black",
+      []
+    ],
+    [
+      "sr1:SHCP",
+      "pico:GP18",
+      "yellow",
+      []
+    ],
+    [
+      "sr1:DS",
+      "pico:GP19",
+      "cyan",
+      []
+    ],
+    [
+      "sr1:STCP",
+      "pico:GP17",
+      "magenta",
+      []
+    ],
+    [
+      "sr1:Q0",
+      "bar1:A1",
+      "orange",
+      []
+    ],
+    [
+      "bar1:C1",
+      "pico:GND.4",
+      "black",
+      []
+    ],
+    [
+      "sr1:Q1",
+      "bar1:A2",
+      "orange",
+      []
+    ],
+    [
+      "bar1:C2",
+      "pico:GND.4",
+      "black",
+      []
+    ],
+    [
+      "sr1:Q2",
+      "bar1:A3",
+      "orange",
+      []
+    ],
+    [
+      "bar1:C3",
+      "pico:GND.4",
+      "black",
+      []
+    ],
+    [
+      "sr1:Q3",
+      "bar1:A4",
+      "orange",
+      []
+    ],
+    [
+      "bar1:C4",
+      "pico:GND.4",
+      "black",
+      []
+    ],
+    [
+      "sr1:Q4",
+      "bar1:A5",
+      "orange",
+      []
+    ],
+    [
+      "bar1:C5",
+      "pico:GND.4",
+      "black",
+      []
+    ],
+    [
+      "sr1:Q5",
+      "bar1:A6",
+      "orange",
+      []
+    ],
+    [
+      "bar1:C6",
+      "pico:GND.4",
+      "black",
+      []
+    ],
+    [
+      "sr1:Q6",
+      "bar1:A7",
+      "orange",
+      []
+    ],
+    [
+      "bar1:C7",
+      "pico:GND.4",
+      "black",
+      []
+    ],
+    [
+      "sr1:Q7",
+      "bar1:A8",
+      "orange",
+      []
+    ],
+    [
+      "bar1:C8",
+      "pico:GND.4",
+      "black",
+      []
+    ],
+    [
+      "logic1:D0",
+      "pico:GP0",
+      "gray",
+      []
+    ],
+    [
+      "logic1:D1",
+      "pico:GP4",
+      "gray",
+      []
+    ],
+    [
+      "logic1:D2",
+      "pico:GP5",
+      "gray",
+      []
+    ],
+    [
+      "logic1:D3",
+      "pico:GP18",
+      "gray",
+      []
+    ],
+    [
+      "logic1:D4",
+      "pico:GP19",
+      "gray",
+      []
+    ],
+    [
+      "logic1:D5",
+      "pico:GP17",
+      "gray",
+      []
+    ],
+    [
+      "logic1:D6",
+      "pico:GP15",
+      "gray",
+      []
+    ],
+    [
+      "logic1:D7",
+      "pico:GP14",
+      "gray",
+      []
+    ],
+    [
+      "logic1:GND",
+      "pico:GND.2",
+      "black",
+      []
+    ]
+  ],
+  "dependencies": {}
+}

@@ -1,0 +1,21 @@
+[package]
+name = "pico-interfaces"
+version = "0.1.0"
+edition = "2024"
+description = "Rust examples for the chapter 'Peripherals and Interfaces' (Raspberry Pi Pico, simulated in Wokwi)"
+
+[dependencies]
+cortex-m = "0.7.7"
+cortex-m-rt = "0.7.5"
+embedded-hal = "1.0.0"
+embedded-hal-nb = "1.0.0"
+embedded-hal-0-2 = { package = "embedded-hal", version = "0.2.7" }  # ADC trait of rp2040-hal 0.10
+panic-halt = "1.0.0"
+rp-pico = "0.9.0"
+critical-section = "1.2.0"
+
+[profile.dev]
+opt-level = 1        # unoptimised code is too slow for bit timing
+
+[profile.release]
+debug = 2            # keep symbols for the Wokwi debugger

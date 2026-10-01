@@ -24,4 +24,6 @@ Script vs. slides
   \os{...}    text only on the slides (typically \os{\newpage} = slide break)
 
 Figures live in figures/; the figures of tcp_ip_serial.tex in images/.
+Runnable examples (Wokwi simulator) live in examples/<chapter>/, see the
+README.md there. Chapter 6 (Interfaces.tex): examples/interfaces/.
 All sources are UTF-8 with LF line endings.

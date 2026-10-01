@@ -1,0 +1,10 @@
+# Wokwi for VS Code: simulate one of the examples.
+# 1. cargo build --release
+# 2. change the two paths below to the example you want to run
+# 3. F1 -> "Wokwi: Start Simulator"
+[wokwi]
+version = 1
+firmware = "target/thumbv6m-none-eabi/release/gpio_blink"
+elf = "target/thumbv6m-none-eabi/release/gpio_blink"
+gdbServerPort = 3333        # F1 -> "Wokwi: Start Simulator and Wait for Debugger"
+vcdFile = "logic-capture.vcd"   # logic analyzer recording, open with PulseView/GTKWave
