@@ -464,7 +464,7 @@ protected.}
 
 \item[{\rot\bf GPIO interrupt (C, Arduino API)}]~\\[-3ex]
 \bi
-	\ite try it: one press often gives several interrupts -- the bouncing is visible again
+	\ite try it: in Wokwi one press gave more than 30 interrupts -- the bouncing is visible again
 \ei
 \begin{lstlisting}[language=C]
 const int LED = 15, BUTTON = 14;
@@ -705,7 +705,7 @@ loop {
 }
 \end{lstlisting}
 \bi
-	\ite hold the button for more than one second and watch the serial monitor
+	\ite hold the button for more than one second and watch the serial monitor -- on a real Pico (the Wokwi simulation did not perform the watchdog reset in our tests)
 	\ite C version: \texttt{watchdog\_enable()}, \texttt{watchdog\_update()}, \texttt{watchdog\_caused\_reboot()}
 \ei
 \os{\newpage}
@@ -768,6 +768,7 @@ void loop() {
 \end{lstlisting}
 \bi
 	\ite turn the potentiometer in Wokwi and watch the values; Rust version: \texttt{adc\_uart.rs}
+	\ite Wokwi does not simulate the temperature sensor: it reads 0 and the formula gives 437\,$^\circ$C -- always check measured values for plausibility
 \ei
 \os{\newpage}
 \end{description}
