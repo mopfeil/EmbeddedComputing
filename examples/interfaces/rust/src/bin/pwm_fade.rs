@@ -5,8 +5,8 @@
 #![no_main]
 
 use embedded_hal::pwm::SetDutyCycle;
+use embedded_hal::delay::DelayNs;
 use panic_halt as _;
-use rp_pico::hal::Clock; // for clocks.*.freq()
 use rp_pico::{entry, hal, hal::pac};
 
 const TOP: u16 = 999;
@@ -14,7 +14,6 @@ const TOP: u16 = 999;
 #[entry]
 fn main() -> ! {
     let mut pac = pac::Peripherals::take().unwrap();
-    let core = pac::CorePeripherals::take().unwrap();
     let mut watchdog = hal::Watchdog::new(pac.WATCHDOG);
     let clocks = hal::clocks::init_clocks_and_plls(
         rp_pico::XOSC_CRYSTAL_FREQ, pac.XOSC, pac.CLOCKS, pac.PLL_SYS, pac.PLL_USB,
@@ -22,7 +21,8 @@ fn main() -> ! {
     )
     .ok()
     .unwrap();
-    let mut delay = cortex_m::delay::Delay::new(core.SYST, clocks.system_clock.freq().to_Hz());
+    // RP2040 timer (1 MHz) as delay provider - implements embedded-hal DelayNs
+    let mut delay = hal::Timer::new(pac.TIMER, &mut pac.RESETS, &clocks);
     let sio = hal::Sio::new(pac.SIO);
     let pins = rp_pico::Pins::new(pac.IO_BANK0, pac.PADS_BANK0, sio.gpio_bank0, &mut pac.RESETS);
 

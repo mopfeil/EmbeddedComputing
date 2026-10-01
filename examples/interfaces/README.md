@@ -71,9 +71,13 @@ Checked with `wokwi-cli` 0.27 in October 2026 (C and Rust unless noted):
 
 Not run in the simulator: `gpio_blink_registers`, `pwm_fade`, `button_irq` (Rust).
 
-Two limitations of the simulation showed up:
+Three limitations of the simulation showed up:
 
 * The RP2040 **temperature sensor** is not simulated: it reads 0, which the
   formula turns into about 437 degrees C. A nice reason to check values for plausibility.
+* The SysTick based `cortex_m::delay::Delay` returns far too early in the
+  simulation (1 ms took 4 us, 500 ms took 366 ms). The Rust examples therefore
+  use the RP2040 timer (`hal::Timer`) as delay, which is exact - and on real
+  hardware the better choice anyway, because it leaves SysTick to an RTOS.
 * The **watchdog reset** did not happen in the simulation (the program keeps
   hanging in the loop). Run `watchdog` on a real Pico to see the reset.

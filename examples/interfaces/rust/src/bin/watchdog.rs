@@ -6,6 +6,7 @@
 
 use core::fmt::Write;
 use embedded_hal::digital::{InputPin, StatefulOutputPin};
+use embedded_hal::delay::DelayNs;
 use panic_halt as _;
 use rp_pico::hal::fugit::{ExtU32, RateExtU32};
 use rp_pico::hal::uart::{DataBits, StopBits, UartConfig, UartPeripheral};
@@ -15,7 +16,6 @@ use rp_pico::{entry, hal, hal::pac};
 #[entry]
 fn main() -> ! {
     let mut pac = pac::Peripherals::take().unwrap();
-    let core = pac::CorePeripherals::take().unwrap();
 
     // Read the reset reason before the HAL takes the WATCHDOG peripheral.
     let by_watchdog = pac.WATCHDOG.reason().read().timer().bit_is_set();
@@ -27,7 +27,8 @@ fn main() -> ! {
     )
     .ok()
     .unwrap();
-    let mut delay = cortex_m::delay::Delay::new(core.SYST, clocks.system_clock.freq().to_Hz());
+    // RP2040 timer (1 MHz) as delay provider - implements embedded-hal DelayNs
+    let mut delay = hal::Timer::new(pac.TIMER, &mut pac.RESETS, &clocks);
     let sio = hal::Sio::new(pac.SIO);
     let pins = rp_pico::Pins::new(pac.IO_BANK0, pac.PADS_BANK0, sio.gpio_bank0, &mut pac.RESETS);
 

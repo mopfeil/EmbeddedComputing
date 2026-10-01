@@ -3,15 +3,14 @@
 #![no_main]
 
 use embedded_hal::digital::OutputPin;
+use embedded_hal::delay::DelayNs;
 use panic_halt as _;
-use rp_pico::hal::Clock; // for clocks.*.freq()
 use rp_pico::{entry, hal, hal::pac};
 
 #[entry]
 fn main() -> ! {
     // Take ownership of the peripherals - exactly once.
     let mut pac = pac::Peripherals::take().unwrap();
-    let core = pac::CorePeripherals::take().unwrap();
 
     // Clock setup: 12 MHz crystal -> PLL -> 125 MHz system clock.
     let mut watchdog = hal::Watchdog::new(pac.WATCHDOG);
@@ -26,7 +25,8 @@ fn main() -> ! {
     )
     .ok()
     .unwrap();
-    let mut delay = cortex_m::delay::Delay::new(core.SYST, clocks.system_clock.freq().to_Hz());
+    // RP2040 timer (1 MHz) as delay provider - implements embedded-hal DelayNs
+    let mut delay = hal::Timer::new(pac.TIMER, &mut pac.RESETS, &clocks);
 
     // Bring the GPIO block out of reset and split it into single pins.
     let sio = hal::Sio::new(pac.SIO);
