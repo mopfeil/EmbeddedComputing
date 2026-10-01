@@ -1,0 +1,348 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{General Aspects}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\bi
+	\ite OMAP-Application Prozessor provides a lot interfaces (like simple digital I/O but also complex systems as a camera interface)
+	\ite different interfaces are a key feature of every microcontroller system
+	\ite every interface is controlled by one or more registers, which are part of the standard memory space.
+	\ite most of the interfaces can generate an interrupt (which is handled according to an interrupt service routine and can be used to program some actions).
+	\ite every interface also has a flag which makes it possible to write programs to ask in a ``polling method'' for interaction with the interface.
+	\ite to reduce the number of external pins, mostly the input/output pins can be used in more than one mode.
+	\ite this means the number of interfaces are also reduced.
+\ei
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Digital Ports}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\bi
+	\ite the OMAP-Application Prozessor has a lot of digital input/output lines (interfaces).
+	\ite these lines are grouped in 6 ports, every port with 32 input/output lines.
+	\ite every port is programmable as an input or an output port.
+	\ite a mix of input and output lines in one port is allowed.
+	\ite the output lines are driven a Hiz-mode (high impedance mode, this means a connection of two or more outputs lines are possible).
+	\os{\newpage}
+	\ite  32 bit Ports (Programming direction)
+\ei
+\begin{center}
+	\begin{tabular}{c c c c}
+	  Port  & Port lines  & Direction\\
+	 \hline
+	  GPIO1  & [31:0] (i/o) & 0x48310034 (r/w) \\
+	  GPIO2  & [63:34] (i/o) & 0x49050034 (r/w) \\
+	  GPIO3  & [95:64] (i/o) & 0x49052034 (r/w) \\
+	  GPIO4  & [127:96] (i/o) & 0x49054034 (r/w) \\
+	  GPIO5  & [159:128] (i/o) & 0x49056034 (r/w) \\
+	  GPIO6  & [191:160] (i/o) & 0x49058034 (r/w) \\
+	\end{tabular}
+	\end{center}
+\bigskip
+\bi
+	\ite after reset the direction is set to input (0xffffffff in the corresponding direction register)
+	\ite a bit reset on the correspondig bit in the direction register switch the direction to output
+\ei
+\os{\newpage}
+\bi
+	  \ite  32 bit Ports (Read and write access)
+\ei
+\begin{center}
+	\begin{tabular}{c c c c}
+	  Port  & Port lines  & Input & Output\\
+	 \hline
+	  GPIO1  & [31:0] (i/o) & 0x48310038 (r) &  0x4831003c (r/w) \\
+	  GPIO2  & [63:34] (i/o) & 0x49050038 (r) & 0x4905003c (r/w) \\
+	  GPIO3  & [95:64] (i/o) & 0x49052038 (r) & 0x4905203c (r/w) \\
+	  GPIO4  & [127:96] (i/o) & 0x49054038 (r) & 0x4905403c (r/w) \\
+	  GPIO5  & [159:128] (i/o) & 0x49056038 (r) & 0x4905603c (r/w) \\
+	  GPIO6  & [191:160] (i/o) & 0x49058038 (r) & 0x4905803c (r/w) \\
+	\end{tabular}
+	\end{center}
+\bigskip
+\bi
+	  \ite read access from input lines done as standard 32 bit access
+	  \ite write access to output lines could be done as standard 32 bit write access
+	  \ite a read access from the output lines gets the ``old'' contents (shadow register)
+	  \ite with the registers ``ClearDataOut'' and ``SetDataOut'' an specific Clearbit- and Setbit-Operation is possible
+	  \ite the specific bit which should be changed must be set in the correspondig  ``ClearDataOut'' or SetDataOut`` register
+\ei
+\begin{center}
+	\begin{tabular}{c c c c}
+	  Port  & Port lines  & ClearDataOut & SetDataOut\\
+	 \hline
+	  GPIO1  & [31:0] (i/o) & 0x48310090 (r/w) &  0x48310094 (r/w) \\
+	  GPIO2  & [63:34] (i/o) & 0x49050090 (r/w) & 0x49050094 (r/w) \\
+	  GPIO3  & [95:64] (i/o) & 0x49052090 (r/w) & 0x49052094 (r/w) \\
+	  GPIO4  & [127:96] (i/o) & 0x49054090 (r/w) & 0x49054094 (r/w) \\
+	  GPIO5  & [159:128] (i/o) & 0x49056090 (r/w) & 0x49056094 (r/w) \\
+	  GPIO6  & [191:160] (i/o) & 0x49058090 (r/w) & 0x49058094 (r/w) \\
+	\end{tabular}
+	\end{center}
+
+\subsection{Push-Pull Ports}
+
+\bi
+\ite The port can deliver large currents when set to "high" (to source) and accept large currents when set to "low" (sink).
+\ite In the static case there is no current consumption
+\ite Consequently signals can be switched at a high frequency (charging and discharging parasitic capacitances)
+\ite Problem: When two push-pull ports are connected and set to different levels this creates a short from V++ to GND and fries the pin
+\ei
+\begin{figure}[!hbtp]
+     \begin{center}
+	  \epsfig{file=figures/PushPull.jpg,width=0.80\textwidth}\\
+	  \caption{Port Configuration Push-Pull}
+     \end{center}	
+\end{figure}
+
+\bi
+\ite Link to a Falstad Circuit Simulating Push Pull
+\ite http://www.falstad.com/circuit/circuitjs.html?ctz=CQAgjCAMB0l3BWcZYA4BsB2ATNzZsEBOVA9EBAFgosgoFMBaMMAKACVltx07U6wvKCG6U6SOpOgJWAeREJygugGZsAoZNYAzcEW5h9IsXu4DpUWNg7GNpnsLomJj6TvsFUt8Ni8qV4BYwkNYA7lw8AkbKUKzhhgZCCT5ekHEeSdFGaQBO3oL5BMJs4dgmYJTUhEqVsaWK4LXVkXUKSkLNYJjkafVK3fkDaQDm3upeZXTNWmIBBckVVQ3iAProlCuQK2JERCsIm7DwRN2KhCtgK9j7KyqssyBqUaKUE8vgaxtbO6hXX0dwAjqTCQFQEA5bNhAA
+\ei
+
+\os{\newpage}
+
+\subsection{Open-Collector / Drain Ports}
+\bi
+\ite There is no possibility for shorts as in the Push-Pull case, even in the presence of programming and connection errors.
+\ite Level changes can be implemented easily (3.3 - 5 V for example)
+\ite At "low" setting there is always a current flowing
+\ite The flanks when switching are asymmetric
+\bi
+\ite The low-high flank is relatively slow, as the current is limited by the large-ish pull-up resistor (RC-Charging curve)
+\ei
+\ite Link to a Falstad Circuit Simulator for Open Drain
+\ite http://www.falstad.com/circuit/circuitjs.html?ctz=CQAgjCDsB0AcYCYCsBTAtATnAZmgBg0gBYwlsEw95YA2CJIkJJvJ9MMAKACVxFwarWKzCCQrBCCKtmrOdCScA8iGQ1wRRuRGbx4zgDNVVARKTrRc8AvH4EPVeb0ITV1tKZ75igO59JluAYAWJ4nH5gwabGsNFhAE6O6mbqGMngeJlhAOZJ4JDqaqoIjHKc0tgCQQG6Re4A+pQl9Xj10hgY9Ugt+FmENObIjfUIbfXY5XiVmrFgukgFMXpgjXjNre2wPXhENLCQ3Xi9mYgukFOIh43heWl5c6WcQA
+\ei
+
+\begin{figure}[!hbtp]
+     \begin{center}
+	  \epsfig{file=figures/OpenCollector.jpg,width=0.80\textwidth}\\
+	  \caption{Port Configuration Open Collector / Open Drain}
+     \end{center}	
+\end{figure}
+
+\os{\newpage}
+
+\subsection{Tri-State Ports}
+\bi
+\ite Besides "high" and "low" a port can also be set to high-impedance.
+\ite THis is usually called High-Z, Z or Tristate
+\ite A port in this configuration presents itself as not being present.
+\ite An arbitrary number of tristate ports can be connected.
+\ei
+\begin{figure}[!hbtp]
+     \begin{center}
+	  \epsfig{file=figures/TriState.jpg,width=0.80\textwidth}\\
+	  \caption{Port Configuration Tri-State}
+     \end{center}	
+\end{figure}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Serial Ports}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\bi
+	\ite The OMAP-Application Prozessor supports different kinds of serial interfaces:
+	\bi
+		\ite programmable serial controller (UART) for standard asynchronus serial communication.
+		\ite universal serial bus (USB) for serial bus-oriented communication.
+		\ite inter-integrated circuit communication (I\begin{math}^{2}\end{math}C).
+	\ei
+
+\ei
+\os{\newpage}
+
+\begin{description}
+\item[{\rot\bf UART universial asynchron receiver/transmitter}]~\\[-3ex]
+\bigskip
+\bi
+	\ite 3 different UART-Channels:
+	\bi
+		\ite UART 1, 2 asynchronous data transfer with 5,6,7,8 bits of data plus parity transfer.
+		\ite UART 3 asynchronouns data transfer IrDA
+		\bi
+			\ite 1.0 SIR mode (SIR) with a baudrate in the range of 2400 - 115200 bps.
+			\ite IrDA 1.1 MIR mode (MIR) with a baudrate ranging from 0.576 or 1.152 Mbps.
+			\ite IrDA 1.1 FIR mode (FIR) with a baudrate of 4.0 Mbps.
+		\ei
+	\ei
+	\bigskip
+	\ite programmable baudrate generator
+\ei
+\os{\newpage}
+\begin{figure}[!hbtp]
+     \begin{center}
+	  \epsfig{file=figures/Fig_5_1_UART,width=0.80\textwidth}\\
+	  \caption{Blockdiagram UART}
+     \end{center}	
+\end{figure}
+\os{\newpage}
+\bi
+	\ite the protocol of the UART-mode fix mostly a 8 bit transfer, 1 start bit and 1 or 2 stop bits.
+	\ite the protocol has to be the same for the transmit- and the receive-interface (no opportunity to check the protocol directly if the transmission failed).
+	\ite both the transmit- and the receive-interface can set flags and can generate interrupts if a transfer is finished.
+	\ite no error-check methods in the UART-mode (only parity-checking is possible).
+\ei
+
+\begin{figure}[!hbtp]
+     \begin{center}
+	  \epsfig{file=figures/Fig_5_2_UART,width=0.95\textwidth}\\
+	  \caption{Protocol of a 8 Bit UART-Transfer}
+     \end{center}
+\end{figure}
+\os{\newpage}
+\bi
+	\ite the SIR-mode is similar to the UART-mode.
+	\ite every 0-bit generates an IR-pulse of a fixed duration (depends on the baudrate).
+\ei
+
+\begin{figure}[!hbtp]
+     \begin{center}
+	  \epsfig{file=figures/Fig_5_3_SIR,width=0.95\textwidth}\\
+	  \caption{Protocol of a SIR-Transfer}
+     \end{center}
+\end{figure}
+\os{\newpage}
+\bi
+	\ite the MIR-mode has the same bit-coding as the SIR-mode, but with shorter IR-pulses (higher baudrates).
+	\ite in this mode the data is transferd in frames (HDLC-Frames)with a start-of-frame and stop-of-frame sequence (STA, STO).
+	\ite the frames are checked with an error check mechanism (CRC).
+\ei
+
+\begin{figure}[!hbtp]
+     \begin{center}
+	  \epsfig{file=figures/Fig_5_4_MIR,width=0.95\textwidth}\\
+	  \caption{Protocol of a MIR-Transfer}
+     \end{center}
+\end{figure}
+\os{\newpage}
+\bi
+	\ite the FIR-mode use 4 PPM (4 pulse position modulation), each IR-pulse has a duration of 125 ns.
+	\ite the data transfer is done in frames.
+	\ite the frames are checked with an error check mechanism (CRC).
+\ei
+\begin{figure}[!hbtp]
+     \begin{center}
+	  \epsfig{file=figures/Fig_5_5_FIR,width=0.95\textwidth}\\
+	  \caption{Protocol of a FIR-Transfer}
+     \end{center}
+\end{figure}
+\os{\newpage}
+
+\begin{figure}[!hbtp]
+     \begin{center}
+	  \epsfig{file=figures/Fig_5_6_IRDA_Example,width=0.95\textwidth}\\
+	  \caption{Example for an IrDA-Interface}
+     \end{center}
+\end{figure}
+
+\end{description}
+
+
+\os{\newpage}
+\begin{description}
+\item[{\rot\bf USB (universal serial bus)}]~\\[-3ex]
+\bigskip
+\bi
+	\ite supports the high-speed operation up to 480 Mbps and full-speed operation at 12 Mbps (USB 2.0 Specification).
+	\ite burst-transfer, interrupt and isochronous transport modes.
+	\ite 4 kbytes of shared  FIFO RAM and 1 kbyte descriptor RAM.
+\ei
+\os{\newpage}
+\begin{figure}[!hbtp]
+     \begin{center}
+	  \epsfig{file=figures/Fig_5_7_USB,width=0.4\textwidth}\\
+	  \caption{Blockdiagram USB}
+     \end{center}
+\end{figure}
+
+\end{description}
+
+\os{\newpage}
+\begin{description}
+\item[{\rot\bf I\begin{math}^{2}\end{math}C (inter-integrated circuit communication)}]~\\[-3ex]
+\bigskip
+\bi
+	\ite an interface to connect hardware decices (e.g. LCD-Displays, keyboards, switches).
+	\ite multi-master operation.
+	\ite different serial clock frequencies are programmable.
+	\ite interrupt driven byte-by-byte data transfer possible.
+	\ite 3 different I\begin{math}^{2}\end{math}-Interfaces
+\ei
+
+\os{\newpage}
+\begin{figure}[!hbtp]
+     \begin{center}
+	  \epsfig{file=figures/Fig_5_8_I2C_Blockdiagram,width=0.8\textwidth}\\
+	  \caption{I2C-Blockdiagram}
+     \end{center}
+\end{figure}
+
+\os{\newpage}
+\begin{figure}[!hbtp]
+     \begin{center}
+	  \epsfig{file=figures/Fig_5_9_I2C_Data_Diagram,width=0.8\textwidth}\\
+	  \caption{Typical Data Transfer Protocol of a I2C-Interface}
+     \end{center}
+\end{figure}
+
+\os{\newpage}
+\end{description}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Timers}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{description}
+\item[{\rot\bf GPT (general purpose timer)}]~\\[-3ex]
+\bigskip
+\bi
+	\ite implementation of 11 independent timer channels
+	\ite every timer has a wordlength of 32 bit and operates as a free running timer.
+	\ite the timer channels could operate in:
+	\bi
+		\ite an input capture-mode (in this mode the counters run until the specified capture event
+occurs (rise, fall, or pulse) on appropriate Event\_Capture\_IN-signal)
+		\ite the capture value are stored in a specific TCAR-register and could be read
+		\ite an output compare-mode (in this mode the counters run until they reach the programmed terminal count value. At this point, the specified output event is generated (toggle, pulse high, or pulse low) on PWM\_OUT
+		\ite the compare value are stored in a specific TMAR-register
+		\ite a PWM-mode (in this mode the user can program period and width values to
+create an adjustable, repeating output waveform on PWM\_OUT)
+		\ite PWM-mode: suitable to emulate an analogue output signal (with an additional operational amplifier).
+	\ei
+\ei
+\os{\newpage}
+\begin{figure}[!hbtp]
+     \begin{center}
+	  \epsfig{file=figures/Fig_5_10_Input_Capture,width=0.9\textwidth}\\
+	  \caption{Blockdiagram of the Input Capture Mode}
+     \end{center}
+\end{figure}
+
+\os{\newpage}
+\begin{figure}[!hbtp]
+     \begin{center}
+	  \epsfig{file=figures/Fig_5_11_Output_Compare,width=0.9\textwidth}\\
+	  \caption{Blockdiagram of the Output Compare Mode}
+     \end{center}
+\end{figure}
+
+\os{\newpage}	
+\item[{\rot\bf Watchdog Timers}]~\\[-3ex]
+\bigskip
+\bi
+	\ite two different timers with a specific clock signal (32 KHz)
+	\ite each timer consists of a 32-bit counter with an additional prescale (1 .. 128)
+	\ite the timers generate a special reset (watchdog) and a special interrupt signal (if not reloaded in time)
+	\bi
+		\ite after they have reached zero, the timers reload and start the counting procedure one's more.
+	\ei
+\ei
+\os{\newpage}
+\begin{figure}[!hbtp]
+     \begin{center}
+	  \epsfig{file=figures/Fig_5_12_Watchdog_Timer,width=0.9\textwidth}\\
+	  \caption{Blockdiagram Watchdog Timers}
+     \end{center}
+\end{figure}
+
+\end{description}
+

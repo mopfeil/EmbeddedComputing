@@ -1,0 +1,294 @@
+
+automaten.tex,657
+%%%\section{Endliche Automaten}1,4
+\section{Endliche Automaten zur Worterkennung}10,381
+\exa{\label{exa:anbm}Der durch folgende Regeln beschriebene Automat24,1056
+\section{Automaten mit Ausgabe}56,2253
+\exa{\label{exa:getr}Es soll ein Getränkeautomat mit Hilfe eines endlichen Automaten58,2291
+\section{Formale Beschreibung von Automaten}94,3746
+\defn{sigmast}{Die Menge $\sigs$ aller {\bf Worte} \index{Wort} ist wie112,4561
+\index{leeres Wort} $\eps$ ist in $\sigs$ enthalten.116,4685
+\exa{Der Automat aus Beispiel~\ref{exa:anbm} wird beschrieben durch193,7443
+\exa{Der Getränkeautomat aus Beispiel~\ref{exa:getr} wird beschrieben durch200,7679
+
+automaten.ueb.tex,33
+\section{Endliche Automaten}1,1
+
+cover.tex,0
+
+docu.tex,32
+\def\refname{Literatur}51,1274
+
+einf.tex,1185
+\newenvironment{folie}[1]{\section{#1}}{}1,27
+\section{Informatik}4,124
+\section{Computer}24,721
+\section{Information}55,1527
+\section{Teilgebiete der Informatik?}87,2547
+\section{Programm, Algorithmus, Software}142,3971
+\section{Betriebssysteme}171,4692
+\subsection{Betriebssysteme: Aufgaben}175,4879
+\subsection{Betriebssysteme: Bestandteile}204,5807
+\subsection{Betriebssysteme: Beispiel}217,6380
+		\subsection{Betriebssysteme: Vergleich}247,7267
+\subsection{UNIX Shellprogrammierung, ein Beispiel:}276,8151
+\section{Softwaretechnologie}331,9693
+\subsection{Softwareentwicklung}357,10394
+\subsection{Moderne Softwareentwicklung}371,10795
+\subsection{CASE: Computer Aided SW-Engineering}392,11478
+\section{Datensicherung}402,11803
+\section{Datensicherheit}441,13386
+\subsection{Speicherung des geheimen Schlüssels}452,13637
+\section{Datenschutz}476,14228
+\section{Datenbanken}501,14966
+\section{Das Informatikstudium}544,16311
+\subsection{Entscheidungsbaum}564,17132
+\subsection{Score (einfach)}576,17455
+%% \section{Asymmetrische Kryptographie}629,18777
+%% \section{Verschl"usseln (E), Entschl"usseln (D)}632,18834
+%% \section{Digitale Signatur}636,18956
+
+geschichte.tex,3145
+\section{Wichtige Quellen}1,1
+\ite F.~Naumann, Vom Abakus zum Internet \cite{Nau01}5,143
+\ite H.~Matis, Die Wundermaschine\cite{Mat02}6,189
+\ite W.~de~Beauclair, Rechnen mit Maschinen -- eine Bildgeschichte der Rechentechnik\cite{Bea68}7,286
+\section{Geschichte der Zahlen und des Rechnens}12,378
+\section{Zahlendarstellung}26,909
+\section{Geschichte der Bauelemente}91,2381
+\subsection{Rechenlogik}95,2571
+\subsection{Speichertechnologie 1956, IBM-RAMAC}115,3621
+\subsection{Speichertechnologie 2005}129,4091
+\subsection{Speichertechnologie 1956--2005}141,4450
+\section{Geschichte der Rechenmaschinen}149,4820
+\subsection{Kerbhölzer und Knotenschnüre}154,5090
+\subsection{Mechanische Rechenmaschinen (Mittelalter)}163,5355
+\subsection{Der Abakus (ca.\ 2000 v.Chr. bis heute!)}179,6041
+\subsection{Die Analytical Engine}196,6591
+\subsection{Zuse Z1, Z2}222,7520
+\subsection{Zuse Z3}235,7909
+\subsection{ASCC (MARK 1)}253,8404
+\subsection{Colossus}271,8950
+\subsection{Die Chiffriermaschine Enigma}291,9488
+\subsection{Eniac (electronical numerical integrator and computer)}313,10392
+\subsection{IBM 360}330,10959
+\subsection{Control Data CDC 6600}343,11310
+\subsection{Telefunken TR 440}356,11650
+\subsection{Cray 1}376,12180
+\subsection{Connection Machine}392,12593
+\subsection{PCs}406,13037
+\subsection{Zitate}421,13709
+\section{Geschichte der Programmiersprachen}440,14356
+\subsection{Fakultät in C, Prolog, Mathematica}457,14979
+\section{Geschichte des Internet}478,15475
+\subsection{Das Semantic Web}514,16630
+\subsection{Aktuelle Trends (2005)}530,17377
+\section{Große Informatiker}536,17715
+\subsection{Blaise Pascal (Frankreich, 1623--1662)}541,17973
+\subsection{Gottfried Wilhelm Leibniz (Leipzig, 1646--1716)}555,18467
+\subsection{Charles Babbage (England, 1791-1871)}568,18913
+\subsection{Kurt Gödel (Österreich, 1906--1978)}583,19317
+\subsection{Alan Turing (England, 1912--1954)}615,20250
+\subsection{Claude Shannon (Michigan, 1916--2001)}655,21607
+\subsection{Alonzo Church (Washington, 1903--1995)}671,22117
+\subsection{John von Neumann (Polen, 1903--1957)}687,22549
+\subsection{Die vonNeumann-Architektur}703,23017
+\subsection{Edsger Dijkstra (Rotterdem, Holland, 1930--)}724,23507
+\subsection{Donald Knuth (Milwaukee, 1938--)}736,23882
+\subsection{Stephen A. Cook (Buffalo, New York, 1939--)}762,24846
+\subsection{Leslie Lamport (New York, 1941--)}773,25196
+\subsection{Ken Thompson, Dennis Ritchie (New Orleans, 1943--, New794,25955
+\subsection{Nikolaus Wirth (Winterthur, Schweiz, 1934--)}819,26701
+\subsection{Bill Gates (Seattle, 1955--)}831,27111
+\subsection{Tim Berners-Lee (London, 1955--)}843,27549
+vereinfachen sollte.\cite{Wiki}851,27971
+\subsection{Der Turing Award}861,28183
+\section{Frauen in der Informatik}927,31507
+\subsection{Frauenanteil am Informatik-Studium.}946,32084
+\subsection{Frauen in der Geschichte der Informatik}961,32443
+\subsubsection{Ada Augusta von Lovelace (1815-1852)}964,32573
+\subsubsection{Die Analytical Engine}979,32970
+\subsubsection{Grace Murray Hopper (1906-1992)}999,33802
+\section{Wichtige Institute und Firmen}1034,34924
+
+geschichte.ueb.tex,40
+\section{Geschichte der Informatik}1,1
+
+ginf2cover.tex,0
+
+ginf2docu.tex,32
+\def\refname{Literatur}51,1350
+
+ginf2text.tex,219
+\chapter{Formale Sprachen und Maschinenmodelle\label{sec:kompl}}2,76
+\chapter{Sortieralgorithmen}6,234
+\chapter{Algorithmen auf Graphen}11,374
+\chapter{Übungen}15,500
+\chapter{Lösungen zu den Übungsaufgaben}23,625
+
+graphen.tex,1523
+\section{Einführung}1,1
+\exa{\label{exa:beispgraph}~\\34,1290
+\exa{Für den Graphen aus Beispiel \ref{exa:beispgraph} gilt:\\87,3162
+\section{Eulerkreise}115,4131
+\section{Datenstrukturen für Graphen}166,6288
+\subsection{Adjazenzmatrix}168,6327
+\subsection{Adjazenzlisten}192,6995
+\subsection{Liste von Adjazenzlisten}198,7151
+\subsection{Vergleich der drei Datenstrukturen}204,7321
+\section{Kürzeste Wege}226,7965
+\subsection{Der Kruskal-Algorithmus}277,10288
+  lineare Komplexität erreichbar~\cite{CLR94}.}305,11319
+\subsection{Der Dijkstra-Algorithmus}320,11827
+  abhängt~\cite{CLR94}.}352,12878
+\subsection{Anwendungen}355,12895
+\section{Das Problem des Handlungsreisenden}375,13480
+\exa{\label{exa:perm}Eine Permutation der Menge $\{1,\ldots,6\}$396,14242
+\subsection{Ein praktisches Ergebnis}406,14446
+\subsection{Der Nearest-Neighbour-Algorithmus}421,14966
+\subsubsection{Idee}423,15014
+\subsubsection{Algorithmus}432,15209
+\subsubsection{Komplexität}445,15512
+\subsection{Der Greedy - Algorithmus}449,15563
+\subsubsection{Idee}451,15602
+\subsubsection{Algorithmus}463,15904
+\subsubsection{Komplexität}474,16287
+\subsection{Optimaler Algorithmus {\sc Optimal\_TSP}}490,16680
+\subsubsection{Idee}492,16735
+\subsubsection{Komplexität}495,16864
+\subsection{Stirling'sche Formel}512,17292
+\subsubsection{Resultate}520,17575
+\subsection*{Wachstum der Rechenzeit von {\sc Optimal\_TSP}}541,18315
+\subsection{Die Minimum-Spanning-Tree-Heuristik}566,19230
+\section{Planare Graphen}605,20589
+
+graphen.ueb.tex,218
+\section{Graphen}5,239
+\ref{satz:euler} einen Eulerkreis, indem Sie mit anderen Zyklen26,849
+Geben Sie für den Graphen aus Beispiel \ref{exa:beispgraph} 42,1396
+\subsection*{Problem des Handlungsreisenden}183,6692
+
+heapsort.tex,881
+\section{Sortieren mit Bäumen (Heapsort)}2,2
+\subsubsection{Der Algorithmus}83,2219
+\subsubsection{Laufzeit von heapify}98,2617
+\subsubsection{Rekursion}103,2740
+\subsubsection{Rekurrenzrelation}109,2892
+\subsection{Erzeugen eines Heap}173,4815
+\exa{\label{exa:buildheap}181,5014
+\subsubsection{Analyse} 245,6536
+\subsubsection{obere Schranke}247,6562
+\subsubsection{bessere Schranke} 255,6722
+\subsection{Der Heapsort - Algorithmus}278,7603
+\subsubsection{Idee}282,7730
+\exa{\label{exa:heapsort}~\\290,7943
+\subsubsection{Algorithmus}302,8510
+\subsubsection{Analyse}312,8755
+\subsection{Priority-Queues als Anwendung der Heap-Struktur}326,9264
+\subsubsection{Idee}342,9998
+\subsubsection{Algorithmus}347,10136
+\subsubsection{Analyse}413,11815
+\section{Sortieren in linearer Zeit}418,11869
+\subsubsection{Idee}423,12027
+\subsubsection{Komplexität}  448,12758
+
+macros.tex,0
+
+slides.tex,100
+\def\refname{Literatur}75,1659
+\renewcommand{\chapter}[1]{\refstepcounter{chapter}\newpage79,1767
+
+sortieren.tex,904
+\section{Sortieren durch Einfügen}1,1
+\subsection{Algorithmus (grob)}17,579
+\subsection{Algorithmus als PASCAL-Programm}27,835
+\subsection{Worst - Case Rechenzeit}96,4269
+\subsubsection{Bestimmung von a, b und c}137,5801
+3.) Auflösen des linearen Gleichungssystems nach a, b und c (siehe Übung~\ref{aufg:einfsort}).150,6272
+\subsection{Best-Case Rechenzeit}171,7244
+\subsection{Einschub: Asymptotik}183,7635
+\subsection{Schwachstellen und mögliche Verbesserungen}253,9926
+\subsubsection{Suche in Listen}266,10166
+\subsubsection{Der Bisektionsalgorithmus}282,10832
+\subsubsection{Komplexität}299,11224
+\section{Quicksort}336,12297
+\subsection{Der Algorithmus}382,15082
+\subsection{Analyse}427,16023
+\subsubsection{Laufzeit von Partition} 429,16045
+\subsubsection{Laufzeit von Quicksort (Best Case)}433,16142
+\subsubsection{Laufzeit von Quicksort (Worst Case, sortierte Liste)} 447,16569
+
+sortieren.ueb.tex,223
+\section{Sortieren}1,1
+\subsection*{Sortieren durch Einfügen}7,260
+ \label{aufg:einfsort}9,367
+\subsection*{Quicksort}97,3406
+\subsection*{Heapsort}254,9196
+\ref{exa:buildheap}.296,10877
+\ref{exa:heapsort}.324,11790
+
+sprachen.tex,2074
+\section{Grundlagen}1,1
+\defn{sigmast}{Die Menge $\sigs$ aller {\bf Worte} \index{Wort} ist wie55,2511
+\index{leeres Wort} $\eps$ ist in $\sigs$ enthalten.59,2635
+\section{Grammatiken}130,4962
+\exa{\label{exa:term}Die (unendliche)147,5725
+\defn{grammatik}{Eine {\bf Grammatik}\index{Grammatik}\/ ist ein 4-Tupel172,6562
+\defit $V$ als endliche nichtleere Menge der {\bf Variablen}\index{Variable}.177,6713
+\defn{BNF}{Die in Beispiel~\ref{exa:term} und im Folgenden verwendete186,7078
+\exa{\label{exa:term2}Mit 190,7261
+und $P$ als Menge der Regeln aus Beispiel~\ref{exa:term} ergibt197,7512
+Sprache}\index{Sprache}\/ ist251,9622
+\exa{Der Syntaxbaum zur Ableitung aus Beispiel \ref{exa:term2} hat257,9890
+\section{Chomsky-Hierarchie}\index{Chomsky-Hierarchie}311,11767
+Definition~\ref{def:grammatik} ist vom {\bf Typ 0}. Die Menge der314,11897
+\exa{Die Sprache aus Beispiel~\ref{exa:term} ist offensichtlich eine339,12762
+\section{Endliche Automaten}463,15473
+\section{Reguläre Ausdrücke}616,21211
+\exa{\label{exa:dezi} Sei $\Sigma = \{ .,0,1,2,3,4,5,6,7,8,9\} $.634,21967
+Dezimalzahlen (siehe Beispiel~\ref{exa:dezi}) einfacher beschreiben mit693,24321
+\section{Der Lexical Analyzer {\sc Lex}}703,24681
+\subsubsection{Die Datei {\tt tel.x}:}723,25285
+\section{{\sc Yacc}: Yet Another Compiler Compiler}772,26074
+\subsection{Ein Beispiel mit {\sc Lex} und {\sc Yacc}}782,26549
+\subsubsection{Die Datei {\tt term.x}}784,26605
+\subsubsection{Die {\sc Bison}-Eingabedatei {\tt term.y}}803,27004
+\subsubsection{Die Datei~ {\tt makefile}}836,27490
+\section{Kellerautomaten}864,28112
+\section{Turingmaschinen}1083,35168
+Turingmaschinen das Wortproblem (Definition~\ref{def:wortproblem})1159,38213
+kleinen aber subtilen Unterschied in den Definitionen~\ref{def:nkd}1161,38358
+und~\ref{def:turing-akzept}. Der Kellerautomat akzeptiert ein Wort1162,38376
+\subsection{Fleißige Biber}1175,38860
+Folgende Tabelle aus~\cite{Mar01} listet einige aktuelle bekannte Ergebnisse1253,41691
+\section{Zusammenfassung zu Sprachen und Maschinenmodellen}1286,42822
+
+sprachen.ueb.tex,935
+\section{Formale Sprachen und Automaten}1,1
+Gegeben sei die Grammatik (\cite{Sch92}, S. 15)4,141
+\label{prog-gramm}65,2055
+Für die Definition von $<Term>$ siehe Beispiel \ref{exa:term} auf101,3484
+\label{regexp}199,6392
+\ta \verb=\\section\*?\{.*\}=229,7457
+\ta \verb!\index{xxx} \color{xxx} \label{xxx} \ref{xxx} !236,7649
+\ta \verb=\section{<text>}=, \verb=\section*{<text>}=238,7741
+\ref{regexp}.248,8171
+Aufgabe \ref{prog-gramm}.292,9979
+\ta \verb=\\section\*?\{.*\}=373,13158
+\label{aufg:keller} %%%%%%%%%%% Kellerautomat 1 %%%%%%%%%%%%%419,14571
+\ta Ändern Sie den Automaten aus Aufgabe \ref{aufg:keller} so ab,437,15198
+\label{aufg:turing1}558,19006
+\label{aufg:turing2}592,20182
+\label{aufg:bb}602,20512
+\subsection*{Busy-Beaver mit 2 Zuständen:}608,20665
+\parbox{0.47\textwidth}{\subsection*{Busy-Beaver mit 3 Zuständen:}634,21376
+\parbox{0.47\textwidth}{\subsection*{Busy-Beaver mit 4 Zuständen:}648,21821
+
+text.tex,263
+\chapter{Was ist Informatik?}2,76
+\chapter{Geschichte der Informatik}6,195
+\chapter{Endliche Automaten}10,326
+\chapter{Sortieralgorithmen}14,449
+\chapter{Algorithmen auf Graphen}19,589
+\chapter{Übungen}23,715
+\chapter{Lösungen zu den Übungsaufgaben}31,863

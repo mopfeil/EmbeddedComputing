@@ -1,0 +1,4025 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Programming in Assembler}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\nsl{The method of programming a microcontroller is little bit different from that used for programming of microprocessors. In the case of microcontrollers, the programming is usually done using the ``cross compilation'' technique. In this method, all the necessary tools for compiling are installed on a PC (i.e. editor, compiler, linker etc.) and the executable file generated is then downloaded to the target system. Here, the target system (e.g. ARM-Cortex-A8) has a completely different processing core than the host PC (which employs e.g. an Intel Processor).
+\newline
+Another method involves development on the target directly and doesn't have a download mechanism. The target processor and the processor for the development system is the same and a loader of an available operating system loads the executable file and starts the program.
+\newline
+A next important difference between the development of programs for microcontroller and microprocessor is the opportunity to use an operating system or not. In nearly every application which uses a microprocessor there is support from an operating system (OS). Simple input/output-operations, memory allocation and mathematical libraries would be offered through the operating system. In the case of a microcontroller you have to program all these functions.
+\newline
+The microcontroller ARM-Cortex-A8 is a processor just on the border between microprocessors and microcontrollers. From the point of a programmer it is a typical microprocessor, from the point of a hardware designer it is a highly sophisticated microcontroller. So in this chapter we don't find the specific restrictions which are typical for other microcontrollers. Starting with an overview about all the registers (register model) from the different parts of this controller we will progress to assembler programming aspects. The focus is to understand the specific aspects of this controller and not to write big assembler programs. These could be better done through C-programs.
+}
+
+\begin{description}
+\item[{\rot\bf Register model}]~\\[-3ex]
+\bigskip
+\bi
+	\ite the register model of all ARM processors first introduce the ALU register set
+	\ite the ALU registers are used for data operations and for address calculations
+	\ite a few register are only visible in the different processor mode (like user mode, system mode, supervisor mode .. )
+	\ite other processor units (like FPU, NEON) use there one register sets
+	\ite register models are important for the development of assembler programs (a C-compiler tries to hide the most aspects of registers).
+	\ite registers are part of the core (not mapped in the address space of the memory).
+	\bigskip
+	\ite register model for integer operations (core register).
+	\bi
+		\ite register r0 - r12 used for data- and address-operation
+		\ite register r13 \pr stack (address register for the stack)
+		\ite register r14 \pr link (address register for the return address of a subroutine)
+		\ite register r15 \pr pc (address register for the next instruction)
+		\ite the access to a data-register could be done as a Byte (b), Halfword (h) (16-bit) or Word (32-bit) (default).
+		\ite the access to an address-register only a Word is possible.
+	\ei
+\ei
+\os{\newpage}
+\begin{figure}[!hbtp]
+     \begin{center}
+	  \epsfig{file=figures/Fig_4_1_RegisterSet.png,width=0.7\textwidth}\\
+	  \caption{Integer Registers}
+     \end{center}
+\end{figure}
+
+\os{\newpage}
+\bi
+	\ite CPSR \pr \underline{C}ommon \underline{P}rocessor \underline{S}tatus \underline{R}egister
+	\ite 32 bit register (with 6 different copies in SPSR, depends on the different modes of the processor).
+
+\ei
+\begin{figure}[!hbtp]
+     \begin{center}
+	  \epsfig{file=figures/Fig_4_2_CPSR.png,width=0.8\textwidth}\\
+	  \caption{Processor Status Word}
+     \end{center}
+\end{figure}
+
+
+\bi
+	\ite N \pr Negative flag (set if the most significant bit of the result is set; otherwise cleared)
+	\ite Z \pr Zero flag (set if the result equals zero; otherwise cleared)..
+	\ite C \pr Carry flag (set if a carry out of the most significant bit of the operand occurs for an addition, or if a borrow occurs in a subtraction; otherwise cleared); for unsigned numbers.
+	\ite V \pr Overflow flag (set if an arithmetic overflow occurs implying that the result cannot be represented in the operand size; otherwise cleared); for signed numbers.
+	\ite Q \pr Sticky Overflow (not changed after every arithmetic operations; explicitly changed with a MSR instruction)
+
+	\os{\bigskip}
+
+	\ite flags could be changed after all instructions (including transfer instructions).
+	\ite flags are used in conditional branch instructions (the instruction which affected a flag and the appropriate branch instruction should follow each other).
+	\ite flags could also used in conditional transfer instructions (typical feature of RISC-Processors)
+\ei
+
+
+\os{\newpage}
+\item[{\rot\bf Addressing modes}]~\\[-3ex]
+\os{\bigskip}
+\bi
+	\ite addressing modes could be separated in five groups
+	\bigskip
+	\ite {\rot\bf Register addressing}
+	\bi
+		\ite name of the register coded in the instruction
+		\\ \begin{tabular}{l l}
+		      LDR r0,r1 &;load the contents form r1 to r0 (32 bit, default) \\
+		      LDRB r2,r0 &;load the least significant byte from r0 to r2 \\
+			& ;(least significant position)\\
+		      LDRH r3,r2 &;load the least significant halfword from r2 to r3\\
+			& ;(same position in r3)\\
+			& \\
+		      SDR r0,r1 &;store the contents form r0 to r1 (32 bit, default) \\
+		      SDRB r2,r0 &;store the least significant byte from r2 to r0\\
+			& ;(least significant position)\\
+		      SDRH r3,r2 &;store the least significant halfword from r3 to r2 (same position in r2)\\
+			& \\
+		      MOV r0,r1 & ;transfer contents form r0 to r1 (allways 32 bit) \\
+		      MOVS r0,r1 & ;transfer contents form r0 to r1 (allways 32 bit)\\
+			& ;and set the Z- and N-flag
+		     \end{tabular}
+		\ite RISC-like register instructions
+		\\ \begin{tabular}{l l}
+		      LDR r15,r14 &;load PC with the contents of the link register\\
+			& ;\pr same as RET-instruction\\
+		      MSR r4,CPSR &;move the contents of CPSR to r4 (32 bit)\\
+		      MRS CPSR\_f,r4 &;move the flag-field \\
+			& ;(5 most significant bits \pr N-, Z-, C-, V-, Q-flag)\\
+		   \end{tabular}
+
+	\ei
+	\os{\newpage}
+	\ite {\rot\bf Immediate addressing}
+	\bi
+		\ite instruction contains the data
+		\ite the immediate value is signed (-4095 to +4096 for LDR-instruction)
+		\ite this type of addressing is useful for source addressing only
+		\\ \begin{tabular}{l l}
+		      LDR r0,\#0x100 & ;transfer the value 100 (hex)to r0 (32 bit)\\
+		      LDR r0,\#0x-100 & ;transfer the value -100 (hex)to r0 (32 bit)\\
+			& \\
+		      LDR r0,=\#0x2000 & ;transfer the value 2000 (hex)\\
+			& ;to r0 (pseudo-instruction)\\
+			& ;LDR r0,=\#0x2000 \pr LDR r0,[pc,offset\_to\_litpool]\\
+			& ;...\\
+			& ;litpool DCD 0x2000
+		     \end{tabular}
+
+	\ei
+	\os{\newpage}
+	\ite {\rot\bf Direct addressing}
+	\bi
+		\ite instruction contains the address of a data
+		\ite not directly implemented, an direct or absolut address could be given with a pseudo-instruction
+		\\ \begin{tabular}{l l}
+		      LDR r0,=label &;load the register r0 with address of label\\
+			& ;LDR r0=label \pr LDR r0,[pc,offset\_to\_litpool]\\
+			& ;...\\
+			& ;litpool DCD label;\\
+		     \end{tabular}
+
+	\ei
+	\os{\newpage}
+	\ite {\rot\bf Indirect addressing}
+	\bi
+		\ite use one of the registers r0 - r12.
+		\ite address registers r13 - a15 are special address registers.
+		\ite address registers are always 32-bit registers.
+		\ite indirect addressing modes operate in different versions.
+		\bigskip
+		\ite {\rot\bf Indirect addressing standard}
+		\\ \begin{tabular}{l l}
+		      LDR r1,[r0] & ;load the register r1 with contents\\
+			& ;of address where r0 points to\\
+		      SDR r2,[r0] & ;store the register r2 to the address\\
+			& ;where r0 points to\\
+		     \end{tabular}
+		\os{\newpage}
+		\ite {\rot\bf Indirect addressing with index and offset}
+		\ite address calculation with an address register and an additional register and a offset
+		\ite the additional register and the offset are signed.
+		\\ \begin{tabular}{l l}
+		      LDR r0,[r1,r2,0x20] &;load register r0 from the address given by\\
+			& ;r1 + r2 + 0x20\\
+		      SDR r0,[r1,-r2,-0x20] &;store register r0 at the address given by \\
+			& ;r1 - r2 - 0x20\\
+		     \end{tabular}
+		\bigskip
+		\ite {\rot\bf Indirect addressing with index,offset and update}
+		\ite address calculation with an address register and an additional register and a offset
+		\ite the additional register and the offset are signed.
+		\ite after the transfer the first mentioned address register are updated
+		\\ \begin{tabular}{l l}
+		      LDR r0,[r1,r2,0x20]! &;load register r0 from the address given by \\
+			& ;r1 + r2 + 0x20, r1 updated\\
+		      SDR r0,[r1,-r2,-0x20]! &;store register r0 at the address given by \\
+			& ;r1 - r2 - 0x20, r1 updated\\
+		     \end{tabular}
+		\os{\newpage}
+
+		\ite{\rot\bf post increment / pre decrement}
+		\ite load and store registers from stack
+		\\\begin{tabular}{l l}
+		      LDMFA r13!,\{r0 - r12\} & ;load stackframe (r13) to registers r0 - r12 \\
+			& ;full asscending stack\\
+			& ;increment register r13 and store\\
+			& ;the last position of the stack in r13 \\
+			& ;(pop-operation on Intel processors)\\
+			& \\
+		     STMFD r13!\{r0 - r12\}, & ;generate a stackframe r0 - r12 \\
+			& ;full descending stack\\
+			& ;save registers r0 - r12 on the stack\\
+			& (push-operation on Intel processors)\\
+			& \\
+		     STMFD  r13!,\{r4 - r12,LR\} & ;push registers r4 - r12 to the stack\\
+			& ;and place the return address (LR)\\
+			& ;on the stack\\
+		     LDMFA r13!,\{r4 - r12,PC\} & pop registers r 4 - r12 from the stack\\
+			& ;and jump back to the calling routine\\
+		     \end{tabular}
+		\os{\newpage}
+		\ite post inrement and predecrement addressing mode work which other register as the stack also
+		\\\begin{tabular}{l l}
+		      LDMIA / STMIA... & ;increment after transfer\\
+		      LDMIB / STMIB... & ;increment before transfer\\
+		      LDMDA / STMDA... & ;decrement after transfer\\
+		      LDMDB / STMDB... & ;decrement before transfer\\
+		
+		 \end{tabular}
+		\bigskip
+		
+	\ei
+	\os{\newpage}
+	\ite {\rot\bf Relative addressing}
+	\bi
+		\ite the program counter (PC) works as an address register.
+		\ite this addressing mode has to be selected for position independent programs.
+		\ite only useful with an offset.
+		\ite relative addressing modes operate in different versions (index register).
+		\bigskip
+		\ite {\rot\bf Relative addressing with an offset}
+		\ite the offset is signed value.
+		\\ \begin{tabular}{l l}
+		      LDR r0,[PC,0x20] & ;load the register r0 with contents\\
+			& ;of address where (PC + 20) points to\\
+		     \end{tabular}
+		\bigskip
+		\ite easier use of relative the relative addressing mode with the pseudo instruction ADR
+		\\\begin{tabular}{l l}
+		      ADR r0,label & ;load the register r0 with the \\
+			& ;relative address of label\\
+		 \end{tabular}
+	\ei
+\ei
+\os{\newpage}
+\bi
+	\ite Classification of the instruction set
+	\\
+	\bi
+		\ite transfer instructions
+		\\
+		\ite integer arithmetic instructions
+		\\
+		\ite floating-point arithmetic instructions
+		\\
+		\ite logical instructions
+		\\
+		\ite bit manipulation instructions
+		\\
+		\ite control instructions
+		\\
+		\ite other
+	\ei
+\ei
+	
+\end{description}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Programming in C}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{description}
+\item[{\rot\bf Specification}]~\\[-3ex]
+\bi
+	\ite Cross compilation:
+	\ite use of a special toolchain to build programs for ARM-Cortex-A8
+	\bi
+		\ite compiler arm-none-linux-gnueabi-gcc.
+		\ite version for the ``standard''-gcc (generates output for the ARM-Cortex-processor)
+		\ite in the case of cross compilation there is mostly support from an operating system. This means it makes no sense to use the MMU features of the processor.
+		\ite the output of the compiler depends on the position which has to be specified in the linker.
+		\ite if the linker doesn't generate a position depend output a additional tool necessary
+		\bi
+		   \ite objdump (mostly part of a build package)
+		\ei
+		\ite this output format is indicated by the endings ``.bin''.
+		\ite  to download these programs in the target convert the ``.bin''-programs to a ``.srec''-format or a ``.ihex''-format if using RS-232-Interface.
+	\ei
+	\os{\newpage}
+	\ite Development in the target system
+	\bi	
+		\ite use of the same compiler (arm-none-linux-gnueabi-gcc) as in the case with cross compilation.
+		\ite the development has to be done in the target system (longer development cycles).
+		\ite the executable file has to be generated position independent(controlled by a special linker command).
+		\ite in the case ARM-Cortex-processor the MMU is active.
+		\ite the output of the linker is build as .elf-file (elf - \underline{e}xecutable and \underline{l}inkable \underline{f}ormat) and could directly loaded from the operating system.
+	\ei
+	\bigskip
+	\ite Development with the same operating system in the target and in the cross-system
+	\bi
+		\ite use of Linux as operating system on the target.
+		\ite implementation of an NFS-server (\underline{n}etwork \underline{f}ile \underline{s}ystem) on the cross-system.
+		\ite mount the ``working directory'' of the cross-system in the target and direct load and execution is possible.
+		\ite shorter development cycles as in the cross-compilation.
+		\ite uses the advantages of an operating system.
+	\ei
+\ei
+\os{\newpage}
+\item[{\rot\bf Special features}]~\\[-3ex]
+\bi
+	\ite no restriction in the use of data types.
+	\ite the type float and double also supported (the basic arithmetic steps like add, sub, mul, and div directly supported from the FPU, more complex floating point arithmetic expressions like sin(x), cos(x), \begin{math} x^{y} \end{math} supported from a special library).
+	\bigskip
+	\ite access to registers (and memory) could be done in two different methods:
+	\bi
+		\ite cross-compilation without the use on the MMU (independent of the OS, the memory here is managed by the complier).
+		\ite set a pointer to the register (type of pointer depends on the register).
+		\\ \begin{tabular}{l l}
+		  \#define I/O\_Peripherals 0xF2000000 & /* Base address of */ \\
+					& /* all I/O Address */ \\
+		    & \\
+		  (*unsigned int *)(I/O\_Peripherals) = 0x1234; & /* Set Register */ \\
+		   \end{tabular}
+		\ite program runs in the ``user-mode'' of the processor.
+		\bigskip
+		\ite development in the target with the use of the MMU.
+		\ite program have to be developed in the ``kernel-mode''.
+	\ei
+	
+\ei
+\os{\newpage}
+\item[{\rot\bf Parameter Passing Conventions}]~\\[-3ex]
+\bi
+	\ite C-Programs and Assembler-Programs could be combined without any restrictions.
+	\ite this feature is based on a similar concept about passing parameters (C-parameter passing conventions, AAPCS \underline{A}RM \underline{A}rchitecture \underline{P}rocedure \underline{C}all \underline{S}tandard).
+	\bi
+		\ite specification of the return value of a function (always passed in registers r0, f0, s0, d0 as follows)
+		\\ \begin{tabular}{l l}
+		    Byte (char, unsigned char) & \pr r0[7..0] \\
+		    Halfword (short, unsigned short) & \pr r0[15..0] \\
+		    Word (int, unsigned int, pointers) & \pr r0 \\
+		    Float & \pr f0, s0 \\
+		    Double & \pr d0 \\	
+		   \end{tabular}
+		\ite the calling parameter are passed on the registers r0 - r3 and the stack (from left to right)
+		\ite  {Register names and there use}\\
+\ei
+\ei
+
+\os{\newpage}
+		\begin{center}
+		  \begin{tabular}{|c|c|c|}
+		    \hline
+		    Register &  Synonym & Use\\
+		    \hline
+		    r15 & PC & Program counter\\
+		    \hline
+		    r14 & LR & Link register \\
+		    \hline
+		    r13 & SP & Stack pointer \\
+		    \hline
+		    r12 & IP & Intra-procedure-call\\
+		    \hline
+		    r11 & v8 & Variable register\\
+		    \hline
+		    r10 & v7 & Variable register \\
+		    \hline
+		    r9 & v6 & Variable register\\
+		    \hline
+		    r8 & v5 & Variable register \\
+		    \hline
+		    r7 & v4 & Variable register\\
+		    \hline
+		    r6 & v3 & Variable register \\
+		    \hline
+		    r5 & v2 & Variable register\\
+		    \hline
+		    r4 & v1 & Variable Register \\
+		    \hline
+		    r3 & a4 & Argument register 4\\
+		    \hline
+		    r2 & a3 & Argument register 3\\
+		    \hline
+		    r1 & a2 & Argument register 2\\
+		    \hline
+		    r0 & a1 & Argument register 1\\
+		    \hline
+		  \end{tabular}
+		\end{center}
+\bi
+		\ite example int myfunc(int i, int j, int k, int l, int m ); /* myfunc = i + j + k + l + m */
+		\newline
+		\begin{center}
+		Preparation of the Stack \\
+		\begin{tabular}{c}
+		
+		 SP \pr \\
+		\end{tabular}
+		\begin{tabular}{|c|}		
+		  \hline
+		  int m \\
+		  \hline
+		\end{tabular}\\
+		Transfer of the parameters with registers\\
+		\begin{tabular}{|c|c|}
+		  \hline
+		  r3 & int l\\
+		  \hline
+		  r2 & int k\\
+		  \hline
+		  r1 & int j\\
+		  \hline
+		  r0 & int i\\
+		  \hline
+		\end{tabular}
+		\end{center}
+\ei
+
+\os{\newpage}
+\bi
+		\ite Program code \\
+		\ite ;int myfunc(int i, int j, int k, int l, int m)\\
+		\begin{tabular}{l l l}
+		  GLOBAL &myfunc & \\
+		  myfunc:&ADD r0,r0,r1 &;r0 = r0 + r1\\
+		  &ADD r0,r0,r2 &;r0 = r0 + r2\\
+		  &ADD r0,r0,r3 &;r0 = r0 + r3\\
+		  &LDR r3, [sp] &;load int m from stack\\
+		  &ADD r0,r0,r3 &;result in r0 (return value)\\
+		  &ADD sp,sp,\#4 &;remove int m from stack\\
+		  &MOV pc,lr &;back to the calling function\\
+		  END & & \\
+		\end{tabular}
+
+
+		\ite if there are additional local variable necessary, they could placed on the stack.
+		\ite before leave every reservation on the stack (local variable) have to be removed
+
+
+\ei
+\end{description}
+
+\section{Python for Embedded Systems}
+
+\begin{description}
+\item[{\rot\bf Python for Embedded}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite A very short introduction
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf Agenda}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Introduction
+\ite Running Python
+\ite Micropython
+\ite Python Programming
+\ite Data types
+\ite Control flows
+\ite Classes, functions, modules
+\ite Hands-on Exercise
+\ei
+\os{\newpage}
+
+
+\item[{\rot\bf What is python?}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Object oriented language
+\ite Interpreted language
+\ite Supports dynamic data type
+\ite Independent from platforms
+\ite Focused on development time
+\ite Simple and easy grammar
+\ite High-level internal object data types
+\ite Automatic memory management (Garbage Collected)
+\ite It is free (open source)!
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf Timeline}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Python born, name picked - Dec 1989
+\bi
+\ite By Guido van Rossum, now at GOOGLE
+\ei
+\ite First public release (USENET) - Feb 1991
+\ite python.org website - 1996 or 1997
+\ite 2.0 released - 2000
+\ite Python Software Foundation - 2001
+\ite Current version:
+\bi
+\ite 2.7 (frozen 2008)
+\ite 3.10 (parallel versions)
+\ei
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf Language properties}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Everything is an object
+\ite Modules, classes, functions
+\ite Exception handling
+\ite Dynamic typing, polymorphism
+\ite Static scoping
+\ite Operator overloading
+\ite Indentation for block structure
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf High-level data types}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Numbers: int, long, float, complex
+\ite Strings: immutable
+\ite Lists and dictionaries: containers
+\ite Other types for e.g. binary data, regular expressions, introspection
+\ite Extension modules can define new "built-in" data types
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf Why learn python?}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Fun-to-use "Scripting language"
+\ite Object-oriented
+\bi
+\ite Highly educational
+\ei
+\ite Very easy to learn
+\ite Powerful, scalable, easy to maintain
+\bi
+\ite high productivity
+\ite Lots of libraries
+\ei
+\ite Glue language
+\bi
+\ite Interactive front-end for FORTRAN/C/C++ code
+\ei
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf Why learn python? (cont.)}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Reduce development time
+\ite Reduce code length
+\ite Easy to learn and use as developers
+\ite Easy to understand codes
+\ite Easy to do team projects
+\ite Easy to extend to other languages
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf Where to use python?}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite System management (i.e., scripting)
+\ite Graphic User Interface (GUI)
+\ite Internet programming
+\ite Database (DB) programming
+\ite Text data processing
+\ite Distributed processing
+\ite Numerical operations
+\ite Graphics
+\ite And so on...
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf Python vs. Perl}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Easier to learn
+\bi
+\ite important for occasional users
+\ei
+\ite More readable code
+\bi
+\ite improved code maintenance
+\ei
+\ite Fewer "magical" side effects
+\ite More "safety" guarantees
+\ite Better Java integration
+\ite Less Unix bias
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf Python vs. Java}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Code 5-10 times more concise
+\ite Dynamic typing
+\ite Much quicker development
+\bi
+\ite no compilation phase
+\ite less typing
+\ei
+\ite Yes, it runs slower
+\bi
+\ite but development is so much faster!
+\ei
+\ite Similar (but more so) for C/C++
+\ite Use Python with Java: JPython!
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf Running Python - The Interpreter}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Python is an interpreted language and not a compiled one, although compilation is a step.
+\ite Python code, written in a .py file is first compiled to what is called bytecode.
+\ite Stored with a .pyc or .pyo format
+\ite bytecode is a low-level set of instructions that can be executed by an interpreter.
+\ite mostly at /usr/local/bin/pythonx.x.
+\ite Instead of executing the instructions on CPU, bytecode instructions are executed on a Virtual Machine.
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf Why to interpret?}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Platform-independent
+\bi
+\ite As long as the Python bytecode and the Virtual Machine have the same version, Python bytecode can be executed on any platform (Windows, MacOS, etc).
+\ei
+\ite Dynamic typing
+\bi
+\ite In static-typed languages like C++, you have to declare the variable type and any discrepancy like adding a string and an integer is checked during compile time.
+\ite In strongly typed languages like Python, it is the job of the interpreter to check the validity of the variable types and operations performed.
+\ei
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf Why not to interpret?}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Dynamic typing provides a lot of freedom, but simultaneously it makes your code risky and sometimes difficult to debug.
+\ite Slow because the interpreter has to do extra work to have the bytecode instruction translated into a form that can be executed on the machine.
+\ite A StackOverflow post makes it easier to understand using an analogy
+\bi
+\ite If you can talk in your native language to someone, that would generally work faster than having an interpreter having to translate your language into some other language for the listener to understand.
+\ei
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf Garbage Collection}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Many Languages use manual memory management. When variables are no longer in use or referenced, they need to be cleaned from the memory.
+\ite Garbage Collector automatically frees up space without you doing anything.
+\ite The memory management works in two ways -
+\bi
+\ite In a simplified way, it keeps track of the number of references to an object. When that number goes down to zero, it deletes that object. This is called reference counting. This cannot be disabled in Python.
+\ite In cases where object references itself or two objects refer each other, a process called generation garbage collection helps. This is something traditional reference counting cannot take care of.
+\ei
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf PyCache}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Folder named \_\_pycache\_\_ : created automatically.
+\bi
+\ite /folder
+\ite    - \_\_pycache\_\_
+\ite    - preprocess.cpython-36.pyc
+\ite    - preprocess.py
+\ei
+\ite Filename is the same as the one outside \_\_pycache\_\_ folder.
+\bi
+\ite The .pyc extension tells us that the file contains bytecode for preprocess.py.
+\ite The names cpython denotes the type of interpreter. CPython means that the interpreter was implemented in C language. JPython is a Python interpreter implemented in Java.
+\ei
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf PyCache}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite This slightly increases the speed of the Python program.
+\ite Unless you change your Python code, recompilation to bytecode is avoided, thereby saving time.
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf Running Python Interactively}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Start python by typing "python"
+\bi
+\ite /usr/bin/python
+\ei
+\ite \^D (control-D) exits
+\bi
+\ite \% python
+\ite \>\>\> \^D
+\ite \%
+\ei
+\ite Comments start with \#
+\ei
+
+\begin{lstlisting}[language=Python]
+ \>\>\> 2+2  #Comment on the same line as text
+ 4
+ \>\>\> 7/3 #Numbers are integers by default
+ 2
+ \>\>\> x = y = z = 0 #Multiple assigns at once
+ \>\>\> z
+ 0
+\end{lstlisting}
+
+\os{\newpage}
+
+
+\item[{\rot\bf Running Python Programs}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite In general
+\bi
+\ite \% python ./myprogram.py
+\ei
+\ite Can also create executable scripts
+\bi
+\ite Compose the code in an editor like vi/emacs
+\bi
+\ite \% vi ./myprogram.py\# Python scripts with the suffix .py.
+\ei
+\ite Then you can just type the script name to execute
+\bi
+\ite \% python ./myprogram.py
+\ei
+\ite The first line of the program tells the OS how to execute it:
+\bi
+\ite \#! /afs/isis/pkg/isis/bin/python
+\ei
+\ite Make the file executable:
+\bi
+\ite \% chmod +x ./myprogram.py
+\ei
+\ite Then you can just type the script name to execute
+\bi
+\ite \% ./myprogram.py
+\ei
+\ei
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf Running Python Programs Interactively}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Suppose the file script.py contains the following lines:
+\ite 	print 'Hello world'
+\ite 	x = [0,1,2]
+\ite Let's run this script in each of the ways described on the last slide:
+\ite python -i script.py
+\ite 	Hello world
+\ite 	\>\>\> x
+\ite 	[0,1,2]
+\ite
+\ite \$ python
+\ite 	\>\>\> execfile('script.py')
+\ite 	\>\>\> x
+\ite 	[0,1,2]
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf Running Python Programs Interactively}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Suppose the file script.py contains the following lines:
+\ite 	print 'Hello world'
+\ite 	x = [0,1,2]
+\ite Let's run this script in each of the ways described on the last slide:
+\ite python
+\ite 	\>\>\> import script\# DO NOT add the .py suffix.  Script is a module here
+\ite 	\>\>\> x
+\ite 		Traceback (most recent call last):
+\ite 		File "<stdin>", line 1, in ?
+\ite 		NameError: name 'x' is not defined
+\ite 	\>\>\> script.x\# to make use of x, we need to let Python know which 				\#module it came from, i.e. give Python its context
+\ite 		[0,1,2]
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf Running Python Programs Interactively}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite\# Pretend that script.py contains multiple stored quantities.  To promote x(and only x) to the top level context, type the following:
+\ite \$ python
+\ite 	\>\>\> from script import x
+\ite 	Hello world
+\ite 	\>\>\> x
+\ite 	[0,1,2]
+\ite 	\>\>\>
+\ite 	\# To promote all quantities in script.py to the top level context, type
+\ite 	from script import * into the interpreter.  Of course, if that's what you want, you might as well type python -i script.py into the terminal.
+\ite 	\>\>\> from script import *
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf File naming conventions}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite python files usually end with the suffix .py
+\ite but executable files usually don't have the .py extension
+\ite modules (later) should always have the .py extension
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf Comments}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Start with\# and go to end of line
+\ite What about C, C++ style comments?
+\bi
+\ite NOT supported!
+\ei
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf Micropython}]~\\[-3ex]
+
+\vspace{1cm}
+
+\os{\newpage}
+
+
+\item[{\rot\bf What is?}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite "Micro Python was successfully funded via a Kickstarter campaign. The software is available to the public under the MIT open source license. "
+\ite "Micro Python is a lean and fast implementation of the Python 3 programming language that is optimised to run on a microcontroller."
+\ite "The Micro Python board is a small electronic circuit board that runs Micro Python on the bare metal, and gives you a low-level Python operating system that can be used to control all kinds of electronic projects." 					micropython.org
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf What is exactly?}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Full implementation of Python 3 grammar. Cpython 3.4 (no batteries)
+\ite Implements lexer, parse, compiler, vm and runtime.
+\ite Execute files or REPL (Read-Evaluate-Print-Loop).
+\ite Python code is compiled to byte code that run in vm.
+\ite Storing objects in efficient ways.
+\ite Decorator can be compiled to native code. 2 time faster than byte code.
+\ite Memory is managed using a simple and fast mark-sweep garbage collector.
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf What is more?}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Micro Python as a "mini Python operating system"
+\bi
+\ite Checks for a local filesystem on the flash.
+\ite Checks for /boot.py.
+\ite Runs /boot.py to configure USB and other low-level parameters that can't be changed without a reset.
+\ite The main Python script is run if it exists. Default is /src/main.py.
+\ite If the main script doesn't exist, or exits, REPL (readevaluate-print-loop) mode is entered.
+\ei
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf Batteries included?}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite I am the terror that flaps in the night, I am the batteries that are not included. I, am Darkwing Duck
+\ite Python standard libraries
+\bi
+\ite cmath - mathematical functions for complex numbers
+\ite gc - control the garbage collector
+\ite math - mathematical functions
+\ite os - basic "operating system" services
+\ite select - wait for events on a set of streams
+\ite struct - pack and unpack primitive data types
+\ite sys - system specific functions
+\ite time - time related functions
+\bi
+\ite additional libs in https://github.com/micropython/micropython-lib
+\ei
+\ei
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf More batteries}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Python standard libraries "micro-ified"
+\bi
+\ite ubinascii - binary/ASCII conversions
+\ite uhashlib - hashing algorithm
+\ite uheapq - heap queue algorithm
+\ite ujson - JSON encoding and decoding
+\ite ure - regular expressions
+\ite usocket - socket module
+\ite uzlib - zlib decompression
+\ei
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf Jupyter}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite The Jupyter Notebook can also be used for both regular and micropython.
+\ite Circuitpython is an adafruit specific version to be used for physical computing.
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf Programming Python}]~\\[-3ex]
+
+\vspace{1cm}
+
+\os{\newpage}
+
+
+\item[{\rot\bf Python Syntax}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Much of it is similar to C syntax
+\ite Exceptions:
+\bi
+\ite missing operators: ++, --
+\ite no curly brackets,\{\}, for blocks; uses whitespace!!!
+\ite different keywords
+\ite lots of extra features
+\ite no type declarations!
+\ei
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf Simple data types}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Numbers
+\bi
+\ite Integer, floating-point, complex!
+\ite
+\ei
+\ite Strings
+\bi
+\ite characters are strings of length 1
+\ite
+\ei
+\ite Booleans are False or True
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf Numbers}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite The usual notations and operators
+\ei
+
+\begin{lstlisting}[language=Python]
+12, 3.14, 0xFF, 0377, (-1+2)*3/4**5, abs(x), 0<x<=5
+
+C-style shifting \& masking
+
+1<<16, x\&0xff, x|1, ~x, x^y
+
+Integer division truncates :-(
+
+1/2 -> 0	# float(1)/2 -> 0.5
+
+Long (arbitrary precision), complex
+
+2L**100 -> 1267650600228229401496703205376L
+1j**2 -> (-1+0j)
+
+\end{lstlisting}
+
+\os{\newpage}
+
+
+\item[{\rot\bf Strings and formatting}]~\\[-3ex]
+
+\vspace{1cm}
+\begin{lstlisting}[language=Python]
+ i = 10
+ d = 3.1415926
+ s = "I am a string!"
+ print "%d\t%f\t%s" % (i, d, s)
+ print "newline\n"
+ print "no newline"
+\end{lstlisting}
+
+\os{\newpage}
+
+
+\item[{\rot\bf Variables}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite No need to declare
+\ite Need to assign (initialize)
+\bi
+\ite use of uninitialized variable raises exception
+\ei
+\ite Not typed
+\bi
+\ite if friendly: greeting = "hello world"
+\ite else: greeting = 12**2
+\ite print greeting
+\ei
+\ite Everything is a variable:
+\bi
+\ite functions, modules, classes
+\ei
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf Reference semantics}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Assignment manipulates references
+\bi
+\ite x = y does not make a copy of y
+\ite x = y makes x reference the object y references
+\ei
+\ite Very useful; but beware!
+\ite Example:
+\ei
+\begin{lstlisting}[language=Python]
+\>\>\> a = [1, 2, 3]; b = a
+\>\>\> a.append(4); print b
+[1, 2, 3, 4]
+\end{lstlisting}
+
+\os{\newpage}
+
+
+\item[{\rot\bf Simple data types: operators}]~\\[-3ex]
+
+\vspace{1cm}
+
+\begin{lstlisting}[language=Python]
++ - * / %  (like C)
++= -=  etc. (no ++ or --)
+Assignment using =
+
+but semantics are different!
+a = 1
+a = "foo"  # OK
+
+Can also use + to concatenate strings
+
+\end{lstlisting}
+\os{\newpage}
+
+
+\item[{\rot\bf Strings}]~\\[-3ex]
+
+\vspace{1cm}
+\begin{lstlisting}[language=Python]
+ "hello"+"world"	"helloworld"	# concatenation
+ "hello"*3		"hellohellohello" # repetition
+ "hello"[0]		"h"		# indexing
+ "hello"[-1]		"o"		# (from end)
+ "hello"[1:4]		"ell"		# slicing
+ len("hello")		5		# size
+ "hello" < "jello"	1		# comparison
+ "e" in "hello"		1		# search
+ New line: 		"escapes: \n "
+ Line continuation: 	triple quotes '''
+ Quotes: 		'single quotes', "raw strings"
+\end{lstlisting}
+
+\os{\newpage}
+
+
+\item[{\rot\bf Simple Data Types}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Triple quotes useful for multi-line strings
+\ite  \>\>\> s = """ a long... string with "quotes" or anything else """\\
+\>\>\> s' a long string with "quotes" or anything else'\\
+\>\>\> len(s)45
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf Methods in string}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite upper()
+\ite lower()
+\ite capitalize()
+\ite count(s)
+\ite find(s)
+\ite rfind(s)
+\ite index(s)
+\ei
+\bi
+\ite strip(), lstrip(), rstrip()
+\ite replace(a, b)
+\ite expandtabs()
+\ite split()
+\ite join()
+\ite center(), ljust(), rjust()
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf Compound Data Type: List}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite List:
+\bi
+\ite A container that holds a number of other objects, in a given order
+\ite Defined in square brackets
+\ei
+\ei
+\begin{lstlisting}[language=Python]
+ a = [1, 2, 3, 4, 5]
+ print a[1]  # number 2
+ some_list = []
+ some_list.append("foo")
+ some_list.append(12)
+ print len(some_list)  # 2
+\end{lstlisting}
+
+\os{\newpage}
+
+
+\item[{\rot\bf List}]~\\[-3ex]
+
+\vspace{1cm}
+\begin{lstlisting}[language=Python]
+ a = [99, "bottles of beer", ["on", "the", "wall"]]
+
+ Flexible arrays, not Lisp-like linked lists
+ Same operators as for strings
+
+ a+b, a*3, a[0], a[-1], a[1:], len(a)
+
+ Item and slice assignment
+
+ a[0] = 98
+ a[1:2] = ["bottles", "of", "beer"]
+
+ -> [98, "bottles", "of", "beer", ["on", "the", "wall"]]
+
+ del a[-1]	# -> [98, "bottles", "of", "beer"]
+\end{lstlisting}
+
+\os{\newpage}
+
+
+\item[{\rot\bf More list operations}]~\\[-3ex]
+
+\vspace{1cm}
+\begin{lstlisting}[language=Python]
+ \>\>\> a = range(5)		# [0,1,2,3,4]
+ \>\>\> a.append(5)		# [0,1,2,3,4,5]
+ \>\>\> a.pop()			# [0,1,2,3,4]
+ 5
+ \>\>\> a.insert(0, 5.5)		# [5.5,0,1,2,3,4]
+ \>\>\> a.pop(0)			# [0,1,2,3,4]
+ 5.5
+ \>\>\> a.reverse()			# [4,3,2,1,0]
+ \>\>\> a.sort()			# [0,1,2,3,4]
+\end{lstlisting}
+
+\os{\newpage}
+
+
+\item[{\rot\bf Operations in List}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Indexing		e.g., L[i]
+\ite Slicing		e.g., L[1:5]
+\ite Concatenation	e.g., L + L
+\ite Repetition		e.g., L * 5
+\ite Membership test	e.g., 'a' in L
+\ite Length		e.g., len(L)
+\ei
+\bi
+\ite append
+\ite insert
+\ite index
+\ite count
+\ite sort
+\ite reverse
+\ite remove
+\ite pop
+\ite extend
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf Nested List}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite List in a list
+\ite E.g.,
+\bi
+\ite \>\>\> s = [1,2,3]
+\ite \>\>\> t = ['begin', s, 'end']
+\ite \>\>\> t
+\ite ['begin', [1, 2, 3], 'end']
+\ite \>\>\> t[1][1]
+\ite 2
+\ei
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf Dictionaries}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Dictionaries: curly brackets
+\ite What is dictionary?
+\ite Refer value through key; "associative arrays"
+
+\ite Like an array indexed by a string
+\ite An unordered set of key: value pairs
+\ite Values of any type; keys of almost any type
+\ei
+\begin{lstlisting}[language=Python]
+ {"name":"Guido", "age":43, ("hello","world"):1,  42:"yes", "flag": ["red","white","blue"]}
+ d = { "foo" : 1, "bar" : 2 }
+ print d["bar"]   # 2
+ some_dict = {}
+ some_dict["foo"] = "yow!"
+ print some_dict.keys() # ["foo"]
+\end{lstlisting}
+
+\os{\newpage}
+
+
+\item[{\rot\bf Methods in Dictionary}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite keys()
+\ite values()
+\ite items()
+\ite has\_key(key)
+\ite clear()
+\ite copy()
+\ite get(key[,x])
+\ite setdefault(key[,x])
+\ite update(D)
+\ite popitem()
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf Dictionary details}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Keys must be immutable:
+\bi
+\ite numbers, strings, tuples of immutables
+\bi
+\ite these cannot be changed after creation
+\ei
+\ite reason is hashing (fast lookup technique)
+\ite not lists or other dictionaries
+\bi
+\ite these types of objects can be changed "in place"
+\ei
+\ite no restrictions on values
+\ei
+\ite Keys will be listed in arbitrary order
+\bi
+\ite again, because of hashing
+\ei
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf Tuples}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite What is a tuple?
+\bi
+\ite A tuple is an ordered collection which cannot be modified once it has been created.
+\ite In other words, it's a special array, a read-only array.
+\ei
+\ite How to make a tuple?  In round brackets
+\bi
+\ite E.g.,
+\ite \>\>\> t = ()
+\ite \>\>\> t = (1, 2, 3)
+\ite \>\>\> t = (1, )
+\ite \>\>\> t = 1,
+\ite \>\>\> a = (1, 2, 3, 4, 5)
+\ite \>\>\> print a[1]  \# 2
+\ei
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf Operations in Tuple}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Indexing		e.g., T[i]
+\ite Slicing			e.g., T[1:5]
+\ite Concatenation	e.g., T + T
+\ite Repetition		e.g., T * 5
+\ite Membership test	e.g., 'a' in T
+\ite Length			e.g., len(T)
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf List vs. Tuple}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite What are common characteristics?
+\bi
+\ite Both store arbitrary data objects
+\ite Both are of sequence data type
+\ei
+\ite What are differences?
+\bi
+\ite Tuple doesn't allow modification
+\ite Tuple doesn't have methods
+\ite Tuple supports format strings
+\ite Tuple supports variable length parameter in function call.
+\ite Tuples slightly faster
+\ei
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf Data Type Wrap Up}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Integers: 2323, 3234L
+\ite Floating Point: 32.3, 3.1E2
+\ite Complex: 3 + 2j, 1j
+\ite Lists: l =  [ 1,2,3]
+\ite Tuples: t = (1,2,3)
+\ite Dictionaries: d = {'hello' : 'there', 2 : 15}
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf Data Type Wrap Up}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Lists, Tuples, and Dictionaries can store any type (including other lists, tuples, and dictionaries!)
+\ite Only lists and dictionaries are mutable
+\ite All variables are references
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf Input}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite The raw\_input(string) method returns a line of user input as a string
+\ite The parameter is used as a prompt
+\ite The string can be converted by using the conversion methods int(string), float(string), etc.
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf File I/O}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite f = file("foo", "r")
+\ite line = f.readline()
+\ite print line,
+\ite f.close()
+\ite \# Can use sys.stdin as input;
+\ite \# Can use sys.stdout as output.
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf Files: Input}]~\\[-3ex]
+
+\vspace{1cm}
+\begin{tabular}{|l|l|} \hline
+input = open('data', 'r') & Open the file for input  \\ \hline
+S = input.read() & Read whole file into one String  \\ \hline
+S = input.read(N) & Reads N bytes
+(N >= 1)  \\ \hline
+L = input.readlines() & Returns a list of line strings  \\ \hline
+\end{tabular}
+
+
+\os{\newpage}
+
+
+\item[{\rot\bf Files: Output}]~\\[-3ex]
+
+\vspace{1cm}
+\begin{tabular}{|l|l|} \hline
+output = open('data', 'w') & Open the file for writing  \\ \hline
+output.write(S) & Writes the string S to file  \\ \hline
+output.writelines(L) & Writes each of the strings in list L to file  \\ \hline
+output.close() & Manual close  \\ \hline
+\end{tabular}
+
+
+\os{\newpage}
+
+
+\item[{\rot\bf open() and file()}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite These are identical:
+\ite   f = open(filename, "r")
+\ite   f = file(filename, "r")
+\ite The open() version is older
+\ite The file() version is the recommended way to open a file now
+\bi
+\ite uses object constructor syntax (next lecture)
+\ei
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf OOP Terminology}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite class -- a template for building objects
+\ite instance -- an object created from the template (an instance of the class)
+\ite method -- a function that is part of the object and acts on instances directly
+\ite constructor -- special "method" that creates new instances
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf Objects}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Objects:
+\bi
+\ite What is an object?
+\bi
+\ite data structure, and
+\ite functions (methods) that operate on it
+\ei
+\ite   class thingy:
+\ite       \# Definition of the class here, next slide
+\ite   t = thingy()
+\ite   t.method()
+\ite   print t.field
+\ite Built-in data structures (lists, dictionaries)  are also objects
+\bi
+\ite though internal representation is different
+\ei
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot \bf Defining a class}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite class Thingy:
+\ite     """This class stores an arbitrary object."""
+\ite     def \_\_init\_\_(self, value):
+\ite         """Initialize a Thingy."""
+\ite         self.value = value
+\ite     def showme(self):
+\ite         """Print this object to stdout."""
+\ite         print "value = \%s" \% self.value
+\ei
+\bi
+\ite constructor
+\ei
+\bi
+\ite method
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf Using a class (1)}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite t = Thingy(10)  \# calls \_\_init\_\_ method
+\ite t.showme()      \# prints "value = 10"
+\ei
+\ite t is an instance of class Thingy
+\ite showme is a method of class Thingy
+\ite \_\_init\_\_ is the constructor method of class Thingy
+\bi
+\ite when a Thingy is created, the \_\_init\_\_ method is called
+\ei
+\ite Methods starting and ending with \_\_ are "special" methods
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf Using a class (2)}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite print t.value  \# prints "10"
+\ite value is a field of class Thingy
+\ite t.value = 20   \# change the field value
+\ite print t.value  \# prints "20"
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf "Special" methods}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite All start and end with \_\_ (two underscores)
+\ite Most are used to emulate functionality of built-in types in user-defined classes
+\ite e.g. operator overloading
+\bi
+\ite \_\_add\_\_, \_\_sub\_\_, \_\_mult\_\_, ...
+\ite see python docs for more information
+\ei
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf Control flow (1)}]~\\[-3ex]
+
+\vspace{1cm}
+\begin{lstlisting}[language=Python]
+ if, if/else, if/elif/else
+   if a == 0:
+       print "zero!"
+   elif a < 0:
+       print "negative!"
+   else:
+       print "positive!"
+
+ Notes:
+
+ blocks delimited by indentation!
+ colon (:) used at end of lines containing control flow keywords
+\end{lstlisting}
+
+\os{\newpage}
+
+
+\item[{\rot\bf Control flow (3)}]~\\[-3ex]
+
+\vspace{1cm}
+\begin{lstlisting}[language=Python]
+ while loops
+
+   a = 10
+   while a > 0:
+       print a
+       a -= 1
+\end{lstlisting}
+
+\os{\newpage}
+
+
+\item[{\rot\bf Control flow (4)}]~\\[-3ex]
+
+\vspace{1cm}
+\begin{lstlisting}[language=Python]
+ for loops
+
+   for a in range(10):
+       print a
+
+ really a "foreach" loop
+\end{lstlisting}
+
+\os{\newpage}
+
+
+\item[{\rot\bf Control flow (5)}]~\\[-3ex]
+
+\vspace{1cm}
+\begin{lstlisting}[language=Python]
+ Common for loop idiom:
+
+   a = [3, 1, 4, 1, 5, 9]
+   for i in range(len(a)):
+       print a[i]
+\end{lstlisting}
+
+\os{\newpage}
+
+
+\item[{\rot\bf Control flow (6)}]~\\[-3ex]
+
+\vspace{1cm}
+\begin{lstlisting}[language=Python]
+ Common while loop idiom:
+   f = open(filename, "r")
+   while True:
+       line = f.readline()
+       if not line:
+           break
+       # do something with line
+\end{lstlisting}
+
+\os{\newpage}
+
+
+\item[{\rot\bf Control flow (7): odds \& ends}]~\\[-3ex]
+
+\vspace{1cm}
+\begin{lstlisting}[language=Python]
+ continue statement like in C
+ pass keyword:
+   if a == 0:
+       pass  # do nothing
+   else:
+       # whatever
+\end{lstlisting}
+
+\os{\newpage}
+
+
+\item[{\rot\bf Defining functions}]~\\[-3ex]
+
+\vspace{1cm}
+\begin{lstlisting}[language=Python]
+   def foo(x):
+       y = 10 * x + 2
+       return y
+ All variables are local unless specified as global
+ Arguments passed by value
+\end{lstlisting}
+
+\os{\newpage}
+
+
+\item[{\rot\bf Executing functions}]~\\[-3ex]
+
+\vspace{1cm}
+\begin{lstlisting}[language=Python]
+ def foo(x):
+     y = 10 * x + 2
+     return y
+
+ print foo(10)  # 102
+\end{lstlisting}
+
+\os{\newpage}
+
+
+\item[{\rot\bf Why use modules?}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Code reuse
+\bi
+\ite Routines can be called multiple times within a program
+\ite Routines can be used from multiple programs
+\ei
+\ite Namespace partitioning
+\bi
+\ite Group data together with functions used for that data
+\ei
+\ite Implementing shared services or data
+\bi
+\ite Can provide global data structure that is accessed by multiple subprograms
+\ei
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf Modules}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Modules are functions and variables defined in separate files
+\ite Items are imported using from or import
+\bi
+\ite from module import function
+\ite function()
+\ite
+\ite import module
+\ite module.function()
+\ei
+\ite Modules are namespaces
+\bi
+\ite Can be used to organize variable names, i.e.
+\bi
+\ite atom.position = atom.position - molecule.position
+\ei
+\ei
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf Modules}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Access other code by importing modules
+\bi
+\ite import math
+\ite print math.sqrt(2.0)
+\ei
+\ite or:
+\bi
+\ite from math import sqrt
+\ite print sqrt(2.0)
+\ei
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf Modules}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite or:
+\bi
+\ite from math import *
+\ite print sqrt(2.0)
+\ei
+\ite Can import multiple modules on one line:
+\bi
+\ite import sys, string, math
+\ei
+\ite Only one "from x import y" per line
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf Example: NumPy Modules}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite http://numpy.scipy.org/
+\ite NumPy has many of the features of Matlab, in a free, multiplatform program. It also allows you to do intensive computing operations in a simple way
+\ite Numeric Module: Array Constructors
+\bi
+\ite ones, zeros, identity
+\ite arrayrange
+\ei
+\ite LinearAlgebra Module: Solvers
+\bi
+\ite Singular Value Decomposition
+\ite Eigenvalue, Eigenvector
+\ite Inverse
+\ite Determinant
+\ite Linear System Solver
+\ei
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf Arrays and Constructors}]~\\[-3ex]
+
+\vspace{1cm}
+\begin{lstlisting}[language=Python]
+ \>\>\> a = ones((3,3),float)
+ \>\>\> print a
+ [[1., 1., 1.],
+  [1., 1., 1.],
+  [1., 1., 1.]]
+ \>\>\> b = zeros((3,3),float)
+ \>\>\> b = b + 2.*identity(3) #"+" is overloaded
+ \>\>\> c = a + b
+ \>\>\> print c
+ [[3., 1., 1.],
+  [1., 3., 1.],
+  [1., 1., 3.]]
+\end{lstlisting}
+
+\os{\newpage}
+
+
+\item[{\rot\bf Overloaded operators}]~\\[-3ex]
+
+\vspace{1cm}
+\begin{lstlisting}[language=Python]
+ \>\>\> b = 2.*ones((2,2),float) #overloaded
+ \>\>\> print b
+ [[2.,2.],
+  [2.,2.]]
+ \>\>\> b = b+1   # Addition of a scalar is
+ \>\>\> print b   #   element-by-element
+ [[3.,3.],
+  [3.,3.]]
+ \>\>\> c = 2.*b  # Multiplication by a scalar is
+ \>\>\> print c   #   element-by-element
+ [[6.,6.],
+  [6.,6.]]
+\end{lstlisting}
+
+\os{\newpage}
+
+
+\item[{\rot\bf Array functions}]~\\[-3ex]
+
+\vspace{1cm}
+\begin{lstlisting}[language=Python]
+ \>\>\> from LinearAlgebra import *
+ \>\>\> a = zeros((3,3),float) + 2.*identity(3)
+ \>\>\> print inverse(a)
+ [[0.5, 0., 0.],
+  [0., 0.5, 0.],
+  [0., 0., 0.5]]
+ \>\>\> print determinant(inverse(a))
+ 0.125
+ \>\>\> print diagonal(a)
+ [0.5,0.5,0.5]
+ \>\>\> print diagonal(a,1)
+ [0.,0.]
+
+ transpose(a), argsort(), dot()
+\end{lstlisting}
+
+\os{\newpage}
+
+
+\item[{\rot\bf Eigenvalues}]~\\[-3ex]
+
+\vspace{1cm}
+\begin{lstlisting}[language=Python]
+ \>\>\> from LinearAlgebra import *
+ \>\>\> val = eigenvalues(c)
+ \>\>\> val, vec = eigenvectors(c)
+ \>\>\> print val
+ [1., 4., 1.]
+ \>\>\> print vec
+ [[0.816, -0.408, -0.408],
+  [0.575, 0.577, 0.577],
+  [-0.324, -0.487, 0.811]]
+ also solve_linear_equations, singular_value_decomposition, etc.
+\end{lstlisting}
+
+\os{\newpage}
+
+
+\item[{\rot\bf Least Squares Fitting}]~\\[-3ex]
+
+\vspace{1cm}
+\begin{lstlisting}[language=Python]
+ Part of Hinsen's Scientific Python module
+
+ \>\>\> from LeastSquares import *
+ \>\>\> def func(params,x): # y=ax^2+bx+c
+ 		return params[0]*x*x + params[1]*x +
+                params[2]
+ \>\>\> data = []
+ \>\>\> for i in range(10):
+ 		data.append((i,i*i))
+ \>\>\> guess = (3,2,1)
+ \>\>\> fit_params, fit_error =
+ 		leastSquaresFit(func,guess,data)
+ \>\>\> print fit_params
+ [1.00,0.000,0.00]
+\end{lstlisting}
+
+\os{\newpage}
+
+
+\item[{\rot\bf FFT}]~\\[-3ex]
+
+\vspace{1cm}
+\begin{lstlisting}[language=Python]
+ \>\>\> from FFT import *
+ \>\>\> data = array((1,0,1,0,1,0,1,0))
+ \>\>\> print fft(data).real
+ [4., 0., 0., 0., 4., 0., 0., 0.]]
+
+ Also note that the FFTW package ("fastest Fourier transform in the West") has a python wrapper. See notes at the end
+ Python Standard Libraries/Modules:
+
+ http://docs.python.org/library/
+ http://its2.unc.edu/dci/dci_components/shared_apps/packages/python_packages.html
+ http://pypi.python.org/pypi/
+\end{lstlisting}
+
+\os{\newpage}
+
+
+\item[{\rot\bf Command-line arguments}]~\\[-3ex]
+
+\vspace{1cm}
+\begin{lstlisting}[language=Python]
+ import sys
+ print len(sys.argv) # NOT argc
+ # Print all arguments:
+ print sys.argv
+ # Print all arguments but the program
+ # or module name:
+ print sys.argv[1:]  # "array slice"
+\end{lstlisting}
+
+\os{\newpage}
+
+
+\item[{\rot\bf Catching Exceptions}]~\\[-3ex]
+
+\vspace{1cm}
+\begin{lstlisting}[language=Python]
+ #python code a.py
+ x = 0
+ try:
+     print 1/x
+ except ZeroDivisionError, message:
+     print "Can't divide by zero:"
+     print message
+ \>\>\>python a.py
+ Can't divide by zero:
+ integer division or modulo by zero
+
+\end{lstlisting}
+
+\os{\newpage}
+
+
+\item[{\rot\bf Try-Finally: Cleanup}]~\\[-3ex]
+
+\vspace{1cm}
+\begin{lstlisting}[language=Python]
+ f = open(file)
+ try:
+     process_file(f)
+ finally:
+     f.close()	# always executed
+ print "OK"	# executed on success only
+
+\end{lstlisting}
+
+\os{\newpage}
+
+
+\item[{\rot\bf Raising Exceptions}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite raise IndexError
+\ite raise IndexError("k out of range")
+\ite raise IndexError, "k out of range"
+\ite try:    somethingexcept:	\# catch everything    print "Oops"    raise	\# reraise
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf Python: Pros \& Cons}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Pros
+\bi
+\ite Free availability (like Perl, Python is open source).
+\ite Stability (Python is in release 2.6 at this point and, as I noted earlier, is older than Java).
+\ite Very easy to learn and use
+\ite Good support for objects, modules, and other reusability mechanisms.
+\ite Easy integration with and extensibility using C and Java.
+\ei
+\ite Cons
+\bi
+\ite Smaller pool of Python developers compared to other languages, such as Java
+\ite Lack of true multiprocessor support
+\ite Absence of a commercial support point, even for an Open Source project (though this situation is changing)
+\ite Software performance slow, not suitable for high performance applications
+\ei
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf References}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Python Homepage
+\ite http://www.python.org
+\ite Python Tutorial
+\ite http://docs.python.org/tutorial/
+\ite Python Documentation
+\ite http://www.python.org/doc
+\ite Python Library References
+\ite http://docs.python.org/release/2.5.2/lib/lib.html
+\ite Python Add-on Packages:
+\ite http://pypi.python.org/pypi
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf Raspberry Pi Simulator}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite There is a simulator for the RasPi and some Hats here:
+\bi
+\ite https://trinket.io/sense-hat
+\ei
+\ite This is obviously tailored to help their sales, but it is useful.
+\ite You can interact with it using the keyboard and the mouse.
+\ite In the Rock-Paper-Scissors example, the Hat Joystick is mapped to the arrow keys
+\ite Tilting the unit can be done by the mouse
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf Exercise}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Understand the workings of the Rock-Paper-Scissors programm
+\ite Modify the program so that you can play Rock-Paper-Scissors-Spock-Lizard
+\ite R-P-S is a state based game
+\bi
+\ite Is the game implemented as a state machine?
+\ei
+\ite
+\ei
+\includegraphics{figures/python_01.png}
+
+\os{\newpage}
+
+\end{description}
+
+
+\section{Node.JS in embedded Systems}
+
+\begin{description}
+
+\item[{\rot \bf Node.js	}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite For Embedded Systems
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf Node.js and Java Script}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Language Requirements for IoT
+\ite Support Web Protocols
+\ite Single Language for all tasks
+\bi
+\ite Client Application
+\ite Cloud Engine
+\ite Gateways
+\ite Embedded Code
+\ei
+\ite JS is a possible solution
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf Popular Languages on github}]~\\[-3ex]
+
+\vspace{1cm}
+
+\begin{figure}[!hbtp]
+     \begin{center}
+	  \epsfig{file=figures/nodejs_1.jpg,width=0.8\textwidth}\\
+	  \caption{Common Languages}
+     \end{center}
+\end{figure}
+
+\os{\newpage}
+
+
+\item[{\rot\bf The rise of JS}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite JS is powerful when running on web-like structures
+\ite IoT and networked embedded is becoming that
+\ite Server side is often in PHP, Ruby, Python or Java
+\ite Node.JS is serverside JS
+\ite https://nodejs.org/en/foundation/
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf Node.js}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite event-driven architecture
+\ite non-blocking I/O API
+\ite
+\ite framework forhigh-performance server-side web applications
+\ite Normal Server: deploy your application in a running server instance
+\ite Node : your application is the server.
+\ite Builds on the highly efficient Google V8 JavaScript engine
+\ite Heart of the Chrome browser
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf Language}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Node isn't JavaScript
+\ite JavaScript is the language you use to build Node applications
+\ite Others, like CoffeeScript are possible.
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf Installation}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Node.JS needs to be installed on any machine to run it
+\ite http://nodejs.org/en/download/.
+\ite Entering node -version will tell you if you have it.
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf A first blink sketch}]~\\[-3ex]
+
+\vspace{1cm}
+
+\begin{lstlisting}[language=JavaScript]
+
+ var http = require("http"); //\#A
+ http.createServer(function(req,res){ //\#B
+   res.writeHeader(200, {'Content-Type': 'text/plain'}); //\#C
+   res.end('Hello World');
+ }).listen(8585); //\#D
+ console.log('Server started!');
+
+ //\#A "require" is used to "import" libraries
+ //\#B creates a new HTTP server and pass it a function to be called whenever a client sends a request
+ //\#C we start writing a response, beginning with the HTTP headers
+ //\#D starts the HTTP server on port 8585
+\end{lstlisting}
+
+\os{\newpage}
+
+
+\item[{\rot\bf What, a server?}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite First, require the http module. This basically loads the HTTP module and makes it available to your application
+\ite Then use the HTTP object to create a new server.
+\ite Pass to this server a function that will be called whenever a client connects to your server.
+\ite When a client actually connects, the function is called with two parameters:
+\ite req represents the client request and offers a number of functions to retrieve information about it, such as the requested URL or the payload that was sent.
+\ite res represents the response you'd like to send back to the client.
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf Calling Sensors}]~\\[-3ex]
+
+\vspace{1cm}
+
+\begin{lstlisting}[language= JavaScript]
+
+ var http = require("http");var port = 8686;
+ function randomInt (low, high) {
+   return Math.floor(Math.random() * (high - low) + low);
+ }
+ http.createServer(function(req,res){  console.log('New incoming client request for ' + req.url);  res.writeHeader(200, {'Content-Type': 'application/json'}); //\#A
+   switch(req.url) { //\#B
+     case '/temperature': // And return the corresponding JSON
+       res.write('{"temperature" :' + randomInt(1, 40) + '}'); //\#C
+       break;
+     case '/light':      res.write('{"light" :' + randomInt(1, 100) + '}')      break;
+     default:      res.write('{"hello" : "world"}');
+   }
+   res.end();  //\#D
+ }).listen(port);
+ console.log('Server listening on http://localhost:' + port);
+
+
+ //\#A Setting the header to announce we return JSON representations
+ //\#B Read the request URL and provide responses accordingly
+ //\#C Write the temperature result as JSON
+ //\#D Causes to return the results to the client
+\end{lstlisting}
+
+\os{\newpage}
+
+
+\item[{\rot\bf Node.js Event Loop}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Building server-side web applications that needs to deal with more than a single client at a time requires the ability to handle a large number of connections in a concurrent manner.
+\ite If the connections couldn't be accepted concurrently, each new web client would have to wait until the clients that arrived earlier were served.
+\ite Imagine a single gas station on a busy intersection, with a single pump used by a single attendant.
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf Multihreaded Approach}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite The first pattern is to create one process - or better, one thread - per request.
+\ite A thread is essentially a lightweight process because it's able to share some of the process's resources (for example, some of the allocated memory) while executing largely independently.
+\ite var result = database.query("SELECT things FROM deviceTable");console.log(result);
+\ite This works fine in the PHP and Java worlds because while one client waits to be served, the underlying server (for example, Apache) serves the next clients.
+\ite It does this by creating one thread for each incoming client.
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf Threaded Multi-Request-Response}]~\\[-3ex]
+
+\vspace{1cm}
+
+\begin{figure}[!hbtp]
+     \begin{center}
+
+\epsfig{file=figures/nodejs_2.jpg,width=0.8\textwidth}\\
+	  \caption{Threaded request response}
+     \end{center}
+\end{figure}
+\os{\newpage}
+
+
+\item[{\rot\bf Single-threaded, non-blocking web servers}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Imagine each thread is a pump with an attendant, each web client is a customer, and the database is the central tank.
+\ite We're better off than with a single pump and attendant, but each attendant is still idle some of the time, waiting for our tank to get filled.
+\ite What if we had only one attendant managing several pumps in an efficient manner?
+\ite Wouldn't this be more economical in terms of costs?
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf Single Thread - Non Blocking}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite This second pattern is an event-driven system often based on the idea of a single thread (or a limited number of threads) with an event loop and non-blocking or asynchronous I/O.
+\ite The Node.js runtime is built on these principles. It runs a single thread with an event loop and strongly favors asynchronous I/O operations.
+\ite When the Node server accepts a client, it puts it on hold until the I/O operations it requested (for example, reading from the database, reading a value from a sensor, or uploading a file on a remote server) have returned and goes on serving other clients in the meanwhile.
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf Non Blocking Event Loop}]~\\[-3ex]
+
+\vspace{1cm}
+\begin{figure}[!hbtp]
+     \begin{center}
+\epsfig{file=figures/nodejs_3.jpg,width=0.8\textwidth}\\
+	  \caption{Non-blocking Event Loop}
+     \end{center}
+\end{figure}
+\os{\newpage}
+
+
+\item[{\rot\bf Synchronous vs Asynchronous}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Imagine that we run the synchronous code shown previously in a Node server.
+\ite The Node runtime will fetch data from the database, wait until it gets it, and then execute the console.log() instruction.
+\ite If there's a lot of data to fetch, you might have to wait for quite some time, during which the Node server wouldn't be able to serve or accept any other incoming request - not a good idea to scale your system!
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf }]~\\[-3ex]
+
+\vspace{1cm}
+
+\begin{lstlisting}[language=JavaScript]
+Database.query("SELECT things FROM deviceTable",
+    function(results) {
+ 		//do something with those results
+ 	}
+ );
+Console.log(results);
+\end{lstlisting}
+
+\os{\newpage}
+
+
+\item[{\rot\bf Callback}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite The major difference with this version is that you pass a function as a parameter when calling the database.query function (callback function).
+\ite The Node event loop will then put this call on hold until a response arrives from the database.
+\ite This time, while waiting for the response, other instructions will be executed until the results have been fetched from the database and are ready to be consumed.
+\ite When the results are retrieved, the event loop will call the callback function(results) with the results.
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf Callback 2}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite This means that the database.query instruction will return directly after it's called.
+\ite As a consequence, the console.log(results) will execute right away, before the results are actually ready!
+\ite Moreover, the results themselves will be available only to the anonymous function (injected in the callback by the event loop)
+\ite The variable will be undefined for the console.log instruction.
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf Synchronous?}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite As a convention, to make sure you keep track of your synchronous calls, Node functions that are synchronous end with the Sync suffix and do not usually take a function as a parameter.
+\ite For example,
+\bi
+\ite fs.readFileSync(filename) reads a file synchronously (that is, blocking the single thread until the file is fully read) as opposed to
+\ite  fs.readFile(filename,callback), which reads a file asynchronously (that is, releasing the thread to do other work while waiting for the file to be read).
+\ei
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf DIRT}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Single-threaded servers with asynchronous I/O are not
+\ite But they've been shown to yield better performance and scaling in a number of situations, particularly for data-intensive real-time (DIRT) applications.
+\ite Interestingly, the nature of real-world Things like sensors does perfectly fit into the DIRT type of applications, which partially explains the growing interest is these types of servers in the context of the Internet of Things.
+\ite Reading data from the real world requires gathering a lot of sensor data (through I/O operations on physical sensors), and clients expect to be informed about changes of these sensors' state in a timely, event-driven, and almost real-time manner!
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf Anonymous Callback}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Consider a function F that performs some asynchronous operation such as fetching some data from the network,
+\ite We need a way to express what to do next when F returns so we give F another function to call whenever F finishes with the message-sending operation.
+\ite This is an example of a callback - that is, a function passed as a parameter to an asynchronous function describing what to do after the async function has completed.
+\ei
+
+\os{\newpage}
+
+\item[{\rot\bf Callback Code}]~\\[-3ex]
+
+\vspace{1cm}
+\begin{figure}[!hbtp]
+     \begin{center}
+\epsfig{file=figures/nodejs_4.jpg,width=0.8\textwidth}\\
+	  \caption{Callback}
+     \end{center}
+\end{figure}
+
+\os{\newpage}
+
+\item[{\rot\bf Callback Code}]~\\[-3ex]
+
+\vspace{1cm}
+
+\begin{lstlisting}[language=JavaScript]
+ var http = require("http"),request = require('request'),fs = require('fs');
+ var serviceRootUrl = 'http://localhost:8686';
+ http.createServer(function (req, res) {  console.log('New incoming client request...');
+   if (req.url === '/log') {    getTemperature(res);  //\#A
+   } else {    res.writeHeader(200, {"Content-Type": "text/plain"});     res.write('Please use /log');     res.end();  }
+ }).listen(8787);
+ function getTemperature(res) {  //\#B
+   request({url: serviceRootUrl + '/temperature', json: true}, function (err, resp, body) {
+     if (err) throw err;
+     if (resp.statusCode === 200) {      console.log(body);      var temp = body.temperature;      getLight(res, temp);  //\#C    }  });}
+
+
+ function getLight(res, temp) {
+   request({url: serviceRootUrl + '/light', json: true}, function (err, resp, body) {
+     if (err) throw err;
+     if (resp.statusCode === 200) {
+       console.log(body);
+       var light = body.light;
+
+       logValuesReply(res, temp, light); //\#D
+     }
+   });
+ }
+
+ function logValuesReply(res, temp, light) {
+   var logEntry = 'Temperature: ' + temp + ' Light: ' + light;
+   fs.appendFile('log.txt', logEntry + '\n', encoding = 'utf8', function (err) {
+     if (err) throw err;
+     res.writeHeader(200, {"Content-Type": "text/plain"}); //\#E
+     res.write(logEntry);
+     res.end();
+   });
+ }
+
+ //\#A Get the temperature and start the chain of calls
+ //\#B A named temperature function
+ //\#C Once the callback for temperature has been called we proceed with calling the getLight function
+ //\#D We then call the named function to log values
+ //\#E Return to the client
+
+\end{lstlisting}
+
+\os{\newpage}
+
+
+\item[{\rot\bf Named Callbacks}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite This code is essentially the same as listing before, but this time the workflow is split across several functions. In the callback of the server you invoke getTemperature(); this function asynchronously gets the temperature and calls the getLight() function as soon as the temperature arrives. getLight() fetches the light from the server and invokes logValuesReply() as soon as the light value is ready. Finally, logValuesReply() asynchronously logs the value to a file and replies to the client.
+\ei
+
+\os{\newpage}
+
+
+\end{description}
+
+\section{Rust}
+\begin{description}
+
+\section{Getting Started}
+
+\subsection{Installing Rust}
+
+\item[{\rot\bf Rustup}]~\\[-3ex]
+	The best way to install and update the Rust toolchain is rustup
+	(\url{https://rustup.rs/}). Among other things, it handles:
+
+	\begin{itemize}
+		\item installing different Rust versions
+		\item installing cross compilation toolchains
+		\item installing language components like autocompletion or code formatting
+	\end{itemize}
+
+	\vspace{1em}
+
+	To download the installer script:
+
+\begin{minted}{sh}
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
+  -o rustup.sh
+\end{minted}
+
+	\vspace{1em}
+
+	(\ldots{}or if you just want to try Rust without installing, use \url{play.rust-lang.org})
+\os{\newpage}
+
+\subsection{Cargo, Rust's Package Manager}
+\item[{\rot\bf Cargo}]~\\[-3ex]
+    \begin{itemize}
+        \item Project and package manager
+        \item Fetches and builds your project’s dependencies
+        \item Invokes rustc or another build tool with the correct parameters
+            to build your project
+        \item Has built-in support for cross-compilation
+    \end{itemize}
+\os{\newpage}
+
+\item[{\rot\bf Cargo -- Create a New Project}]~\\[-3ex]
+\begin{minted}{sh}
+$ cargo new hello_world --bin
+$ cd hello_world
+$ tree
+.
+├── Cargo.toml
+└── src
+    └── main.rs
+1 directory, 2 files
+\end{minted}
+\os{\newpage}
+
+\item[{\rot\bf Cargo -- Compile and Run}]~\\[-3ex]
+\begin{minted}{sh}
+$ cargo build
+   Compiling hello_world v0.1.0 (file:///path/to/project/hello_world)
+
+$ ./target/debug/hello_world
+Hello, world!
+$ cargo run
+   Compiling hello_world v0.1.0 (file:///path/to/project/hello_world)
+   Running `target/debug/hello_world`
+Hello, world!
+\end{minted}
+\os{\newpage}
+
+\item[{\rot\bf Cargo -- Dependencies}]~\\[-3ex]
+\begin{itemize}
+    \item Cargo generated a manifest for us:
+\begin{minted}{ini}
+[package]
+name = "hello_world"
+version = "0.1.0"
+authors = ["Your Name <you@example.com>"]
+\end{minted}
+    \item To add a dependency (from \url{https://crates.io} or github) we add it to the manifest:
+\begin{minted}{ini}
+[dependencies]
+time = "0.1"
+\end{minted}
+    \item Cargo uses semantic versioning\footnote{\url{http://semver.org/}}
+    $\rightarrow$ we get the latest 0.1.x version
+\end{itemize}
+\os{\newpage}
+
+\item[{\rot\bf Cargo -- Dependencies}]~\\[-3ex]
+\begin{minted}{text}
+$ cargo build
+    Updating registry `https://github.com/rust-lang/crates.io-index`
+ Downloading winapi v0.2.7
+   Compiling winapi v0.2.7
+   Compiling winapi-build v0.1.1
+   Compiling libc v0.2.11
+   Compiling kernel32-sys v0.2.2
+   Compiling time v0.1.35
+   Compiling hello_world v0.1.0 (file:///path/to/project/hello_world)
+\end{minted}
+\os{\newpage}
+
+\item[{\rot\bf Cargo -- Testing}]~\\[-3ex]
+	Rust has integrated unit testing\footnote{\url{https://doc.rust-lang.org/book/ch11-00-testing.html}}
+\begin{minted}{rust}
+#[test]
+fn it_works() {
+    assert_eq!(1, 1);
+}
+#[test]
+fn it_fails() {
+    assert_eq!(1, 2);
+}
+\end{minted}
+\os{\newpage}
+\begin{frame}[fragile,c]{Cargo -- Testing}
+\begin{minted}{text}
+$ cargo test
+
+running 2 tests
+test it_fails ... FAILED
+test it_works ... ok
+
+...
+
+test result: FAILED. 1 passed; 1 failed; 0 ignored; 0 measured
+\end{minted}
+\os{\newpage} 
+
+\end{description}
+
+
+
+\section{A systematic approach to debugging (especially Linux)}
+\begin{description}
+\item[{\rot\bf Attribution}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite This part of the Lecture is based on a talk at the
+\ite Embedded Linux Conference
+\ite June 30, 2020
+\ite A Disciplined Approach to Debugging
+\ite Lev Iserovich
+\ite D.E. Shaw Research, LLC
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf Debugging Statistics}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite ca. 50\% of developer time spent on admin tasks \footnote{\label{fn:debug_1} Britton, T., Jeng, L., Carver, G., Cheak, P., Katzenellenbogen, T. 2013. Reversible debugging software. Cambridge Judge Business School; \url{http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.444.9094\&rep=rep1\&type=pdf}.}
+\ite ca. 50\% of programming time is spent debugging (same source)
+\bi
+\ite ca. 25\% of your time is spent debugging
+\ei
+\ite About 1.5M SW developers in US, total wages roughly USD 150B \footnote{\url{https://www.bls.gov/oes/current/oes_nat.htm}}
+\ite roughly USD 37B spent debugging in the US
+\ite Little methodology, very few university courses deal with debugging
+\bi
+\ite MIT course catalog: grep 'debugging' ca. 3/10,299 words \footnote{\url{http://student.mit.edu/catalog/m6a.html}}
+\ei
+\ei
+
+
+\os{\newpage}
+
+
+\item[{\rot\bf Step 0 - Testing}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Always cheaper than debugging
+\ite Unit tests
+\bi
+\ite For each subcomponent  / class / function
+\ei
+\ite Integration test
+\bi
+\ite Entire system
+\ei
+\ite More expensive bugs -> More testing
+\bi
+\ite ASIC design
+\ite ca. \$10M, months of time for each mistake
+\ite Entire teams devoted to design verification and test
+\ei
+\ite "Everyone knows that debugging is twice as hard as writing a program in the first place. So if you're as clever as you can be when you write it, how will you ever debug it?"  -Brian Kernighan
+\ei
+\os{\newpage}
+
+
+\item[{\rot\bf First: Reproduce}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite User / bug reports often are missing information
+\bi
+\ite Or missing vital information
+\ite Low signal / noise ratio
+\ei
+\ite Needs to be reproducible to properly instrument / observe
+\ite Confirmed fix only possible when reproduced
+\bi
+\ite Intermittent problems
+\ite Load or environmental related bugs can come and go
+\ei
+\ite Often bugs found 'by inspection' don't actually fix the problem
+\bi
+\ite There are lots of bugs in software, did you find the right one?
+\ei
+\ite
+\bi
+\ite
+\ei
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf Second: Observe}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Visibility into program is vital
+\ite Logging
+\bi
+\ite printf
+\ite Logging frameworks (single machine)
+\bi
+\ite C++: Google's glog (https://github.com/google/glog)
+\ite Python: logging module (https://docs.python.org/3.5/library/logging.html)
+\ite Shell: logger (man logger), file redirect
+\ite Many languages: fluentd (www.fluentd.org) / fluentbit (www.fluentbit.io)
+\ei
+\ite Logging aggregators (many machines)
+\bi
+\ite Splunk (https://www.splunk.com/)
+\ite ElasticStack (ElasticSearch / Kibana / Logstash) (https://www.elastic.co/elastic-stack)
+\ite Graphana (visualization) (https://grafana.com/)
+\ei
+\ite Check and print all return codes
+\bi
+\ite assert() is your friend
+\ei
+\ei
+\ei
+\includegraphics{figures/debug_approach_03.png}
+
+\os{\newpage}
+
+
+\item[{\rot\bf Third: Observe}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite strace - trace system calls
+\ite gdb
+\bi
+\ite Attach to running process
+\ite Get core with gcore / kill -SEGV (set ulimit -c unlimited)
+\ite Don't forget debug symbols (gcc -g)
+\ite Recompile with -O0 for straightforward flow
+\ite Always use -Wall -Werror
+\ei
+\ite Reverse debugging
+\bi
+\ite Sounds cool, not super useful
+\ei
+\ite Wireshark / tcpdump
+\ite Hardware analyzers
+\bi
+\ite i2c/SPI, PCI-Express, etc
+\ei
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf Observe}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Performance monitoring
+\bi
+\ite gperftools (Google perf tools)
+\ite iostat (man iostat), sar, etc.
+\ite htop
+\ite oprofile, other kernel profiling tools
+\ei
+\ite Memory / access debugging
+\bi
+\ite gperftools memory profile
+\ite valgrind (10-100x slowdown)
+\ite Dr. Memory (similar to valgrind)
+\ite
+\ite
+\ei
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf No Title}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite From Brendan Gregg
+\ite http://www.brendangregg.com/linuxperf.html
+\ei
+\includegraphics[width = 12cm] {figures/debug_approach_05.png}
+
+\os{\newpage}
+
+
+\item[{\rot\bf Bisect}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite With or without hypothesis
+\bi
+\ite Educated or uneducated guess
+\ei
+\ite Disable parts of program / workflow
+\ite Switch compiler optimization levels
+\ite Switch tool version
+\bi
+\ite One at a time!
+\ei
+\ite Always move up the trust stack
+\bi
+\ite Your code < library < compiler < OS < hardware
+\ite Trust but verify
+\ei
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf Classifying Bugs}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Hard error (Easy)
+\bi
+\ite Crash
+\ite Unrecoverable error
+\ite Wrong (but consistent) data output
+\ite Resource exhaustion (eg. out of memory)
+\ei
+\ite Soft error  (Difficult)
+\bi
+\ite Intermittent failure / crash
+\ite Inconsistent data output
+\ite Recovered error
+\ite Performance degradation
+\ei
+\ite Difference: reproducibility!
+\bi
+\ite Take the easy way
+\ite
+\ei
+\ite
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf Turning Soft Errors into Hard Errors}]~\\[-3ex]
+
+\vspace{1cm}
+
+\bi
+\ite Tracing and logging
+\bi
+\ite Turn up debug level
+\ite Catch first instance of error
+\ite Trace external events - logs, network, CPU load, I/O load
+\ite Try to replicate error message
+\ei
+\ite Stress test application
+\bi
+\ite Load testing
+\ei
+\ite Debugger
+\bi
+\ite Breakpoints
+\ite Watchpoints
+\ite
+\ei
+\ite
+\ei
+
+
+\os{\newpage}
+
+
+\item[{\rot\bf Example: Disk I/O Error}]~\\[-3ex]
+
+\vspace{1cm}
+
+\begin{verbatim}
+ I/O error log in program
+ 2019-06-25 11:48:37.353: Uncategorized and unmanaged std::runtime_error exception:
+ 2019-06-25 11:48:37.353: boost::filesystem::status: Input/output error: "/f/a/job/10085698/system.dms"
+ 2019-06-25 11:48:37.353: details: boost::filesystem::status: Input/output error: "/f/a/job/10085698/system.dms"
+ 2019-06-25 11:48:37.355: Recording error code BAD_ERROR 1001 (priority 1)
+
+ "Soft error" - intermittent - EIO is unpredictable
+ Trying other errors (ENOENT, EPERM) does not result in the same failure
+ Look at /usr/include/asm-generic/errno.h and errno-base.h
+ How about ELOOP
+
+ $ ln -s a b
+ $ ln -s b a
+ $ cat a
+ cat: a: Too many levels of symbolic links
+\end{verbatim}
+
+
+
+\os{\newpage}
+
+
+\item[{\rot\bf Found!}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Bingo!
+\begin{verbatim}
+int main() {
+    printf("exists foo: }%d\n", boost::filesystem::exists("foo"));
+    printf("exists a: %d\n", boost::filesystem::exists("a"));
+    return 0;
+    }
+
+$ ./test
+exists foo: 0
+terminate called after throwing an instance of 'boost::filesystem::filesystem\_error'
+what():  boost::filesystem::status: Too many levels of symbolic links: "a"
+Aborted
+boost::filesystem::exists throws on certain errors
+\end{verbatim}
+\ite Solution: use noexcept variant
+\ei
+\begin{verbatim}
+bool exists(const path\& p); bool exists(const path\& p, system::error_code\& ec) noexcept;
+Returns: exists(status(p)) or exists(status(p, ec)), respectively. If ec != 0 and an error
+Throws: As specified in Error reporting.
+\end{verbatim}
+
+
+\os{\newpage}
+
+
+\item[{\rot\bf Start-up Problem}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Program fails to start
+\begin{verbatim}
+ # Somewhere in log file:
+ Intel MKL FATAL ERROR: Cannot load /opt/intel/mkl/lib/intel64_lin/libmkl_rt.so.
+
+ $ ls /opt/intel/mkl/lib/intel64_lin/libmkl_rt.so
+ /opt/intel/mkl/lib/intel64_lin/libmkl_rt.so
+\end{verbatim}
+\ite
+\ite Step 1: Reproduce
+\bi
+\ite When running the same command from command line, works fine!
+\ite Library is not on NFS, present on the machine where command fails
+\ei
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf No Title}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Step 2: Observe
+\ite Use strace when starting program, look for failing trace
+\ite Use '-f' to follow forked processes
+\ei
+\begin{verbatim}
+\ite Look for errors different than working trace
+\ite 22293 mprotect(0x7f7cddbf4000, 2097152, PROT_NONE) = 0
+\ite 22293 mmap(0x7f7cdddf4000, 32768, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x4b1000) = 0x7f7cdddf4000
+\ite 22293 mmap(0x7f7cdddfc000, 73280, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x7f7cdddfc000
+\ite 22293 close(3)                          = 0
+\ite 22293 mprotect(0x7f7cdddf4000, 24576, PROT_READ) = 0
+\ite 22293 mprotect(0x7f7cde184000, 8192, PROT_READ) = 0
+\ite 22293 getcwd(0x7f7cdddfe1a0, 4096)      = -1 ENOENT (No such file or directory)
+\ite 22293 open("/usr/share/locale/C/mkl_msg.cat", O_RDONLY) = -1 ENOENT (No such file or directory)
+\ite 22293 open("/usr/share/locale/C/LC_MESSAGES/mkl_msg.cat", O_RDONLY) = -1 ENOENT (No such file or directory)
+\ite 22293 open("/usr/share/locale/C/mkl_msg.cat", O_RDONLY) = -1 ENOENT (No such file or directory)
+\ite 22293 open("/usr/share/locale/C/LC_MESSAGES/mkl_msg.cat", O_RDONLY) = -1 ENOENT (No such file or directory)
+\ite 22293 write(2, "Intel MKL FATAL ERROR: Cannot lo"..., 132) = 132
+\ite 22293 write(2, "\n", 1)                 = 1
+\ite 22293 exit_group(2)                     = ?
+\ite 22293 +++ exited with 2 +++
+\ite 22290 <... wait4 resumed> [{WIFEXITED(s) \&\& WEXITSTATUS(s) == 2}], 0, NULL) = 22293
+\ite 22290 rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+\end{verbatim}
+
+
+\os{\newpage}
+
+
+\item[{\rot\bf Step 3: Bisect}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite getcwd() called on removed directory
+\ite Reproduce with shell script, observe behavior
+\ei
+\begin{verbatim}
+ #!/bin/bash
+ mkdir test
+ cd test
+ ( sleep 1; prog ) \&
+ cd ..
+ rmdir test
+ wait
+
+ $ ./mkl-test.sh
+ ...
+ Intel MKL FATAL ERROR: Cannot load /opt/intel/mkl/lib/intel64_lin/libmkl_rt.so
+\end{verbatim}
+\bi
+\ite Concusion: MKL is very particular where you run it, don't remove underlying directory
+\ei
+
+
+\os{\newpage}
+
+
+\item[{\rot\bf Observe with GDB}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite For hangs, or to debug live process: gdb <exe> <pid>
+\ite Stops process, so be careful!
+\ei
+\ite gcore will generate a core from running process without stopping it
+\ite Make sure to set ulimit -c unlimited to get core dumps
+\ite Not sure which executable? Gdb will tell you:
+\begin{verbatim}
+ $ gdb /bin/ls core.1234
+ ...
+ Core was generated by '/path/to/my/exe'
+ Thread support:
+ Show all threads: info threads
+ Switch to thread: thread 1
+ Command on all threads: thread apply all backtrace
+\end{verbatim}
+
+
+\os{\newpage}
+
+
+\item[{\rot\bf More GDB Features}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Remote debugging for embedded platforms (gdb-server and target command)
+\ite Watchpoints - triggers on memory access - useful to watch for corruption
+\bi
+\ite watch <expression> (write), rwatch (read), awatch (r/w)
+\ite HW watchpoints are free, but limited in number - 4 on x86
+\ite SW watchpoints - unlimited, but expensive
+\ei
+\ite Conditional breakpoints
+\bi
+\ite break <location> [thread <n>] if <condition>
+\ei
+\ite Observe values at each break
+\bi
+\ite command <breakpoint>
+\bi
+\ite print val
+\ite continue
+\ei
+\ite catch [exception | fork | signal | ...]
+\ei
+\ei
+\os{\newpage}
+
+
+\item[{\rot\bf Debugging with GDB}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite
+\ite What can debuggers do?
+\ite
+\ite Run programs
+\ite Make the program stops on specified places or on specified  conditions
+\ite Give information about current variables' values, the memory and the stack
+\ite Let you examine the program execution step by step - stepping
+\ite Let you examine the change of program variables' values - tracing
+\ite
+\ite ! To be able to debug your program, you must compile it with the -g option (creates the symbol table) !
+\ite 	CC -g my\_prog
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf GDB - Freeware GNU Debugger}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Starting GDB:  gdb
+\ite
+\ite Loading the symbol table:
+\ite
+\ite 	file my\_prog
+\ite
+\ite 	/my\_prog is executable file name!/
+\ite
+\ite
+\ite Exit GDB:	quit
+\ite
+\ite Executing shell commands:	shell command args
+\ite make is a special case: 	make args
+\ei
+\bi
+\ite Start GDB and load the symbol table in one step:
+\ite
+\ite gdb my\_prog
+\ei
+
+
+\os{\newpage}
+
+
+\item[{\rot\bf GDB - Commands}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Command names may be truncated if the abbreviation is unambiguous:  s (for step),  r (for run)
+\ite
+\ite UNIX style TAB completion for the command names.
+\ite Alternative way:  	complete chars.
+\ite
+\ite 	Ex.: complete h	results in: 	handle
+\ite 							hbreak
+\ite 							help
+\ite Getting help:
+\ite 	help (or h) - lists all classes of commands.
+\ite 	h command - displays a short description of the command
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf GDB - Running Programs}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Running a program:
+\ite run (or r) --  creates an inferior process that runs your program.
+\ite
+\ite if there are no execution errors the program will finish and results will be displayed
+\ite in case of error, the GDB will show:
+\ite 	- the line the program has stopped on and
+\ite 	- a short description of what it believes has caused the error
+\ite
+\ite There is a certain information that affects the execution of a program:
+\bi
+\ite program's arguments
+\ite program's environment
+\ite program's working directory
+\ite the standard input and output
+\ei
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf GDB - Program's arguments}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Specifying arguments for your program:
+\ite As arguments to run:  		run arg1 arg2 ...
+\ite With set args  command: 	set args arg1 arg2 ...
+\bi
+\ite
+\ei
+\ite 	! run without arguments uses the same arguments used by the previous run.
+\ite
+\ite 	! set args  without arguments - removes all arguments.
+\ite
+\ite 	! show args command shows the arguments your program has been started with.
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf GDB - Program's environment}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Changing the PATH environment variable:
+\ite path dir - add the directory dir at the beginning of the PATH  variable. You may specify several directory names separated by ':' or white space.
+\ite
+\ite show paths - displays the search paths for executables.
+\ite
+\ite Changing the working directory:
+\ite cd dir - to change the working directory
+\ite
+\ite Redirecting output:
+\ite run > outfile direct the output to the file outfile.
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf GDB - Debugging an already-running process}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite From inside GDB:
+\ite attach process-id
+\ite / To get the process ID use the UNIX command ps /
+\ite
+\ite From outside GDB:
+\ite gdb my\_prog process-id
+\ite
+\ite 	! The first thing GDB does after arranging to debug the specified process is to stop it.
+\ite
+\ite detach - detaches the currently attached process from the GDB control. A detached process continues its own execution.
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf GDB - Breakpoints and watchpoints}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Breakpoints and watchpoints allow you to specify the places or the conditions where you want your program to stop.
+\ite
+\ite break arg - stops when the execution reaches the specified line
+\ite / arg - function name, line number, +/- offset /
+\ite watch expr - stops whenever the value of the expression changes
+\ite clear [arg]
+\ite 	Without arguments deletes any breakpoint at the next instruction to be executed in the current stack frame
+\ite delete [bnum]
+\ite 	Without arguments deletes all breakpoints.
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf GDB - Examining variables}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite ! Global variables can be examined from every point in the source file.
+\ite ! Local variables - can be examined only in their scope or using:
+\ite 	file::variable or function::variable
+\ite
+\ite The variable type:  	ptype var
+\ite
+\ite Current value:  	print var
+\ite
+\ite Automatic display: 	display var - adds var to the automatic display list.
+\ite 				undisplay dnum
+\ite Specifying the output format  (x, o, d, u, t, a, f, and c) :
+\ite print /t var  - prints the value of var in binary format
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf GDB - Value history}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite 	The value history keeps the values printed by the print command.
+\ite
+\ite 	Previously printed values can be accessed by typing \$ followed by  their history number.
+\ite 	\$  -  refers to the most recent value and
+\ite 	\$\$n  -  refers to the n-th value from the end.
+\ite
+\ite 	show values [n|+]
+\ite 		Without argument - the last 10 values.
+\ite 		n - 10 values centered around n
+\ite 		+ - 10 values after the last printed
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf GDB - Stepping through the program}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite step [count] - program execution continue to next source line 			going into function calls.
+\ite
+\ite next [count] - program execution continue to the next source 			line omitting function calls.
+\ite
+\ite continue - resume program execution
+\ite
+\ite until - continue until the next source line in the current stack frame 		is reached. /useful to exit from loops/
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf GDB - Altering execution}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Returning from a function
+\ite 	finish - forced return
+\ite 	return [ret\_value] - pops the current stack frame
+\ite Continuing at different address
+\ite 	jump line\_num|*address
+\ite Altering the value of a variable
+\ite 	set i=256
+\ite Proceeding to a specified point:
+\ite 	until [line\_num|*address |function\_name]
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf GDB - The stack frame}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite 	Stack frames are identified by their addresses, which are kept in the frame pointer register.
+\ei
+\bi
+\ite 0
+\ite 1
+\ite 2
+\ei
+\bi
+\ite  Selecting a frame:
+\ite  frame n|addr
+\ite  up n
+\ite  down n
+\ite  Information about the current frame
+\ite  frame - brief description
+\ite  info args - shows function arguments
+\ite  info locals - shows local variables
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf GDB - Convenience variables}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Convenience variables are used to store values that you may want to refer later. Any string preceded by \$ is regarded as a convenience variable.
+\ite 	Ex.:  \$table = *table\_ptr
+\ite
+\ite There are several automatically created convenience variables:
+\begin{verbatim}
+ 	$pc - program counter
+ 	$sp - stack pointer
+ 	$fp - frame pointer
+ 	$ps - processor status
+ 	$_ - contains the last examined address
+ 	$__ - the value in the last examined address
+ 	$_exitcode  -  the exit code of the debugged program
+\end{verbatim}
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf DDD - The Data Display Debugger}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite DDD is a GUI debugger that can work with several inferior debuggers including GDB.
+\ite
+\ite GDB commands can be typed in the debugger console window.
+\ite
+\ite DDD sets some GDB settings automatically and will not work correctly if you change them. These are:
+\ite
+\ite 	set height 0
+\ite 	set width 0
+\ite 	set verbose off
+\ite 	set prompt (gdb) !
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf DDD - View}]~\\[-3ex]
+
+\vspace{1cm}
+\includegraphics[height=10cm]{figures/debug_approach_16.png}
+
+\os{\newpage}
+
+
+\item[{\rot\bf DDD - GUI Advantages}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Frequently used commands are on the toolbars, have assigned shortcut keys or can be done just with a mouse click.
+\ite
+\ite Easy browsing through the source !
+\ite
+\ite Examining current variables values directly - by placing the mouse pointer over them.
+\ite
+\ite Possibility to graphically display the program data.
+\ite
+\ite Help menu - What now? - very helpful !
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf DDD - Command menu}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite
+\ei
+
+\begin{figure}[!hbtp]
+     \begin{center}
+\epsfig{file=figures/debug_approach_17.png,width=0.3\textwidth}\\
+     \end{center}
+\end{figure}
+\os{\newpage}
+
+
+\item[{\rot\bf GDB - Examining memory}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite The x command (for "examine"):
+\ite x/nfu addr - specify the number of units (n), the display format (f) and the unit size (u) of the memory you want to examine, starting from the address addr. Unit size can be - b, h (half), w and g (giant).
+\ite x addr - start printing from the address addr, others default
+\ite x - all default
+\ite
+\ite Registers
+\ite   Registers names are different for each machine. Use info registers to see the names used on your machine.
+\ite   GDB has four "standard" registers names that are available on most machines: program counter, stack pointer, frame pointer and processor status.
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf GDB - Additional process information}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite info proc - summarize available information about the current 			process.
+\ite
+\ite info proc mappings - address range accessible in the 					program.
+\ite
+\ite info proc times - starting time, user CPU time and system 				CPU time for your program and its children.
+\ite
+\ite help info !
+\ite
+\ite info signals - information about the system signals and how 			GDB handles them.
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf Debug Hang with GDB}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Application hanging periodically (once every 10,000 runs approximately)
+\ite Job scheduler kills application
+\ite Step 1: Reproduce
+\bi
+\ite Rerun of the same inputs doesn't lead to hang
+\ite Difficult to reproduce
+\ei
+\ite Step 2: Observe
+\bi
+\ite Add code to scheduler that detects hung application to request coredump (gcore)
+\ite (Tip: core files are large but gzip really well)
+\ite Analyze core dump
+\ite gdb /my/app core.1234
+\ei
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf No Title}]~\\[-3ex]
+
+\vspace{1cm}
+\begin{verbatim}
+ (gdb) info threads
+   Id   Target Id         Frame
+ * 1    LWP 5088          0x00007efc1b74d1ad in glob64 () from /lib64/libc.so.6
+   2    LWP 5263          0x00007efc1ff50945 in pthread_cond_wait@@GLIBC_2.3.2 () from /lib64/libpthread.so.0
+   3    LWP 5265          0x00007efc1ff5370d in read () from /lib64/libpthread.so.0
+   4    LWP 5732          0x00007efc1ff50945 in pthread_cond_wait@@GLIBC_2.3.2 () from /lib64/libpthread.so.0
+   5    LWP 5733          0x00007efc1ff50945 in pthread_cond_wait@@GLIBC_2.3.2 () from /lib64/libpthread.so.0
+   6    LWP 5734          0x00007efc1ff50945 in pthread_cond_wait@@GLIBC_2.3.2 () from /lib64/libpthread.so.0
+   7    LWP 5735          0x00007efc1ff50945 in pthread_cond_wait@@GLIBC_2.3.2 () from /lib64/libpthread.so.0
+   8    LWP 5736          0x00007efc1ff50945 in pthread_cond_wait@@GLIBC_2.3.2 () from /lib64/libpthread.so.0
+   9    LWP 5737          0x00007efc1ff50945 in pthread_cond_wait@@GLIBC_2.3.2 () from /lib64/libpthread.so.0
+   10   LWP 5738          0x00007efc1ff50945 in pthread_cond_wait@@GLIBC_2.3.2 () from /lib64/libpthread.so.0
+   11   LWP 5739          0x00007efc1ff50945 in pthread_cond_wait@@GLIBC_2.3.2 () from /lib64/libpthread.so.0
+   12   LWP 5740          0x00007efc1ff50945 in pthread_cond_wait@@GLIBC_2.3.2 () from /lib64/libpthread.so.0
+   13   LWP 5741          0x00007efc1ff50945 in pthread_cond_wait@@GLIBC_2.3.2 () from /lib64/libpthread.so.0
+ ...
+ (gdb) thread 3
+ [Switching to thread 3 (LWP 5265)]
+ #0  0x00007efc1ff5370d in read () from /lib64/libpthread.so.0
+
+ Stuck in read(), but why?
+ libpthread.so is not compiled with debug info
+\end{verbatim}
+
+\os{\newpage}
+
+
+\item[{\rot\bf No Title}]~\\[-3ex]
+
+\vspace{1cm}
+\begin{verbatim}
+ (gdb) info registers
+ rax            0xfffffffffffffe00       -512
+ rbx            0x0      0
+ rcx            0xffffffffffffffff       -1
+ rdx            0x4      4
+ rsi            0x7efc1aa620cc   139621243953356
+ rdi            0x0      0
+ rbp            0x4      0x4
+ rsp            0x7efc1aa62080   0x7efc1aa62080
+ r8             0x1      1
+ r9             0x4b0    1200
+ ...
+ https://en.wikipedia.org/wiki/X86_calling_conventions
+
+ $ man 2 read
+ ...
+ ssize_t read(int fd, void *buf, size_t count);
+ read(fd = 0, buf, 4);    <- fd 0 is STDIN
+\end{verbatim}
+\begin{tabular}{|l|l|l|l|l|l|} \hline
+System V AMD64 ABI[22] & Solaris, Linux, BSD, OS X (GCC, Intel C++ Compiler) & RDI, RSI, RDX, RCX, R8, R9, [XYZ]MM0-7 & RTL (C) & Caller & Stack aligned on 16 bytes boundary. 128 bytes red zone below stack. The kernel interface uses RDI, RSI, RDX, R10, R8 and R9. In C++, this is the first parameter.  \\ \hline
+\end{tabular}
+
+
+\os{\newpage}
+
+
+\item[{\rot\bf Bug in Hanging Server}]~\\[-3ex]
+
+\vspace{1cm}
+\begin{verbatim}
+ void MyServer::main_loop() {
+     while (!m_thread_exit) {
+         ret = read(m_socket, \&m_buf, 4);
+         if (ret <= 0) return;       // returns on EOF or error
+         // Process data
+     }
+ }
+
+ void MyServer::cleanup()
+ {
+     log("Cleaning up server...\n");
+     close(m_socket);               // tear down connection
+     m_thread_exit = true;          // signal exit to main loop thread
+     wait();                        // wait for it to finish
+ }
+ Race between close() and read()
+ Object is cleaned up, and memory used for something else that sets m_socket = 0
+\end{verbatim}
+
+\os{\newpage}
+
+
+\item[{\rot\bf Observe Network}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Wireshark is the best GUI tool for network capture/debug
+\ite tcpdump to capture output to file, then visualize with wireshark
+\ite Note: capture specification language and visual selection language are different
+\ite man 7 pcap-filter for capture
+\ite tcpdump -i eth0 tcp port 80 and host 142.250.64.78
+
+\ite man 4 wireshark-filter
+\bi
+\ite tcp.port == 80 and ip.addr == 142.250.64.78
+\ite Try to capture as much as possible without missed packets, filter in wireshark
+\ite For fast streams kernel cannot keep up - look for 'dropped by kernel' statistic
+\ite Wireshark can follow TCP streams
+\ei
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf TCP Packet Loss}]~\\[-3ex]
+
+\vspace{1cm}
+
+\os{\newpage}
+
+
+\item[{\rot\bf Hardware Debugging}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Observability is key!
+\ite Get an analyzer for any interface which you are building hardware for
+\ite I2C / SPI
+
+\ite Saleae Logic analyzer (www.saleae.com) - Linux support
+\ite Beagle analyzer (www.totalphase.com) - Linux support
+\ite Easyi2c (www.easyi2c.com) - Windows only
+
+\ite USB
+\ite Tcpdump / wireshark supports USB!
+\ite modprobe usbmon
+\ite tcpdump -i usbmon1
+\ite PCIe / NVMe / SATA, other high speed protocols
+\ite LeCroy protocol analyzers (www.teledynelecroy.com)
+\ite Keysight protocol analyzers (www.keysight.com)
+\ei
+\includegraphics[height=6cm]{figures/debug_approach_19.png}
+
+\os{\newpage}
+
+
+\item[{\rot\bf I2C Example}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Periodic loss of i2c bus connected to Xilinx FPGA
+\bi
+\ite Once every few days in normal operation
+\ite Devices stop responding, board reset required
+\ei
+\ite Step 1 - Reproduce
+\bi
+\ite Increase activity on i2c bus
+\ite Poll temp / volt sensors every .1 second instead of 10 seconds
+\ite Hangs now happen every few minutes
+\ei
+\ite Step 2 - Observe
+\bi
+\ite Xilinx FPGA block IP was encrypted - cannot instrument
+\ite Use logic analyzer to capture i2c waveforms
+\ei
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf No Title}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite I2C Analyzer Example
+\ite Yellow: SCL (clock)
+\ite Green: SDA (data)
+\ite Zoomed region
+\bi
+\ite Note glitches on rise
+\ei
+\ite Causes 'extra' clock
+\bi
+\ite Everything is off now
+\ei
+\ite More devices = slower rise
+\ite Solution
+\bi
+\ite Stronger pull-up
+\ite Faster rise-time
+\ei
+\ite Debugging I2C from TI:
+\ite \url{https://www.ti.com/lit/an/slyt770/slyt770.pdf}
+\ei
+\includegraphics[height=6cm]{figures/debug_approach_20.png}
+
+\end{description}
+
+\section{Debugging using JTAG}
+
+\begin{description}
+\item[{\rot\bf 	Topics Discussed in this section}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite Bed of Nails(Bon Tester)
+\ite What is JTAG ???
+\ite Advantages
+\ite Boundary Scan logic and Architecture
+\ite Real JTAG Applications
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf 	Bed of Nails Fixture}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite PCB Testing was done using Bed of Nails in circuit testing
+\ite Every pad had to be contacted by a spring loaded pin.
+\ei
+
+\begin{centering}
+\includegraphics[height=10cm]{figures/jtag_01.png}
+\end{centering}
+
+\os{\newpage}
+
+
+\item[{\rot\bf 	Increased problem of test}]~\\[-3ex]
+
+\vspace{1cm}
+
+\begin{centering}
+\includegraphics[height=10cm]{figures/jtag_02.png}
+\end{centering}
+
+\os{\newpage}
+
+
+\item[{\rot\bf 		Circuit Complexity}]~\\[-3ex]
+
+\vspace{1cm}
+
+\bi
+\ite Chips are becoming more and more complex
+\ite Where there was a single logic unit in a chip there is now a complete microcontroller inside
+\ite The ratio between functions and accessible pins has changed dramatically.
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf 	Development Cost }]~\\[-3ex]
+
+\vspace{1cm}
+
+\bi
+\ite Cost will increase by a factor of ten as fault finding moves from one level of complexity to the next. The results are:
+\bi
+\ite Reduced profit margins
+\ite Longer time to product introduction
+\ite Dissatisfied Customers
+\ei
+\ite 1. Device Level: 1 Unit of Cost
+\ite 2. Board Level: 10 Units of Cost
+\ite 3. System Level: 100 Units of Cost
+\ite 4. Field Level: 1000 Units of Cost
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf 		JTAG (1149.1 STANDARD)}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite 	IEEE 1149.1, a standard 4 wire serial protocol protocol that established the details of access to any chip with a JTAG port .
+\ite
+\ite Boundary scan testing of Integrated Circuits(ICs) and boards.
+\ite Debug Embedded devices.
+\ite System level debug capability
+\ite
+\ite
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf 	What can it be used for?}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite     The standard defines instructions that can be used to  perform :
+\ite    Functional Tests
+\ite    Interconnect tests
+\ite    Built-in self test procedures.
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf 		Advantages}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite The need for physical test points on the board is eliminated leading to significant savings as a result of simpler board layouts.
+\ite Less costly test fixtures.
+\ite reduced time on in-circuit test systems.
+\ite increased use of standard interfaces.
+\ite faster time-to-market.
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf 	Boundary Scan }]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite What is Boundary Scan?
+\ite 	Boundary scan is a methodology allowing complete controllability and observability of the boundary pins of a JTAG compatible device via software control.
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf 	Boundary Scan Architecture}]~\\[-3ex]
+
+\vspace{1cm}
+
+\begin{centering}
+\includegraphics[height = 10cm]{figures/jtag_03.png}
+\end{centering}
+\os{\newpage}
+
+
+\item[{\rot\bf 	BOUNDARY SCAN PRINCIPLE}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite How does it work?
+\ite 	The top level schematic of the test logic defined by IEEE Std 1149.1 includes three key blocks:
+\ite      The TAP Controller
+\ite 	This responds to the control sequences supplied through the test access port (TAP) and generates the clock and control signals required for correct operation of the other circuit blocks.
+\ite       The Instruction Register
+\ite      	This shift register-based circuit is serially loaded with the instruction that selects an operation to be performed.
+\ite      The Data Registers
+\ite      	These are a bank of shift register based circuits. The stimuli required by an operation are serially loaded into the data registers selected by the current instruction. Following execution of the operation, results can be shifted out for examination.
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf 	JTAG Test Access Port}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite The JTAG Test Access Port (TAP) contains four pins that drive the circuit blocks and control the operations specified. The TAP facilitates the serial loading and unloading of instructions and data.
+\ite 	The four pins of the TAP are:
+\ite 	TMS - Test Mode Select
+\ite 	TCK - Test Clock
+\ite 	TDI - Test Data Input
+\ite    TDO - Test Data Output
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf 	JTAG Test Access Port (Contd)}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite The function of each TAP pin is as follows:
+\ite TCK - this pin is the JTAG test clock. It sequences the TAP controller as well as all of the JTAG registers
+\ite TMS - this pin is the mode input signal to the TAP Controller. The state of TMS at the rising edge of TCK determines the sequence of states for the TAP controller.
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf 	JTAG Test Access Port (Contd)}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite TDI - this pin is the serial data input to all JTAG instruction and data registers. TDI is sampled into the JTAG registers on the rising edge of TCK.
+\ite TDO - this pin is the serial data output for all JTAG instruction and data registers. TDO changes state on the falling edge of TCK and is only active during the shifting of data through the device. This pin is three-stated at all other times
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf 	JTAG TAP Controller}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite 	The JTAG TAP Controller is a
+\ite 16-state finite state machine, that controls the scanning of data into the various registers of the JTAG architecture.
+\ite The state of the TMS pin at the rising edge of TCK is responsible for determining the sequence of state transitions.
+\ite There are two state transition paths for scanning the signal at TDI in to the device,
+\bi
+\ite one for shifting in an instruction to the instruction register ,and ,
+\ite  one for shifting data into the active data register as determined by the current instruction.
+\ei
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf 	JTAG TAP Controller logic}]~\\[-3ex]
+
+\vspace{1cm}
+
+\begin{centering}
+\includegraphics[height=10cm]{figures/jtag_04.png}
+\end{centering}
+\os{\newpage}
+
+
+\item[{\rot\bf        Data Registers}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite The Device ID register (IDR) reads-out an identification number which is hardwired into the chip.
+\ite The Bypass register (BR) is a 1-cell pass-through register which connects the TDI to the TDO with a 1-clock delay to give test equipment easy access to another device in the test chain on the same board.
+\ite The Boundary Scan register (BSR), intercepts all the signals between the core-logic and the pins.
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf 			Test Process}]~\\[-3ex]
+
+\vspace{1cm}
+\bi
+\ite     The standard test process for verifying a device or circuit board using boundary-scan technology is as follows:
+\ite The tester applies test or diagnostic data on the input pins of the device.
+\ite The boundary-scan cells capture the data in the boundary scan registers monitoring the input pins.
+\ite Data is scanned out of the device via the TDO pin, for verification.
+\ite Data can then be scanned into the device via the TDI pin.
+\ite The tester can then verify data on the output pins of the device.
+\ei
+
+\os{\newpage}
+
+
+\item[{\rot\bf      REAL JTAG APPLICATIONS}]~\\[-3ex]
+
+\vspace{1cm}
+
+\bi
+\ite Scan access to chips, boards and systems for:
+\bi
+\ite Desing verification and debugging
+\ite Manufacturing test
+\ite Hardware/Software integration
+\ite Field Test / Diagnostics
+\ei
+\ite Access buildt-in self-test (BIST)
+\ite Access on-chip / in-circuit emulation (ONCE/ICE)
+\ite Access in-system programming (ISP) of PLDs/EEPROMs
+\ite Whatever else you can think of...
+\ei
+
+\os{\newpage}
+
+
+\end{description}
+
+

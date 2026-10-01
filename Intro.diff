@@ -1,0 +1,98 @@
+3c3
+< \nsl{The lecture embedded computing focus on different aspects in computer science. Starting with a short introduction in the development of computers we will try to get an idea about the special requirements of embedded systems. Embedded systems nowadays are really often used. In cars, washing machines and toaster but also in every mobile phone you will find one processor which is none as a microcontroller. People how engaged in market research mention that the number microcontrollers overcome the number of PC's. If you are looking on an application which includes a microcontroller you will have an embedded system.
+---
+> \nsl{The lecture on Embedded Computing focuses on different aspects in computer science. Starting with a short introduction on the development of computers, we will try to get an idea about the special requirements of embedded systems. In modern times, Embedded Systems finds application in almost every field.They are used not only in cars, washing machines and toasters but also in every mobile phone you'll find one microprocessor/microcontroller. It is interesting to note that the number of microcontrollers in use is much more than the number of Personal Computers. If you are looking on an application which includes a microcontroller you will have an embedded system. 
+5c5
+< Embedded systems in contrary to a standard PC don't have graphical user interfaces (GUI), hard discs, keyboards and things like that so at the first glance you will oversee that a device contains a microcontroller in an embedded application. A typical example is an embedded system which controls your break system in your car. This controller doesn't ask you in a command line (or with a click on an icon) what should be done. This system simple controls the brakes and hopefully stops your car in a dangerous situation. To fulfil such a typical requirement embedded systems have to deal with different aspects than standard PC. In the chapter ``Modelling'' we will try to find out what are the special conditions which embedded systems should fulfil.
+---
+> Embedded systems on the contrary to a standard PC don't have graphical user interfaces (GUI), hard discs, keyboards etc. A typical example is an embedded system which controls the breaking mechanism in your car. This controller doesn't ask you in a command line (or with a click on an icon) what should be done. This system simple controls the brakes and hopefully stops your car in a dangerous situation. To fulfil such a typical requirement embedded systems have to deal with different aspects and have different requirements than standard PC. In the chapter ``Modelling'' we will try to find out what are the special conditions which embedded systems should fulfil.
+7c7
+< After a general view about the requirements for embedded systems we will focus on processors. There exits more than one types of processors which in principle could be used for embedded systems. The standard processor for embedded systems is a microcontroller obviously. More in detail we are working with a Coldfire, a 32 bit microcontroller from Motorola (or Freescale). This controller allows us to build simple stand alone applications or applications with the support of operating systems (real-time operating system).  
+---
+> After a general view about the requirements for embedded systems we shall shift our focus to processors. In principle, an embedded system can be realized using several different types on processors. This decision is based on factors such as application requirements, costs, computational needs etc. A standard processor of choice for an embedded system is a microcontroller. We shall focus on 'Coldfire', a 32-bit microcontroller from Motorola (or Freescale). This controller allows us to build simple stand alone applications or applications with the support of operating systems (real-time operating system).  
+9,11c9,10
+< Real-time operating systems are an important part in modern embedded systems. They offer us a lot of features which makes it easier to build more complex applications. The drawback is that real-time operating systems have bigger requirements one the onboard memory and the support of special functions of the microcontroller like a memory management unit and so one.  
+< 
+< The last aspect of this lecture is, to give an introduction about the opportunities to store an algorithm in a chip directly. This so called ``solution on chip'' works with a FPGA-Chip (field programmable gate array) mostly and offers a solution with the fastest execution time as possible.      
+---
+> Real-time operating systems are an important part in modern embedded systems. PC based computing is not very time critical e.g. If you are running a word- processor (like MS Word) a time delay of a few seconds in opening a new document is not critical. However, imagine if the same delay occurs in deploying of Air-bags during a car crash. Hence, embedded systems have special needs and the operating system of choice for such applications are the Real-time operating systems. They offer us a lot of features which makes it easier to build more complex applications. The drawback is that real-time operating systems have bigger requirements on the onboard memory and the support of special functions of the microcontroller like a memory management unit and so on.  
+> The last aspect of this lecture is, to give an introduction about the opportunities to store an algorithm on a chip directly. This so called ``solution on chip'' works with a FPGA-Chip (field programmable gate array) and offers a solution with the fast execution times.      
+22c21
+< 	\ite development of computers
+---
+> 	\ite Development of computers
+32c31
+< generation & period of time & technology & characteristic\\
+---
+> Generation & Period & Technology & Characteristics\\
+49c48
+< \epsfig{file=figures/Bild1_1_ZuseZ3,width=0.7\textwidth}\\
+---
+> \epsfig{file=figures/Bild1_1_ZuseZ3.jpg,width=0.7\textwidth}\\
+61a61
+> 
+78c78
+< \item Microcontroller in embedded systems
+---
+> \item Microcontrollers in Embedded systems
+80c80
+< 	\ite no \underline{g}raphical \underline{u}ser \underline{i}nterface (GUI)
+---
+> 	\ite no \underline{G}raphical \underline{U}ser \underline{I}nterface (GUI)
+85c85
+< \item features of microcontrollers
+---
+> \item Features of microcontrollers
+87,97c87,98
+< 	\ite on-chip memory, 
+< 	\ite i/o-devices (analogue, digital)
+< 	\ite timer/counter-channels
+< 	\ite one-chip-solutions
+< \ei
+< \item differences  in the programming of microcontrollers
+< \bi
+< 	\ite cross development (PC, workstation)
+< 	\ite functional oriented programming language (most 'C')
+< 	\bi 
+< 		\ite application wihout an operating system
+---
+> 	\ite On-chip memory, 
+> 	\ite I/O-devices (analogue, digital)
+> 	\ite Timer/Counter-channels
+> 	\ite One-chip-solutions
+> \ei
+> \item Differences in the programming of microcontrollers
+> \bi
+> 	\ite Cross development (using PC, workstation)
+> 	\ite Function oriented programming language (most 'C')
+>               	
+>         \bi  
+> 		\ite application without an operating system
+133c134
+< 		\ite continuously execution for long times (sometimes more than years)
+---
+> 		\ite continuous execution for long times (sometimes more than years)
+138c139
+< 		\ite indicates the repair friendliness   
+---
+> 		\ite indicates repair friendliness   
+164c165
+< \item[{\rot\bf Efficienty of embedded systems }]~\\[-3ex]
+---
+> \item[{\rot\bf Efficiency of embedded systems }]~\\[-3ex]
+168c169
+< 		\ite low power consumption of microcontrollers
+---
+> 		\ite low power consumption by microcontrollers
+171c172
+< 	\ite Codes-size
+---
+> 	\ite Code-size
+180c181
+< 		\ite a principal right answers which arrive too late is wrong
+---
+> 		\ite in principal, 'a right answers that arrives too late, is wrong'
+189c190
+< 		\ite software cost mostly dedicated to one embedded system project (no general purpose software)
+---
+> 		\ite software cost mostly dedicated to one embedded system project (no general purpose software available)

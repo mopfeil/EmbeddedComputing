@@ -1,0 +1,802 @@
+\newenvironment{folie}[1]{\section{#1}}{}
+
+\nsl{
+
+\begin{center}
+Notational Conventions\\
+\begin{tabular}{|c|c|}
+\hline
+Reg & Registeraddressing\\
+\hline
+Imm & Immediate addressing\\
+\hline
+dir & Direct addressing\\
+\hline
+indir & Indirect adressing\\
+\hline
+rel & Relativ addressing\\
+\hline
+\hline
+Q & Sticky Overflow flag\\
+\hline
+N & Negative flag\\
+\hline
+Z & Zero flag\\
+\hline
+C & Carry flag\\
+\hline
+V & Overflow flag\\
+\hline
+CPSR & Common Processor Status Register\\
+\hline
+\end{tabular}
+\end{center}
+\bigskip
+
+\begin{center}
+Condition Codes (cond)\\
+\begin{tabular}{|c|c|c|}
+\hline
+Suffix & Flags & Meaning\\
+\hline
+EQ & Z set & Equal\\
+\hline
+NE & Z clear & Not equal\\
+\hline
+CS/HS & C set & Higher or same (unsigned \textgreater=)\\
+\hline
+CC/LO & C clear & Lower (unsigned \textless)\\
+\hline
+MI & N set & Negative\\
+\hline
+PL & N clear & Positive or zero\\
+\hline
+VS & V set & Overflow\\
+\hline
+VC & V clear & No overflow\\
+\hline
+HI & C set and Z clear & Higher (unsigned \textgreater)\\
+\hline
+LS & C clear and Z set & Lower or same (unsigned \textless=)\\
+\hline
+LT & N and V the different & Signed \textless\\
+\hline
+GT & Z clear and N and V the same & Signed \textgreater\\
+\hline
+LE & T set and N and V the same & Signed \textless=\\
+AL & Any & Allways\\
+\hline
+\end{tabular}
+\end{center}
+
+\bigskip
+Offset Syntax (Offset)
+\bi
+      \ite \# expr
+      \ite \{-\}Rn\\
+      where\\
+      \begin{tabular}{l l}
+         expr & integer value between -255 and +255\\
+	    & \\
+	 - & negative result of the address calculation\\
+	 Rn & address register\\
+      \end{tabular}
+
+\ei
+
+\bigskip
+Flexible Offset Syntax (FlexOffset)
+\bi
+      \ite \# expr
+      \ite \{-\}Rn\{shift\}\\
+      where\\
+      \begin{tabular}{l l}
+         expr & integer value between -4095 and +4095\\
+	    & \\
+	 - & negative result of the address calculation\\
+	 Rn & address register\\
+	 shift & ASR n  arithmetic shift right n bits 1 \underline{\textless} n \underline{\textless} 32\\
+	       & LSL n 1 logical shift left n bits 0 \underline{\textless} n \underline{\textless} 31\\
+	       & LSR n 1 logical shift right n bits 1 \underline{\textless} n \underline{\textless} 32\\
+	       & ROR n 1 rotate right n bits 1 \underline{\textless} n \underline{\textless} 31\\
+	       & RRX n  rotate right one bit, with extend\\
+      \end{tabular}
+
+\ei
+\bigskip
+Label
+\bi
+      \ite address inside the program segment
+\ei
+
+\begin{landscape} 
+%==============================================================================
+\section{Transfer Instructions}
+%==============================================================================
+{\rot Core/Memory}\\
+\\
+\begin{tabular}{|c|c|c|c|c|c|l|}
+\hline
+Instruction & Conditions & Operand Size & 1.Parameter & 2.Parameter & 3.Parameter & Operation\\
+\hline
+LDR & \{cond.\} & Word & Rd & Rn &  & Load register Rd from Rn\\
+\hline
+LDR & \{cond.\} & Word & Rd & [Rn] &  & Load register Rd from the memory [Rn]\\
+\hline
+LDR & \{cond.\} & Word & Rd & [Rn,FlexOffset] &  & Load register Rd from the memory [Rn, FlexOffset]\\
+\hline
+LDR & \{cond.\} & Word & Rd & [Rn,FlexOffset]! &  & Load register Rd from the memory [Rn, FlexOffset] and update Rn\\
+\hline
+LDR & \{cond.\} & Word & Rd & label &  & Load register Rd from the memory location label\\
+\hline
+\hline
+LDRB & \{cond.\} & 0-extended Byte & Rd & Rn &  & Load register Rd from Rn\\
+\hline
+LDRB & \{cond.\} & 0-extended Byte & Rd & [Rn] &  & Load register Rd from the memory [Rn]\\
+\hline
+LDRB & \{cond.\} & 0-extended Byte & Rd & [Rn,FlexOffset] &  & Load register Rd from the memory [Rn, FlexOffset]\\
+\hline
+LDRB & \{cond.\} & 0-extended Byte & Rd & [Rn,FlexOffset]! &  & Load register Rd from the memory [Rn, FlexOffset] and update Rn\\
+\hline
+LDRB & \{cond.\} & 0-extended Byte & Rd & label &  & Load register Rd from the memory location label\\
+\hline
+\hline
+STR & \{cond.\} & Word & Rd & Rn &  & Store register Rd to Rn\\
+\hline
+STR & \{cond.\} & Word & Rd & [Rn] &  & Store register Rd to the memory [Rn]\\
+\hline
+STR & \{cond.\} & Word & Rd & [Rn,FlexOffset] &  & Store register Rd to the memory [Rn, FlexOffset]\\
+\hline
+STR & \{cond.\} & Word & Rd & [Rn,FlexOffset]! &  & Store register Rd to the memory [Rn, FlexOffset] and update Rn\\
+\hline
+\hline
+STRB & \{cond.\} & 0-extended Byte & Rd & Rn &  & Store register Rd to Rn\\
+\hline
+STRB & \{cond.\} & 0-extended Byte & Rd & [Rn] &  & Store register Rd to the memory [Rn]\\
+\hline
+STRB & \{cond.\} & 0-extended Byte & Rd & [Rn,FlexOffset] &  & Store register Rd to the memory [Rn, FlexOffset]\\
+\hline
+STRB & \{cond.\} & 0-extended Byte & Rd & [Rn,FlexOffset]! &  & Store register Rd to the memory [Rn, FlexOffset] and update Rn\\
+\hline
+\hline
+LDRSH & \{cond.\} & signed Halfword & Rd & Rn &  & Load register Rd from Rn\\
+\hline
+LDRSH & \{cond.\} & signed Halfword & Rd & [Rn] &  & Load register Rd from the memory [Rn]\\
+\hline
+LDRSH & \{cond.\} & signed Halfword & Rd & [Rn,FlexOffset] &  & Load register Rd from the memory [Rn, Offset]\\
+\hline
+LDRSH & \{cond.\} & signed Halfword & Rd & [Rn,FlexOffset]! &  & Load register Rd from the memory [Rn, Offset] and update Rn\\
+\hline
+LDRSH & \{cond.\} & signed Halfword & Rd & label &  & Load register Rd from the memory location label\\
+\hline
+\hline
+LDRH & \{cond.\} & Halfword & Rd & Rn &  & Load register Rd from Rn\\
+\hline
+LDRH & \{cond.\} & Halfword & Rd & [Rn] &  & Load register Rd from the memory [Rn]\\
+\hline
+LDRH & \{cond.\} & Halfword & Rd & [Rn,FlexOffset] &  & Load register Rd from the memory [Rn, Offset]\\
+\hline
+LDRH & \{cond.\} & Halfword & Rd & [Rn,FlexOffset]! &  & Load register Rd from the memory [Rn, Offset] and update Rn\\
+\hline
+LDRH & \{cond.\} & Halfword & Rd & label &  & Load register Rd from the memory location label\\
+\hline
+\hline
+LDRSB & \{cond.\} & signed Byte & Rd & Rn &  & Load register Rd from Rn\\
+\hline
+LDRSB & \{cond.\} & signed Byte & Rd & [Rn] &  & Load register Rd from the memory [Rn]\\
+\hline
+LDRSB & \{cond.\} & signed Byte & Rd & [Rn,FlexOffset] &  & Load register Rd from the memory [Rn, Offset]\\
+\hline
+LDRSB & \{cond.\} & signed Byte & Rd & [Rn,FlexOffset]! &  & Load register Rd from the memory [Rn, Offset] and update Rn\\
+\hline
+LDRSB & \{cond.\} & signed Byte & Rd & label &  & Load register Rd from the memory location label\\
+\hline
+\end{tabular}\\
+
+\begin{tabular}{|c|c|c|c|c|c|l|}
+\hline
+STRSH & \{cond.\} & signed Halfword & Rd & Rn &  & Store register Rd to Rn\\
+\hline
+STRSH & \{cond.\} & signed Halfword & Rd & [Rn] &  & Store register Rd to the memory [Rn]\\
+\hline
+STRSH & \{cond.\} & signed Halfword & Rd & [Rn,FlexOffset] &  & Store register Rd to the memory [Rn, FlexOffset]\\
+\hline
+STRSH & \{cond.\} & signed Halfword & Rd & [Rn,FlexOffset]! &  & Store register Rd to the memory [Rn, FlexOffset] and update Rn\\
+\hline
+\hline
+STRH & \{cond.\} & Halfword & Rd & Rn &  & Store register Rd to Rn\\
+\hline
+STRH & \{cond.\} & Halfword & Rd & [Rn] &  & Store register Rd to the memory [Rn]\\
+\hline
+STRH & \{cond.\} & Halfword & Rd & [Rn,FlexOffset] &  & Store register Rd to the memory [Rn, FlexOffset]\\
+\hline
+STRH & \{cond.\} & Halfword & Rd & [Rn,FlexOffset]! &  & Store register Rd to the memory [Rn, FlexOffset] and update Rn\\
+\hline
+\hline
+STRSB & \{cond.\} & signed Byte & Rd & Rn &  & Store register Rd to Rn\\
+\hline
+STRSB & \{cond.\} & signed Byte & Rd & [Rn] &  & Store register Rd to the memory [Rn]\\
+\hline
+STRSB & \{cond.\} & signed Byte & Rd & [Rn,FlexOffset] &  & Store register Rd to the memory [Rn, FlexOffset]\\
+\hline
+STRSB & \{cond.\} & signed Byte & Rd & [Rn,FlexOffset]! &  & Store register Rd to the memory [Rn, FlexOffset] and update Rn\\
+\hline
+\hline
+LDRD & \{cond.\} & Doubleword & Rd:Rd+1 & Rn:Rn+1 &  & Load register Rd:Rd+1 from Rn:Rn+1\\
+\hline
+LDRD & \{cond.\} & Doubleword & Rd:Rd+1 & [Rn] &  & Load register Rd:Rd+1 from the memory [Rn]\\
+\hline
+LDRD & \{cond.\} & Doubleword & Rd:Rd+1 & [Rn,FlexOffset] &  & Load register Rd:Rd+1 from the memory [Rn, Offset]\\
+\hline
+LDRD & \{cond.\} & Doubleword & Rd:Rd+1 & [Rn,FlexOffset]! &  & Load register Rd:Rd+1 from the memory [Rn, Offset] and update Rn\\
+\hline
+LDRD & \{cond.\} & Doubleword & Rd:Rd+1 & label &  & Load register Rd:Rd+1 from the memory location label\\
+\hline
+\hline
+STRD & \{cond.\} & Doubleword & Rd:Rd+1 & Rn &  & Store register Rd:Rd+1 to Rn:Rn+1\\
+\hline
+STRD & \{cond.\} & Doubleword & Rd:Rd+1 & [Rn] &  & Store register Rd:Rd+1 to the memory [Rn]\\
+\hline
+STRD & \{cond.\} & Doubleword & Rd:Rd+1 & [Rn,FlexOffset] &  & Store register Rd:Rd+1 to the memory [Rn, FlexOffset]\\
+\hline
+STRD & \{cond.\} & Doubleword & Rd:Rd+1 & [Rn,FlexOffset]! &  & Store register Rd:Rd+1 to the memory [Rn, FlexOffset] and update Rn\\
+\hline
+\end{tabular}
+\bigskip
+\newline
+{\rot Transfer (conditional)}\\
+\\
+\begin{tabular}{|c|c|c|c|c|c|l|}
+\hline
+Instruction & Conditions & Condition changed & Operand Size & 1.Parameter & 2.Parameter  & Operation\\
+\hline
+MOV & \{cond.\} & S & Word & Rd & FlexOffset & Copies the value addressed by FlexOffset to Rd, Conditions-flags updated\\
+\hline
+MOV & \{cond.\} & - & Word & Rd & FlexOffset & Copies the value addressed by FlexOffset to Rd, Conditions-flags unchanged\\
+\hline
+MVN & \{cond.\} & S & Word & Rd & FlexOffset & Generates a bitwise NOT of the value addressed by FlexOffset \\
+    &           &   &      &    &            & and copies to Rd, Conditions-flags updated\\
+\hline
+MVN & \{cond.\} & - & Word & Rd & FlexOffset & Generates a bitwise NOT of the value addressed by FlexOffset \\
+    &		&   &      &    &            & and copies to Rd, Conditions-flags unchanged\\
+\hline
+\end{tabular}
+\bigskip
+
+\newpage
+{\rot Transfer Registerset}\\
+\\
+\begin{tabular}{|c|c|c|c|c|l|}
+\hline
+Instruction & Conditions & Dec./Inc. & Base Register & Registerlist  & Operation\\
+\hline
+LDM & \{cond.\} & IA & Rn \{!\} & reglist & Load listed registers from memory addressed by base reg.\\
+    &           &    &          & 	  & base register incremented after each transfer\\
+\hline
+LDM & \{cond.\} & IB & Rn \{!\} & reglist & Load listed registers from memory addressed by base reg.\\
+    &           &    &          & 	  & base register incremented before each ransfer\\
+\hline
+LDM & \{cond.\} & DA & Rn \{!\} & reglist & Load listed registers from memory addressed by base reg.\\
+    &           &    &          & 	  & base register decremented after each transfer\\
+\hline
+LDM & \{cond.\} & IA & Rn \{!\} & reglist & Load listed registers from memory addressed by base reg.\\
+    &           &    &          & 	  & base register decremented before each transfer\\
+\hline
+\hline
+STM & \{cond.\} & IA & Rn \{!\} & reglist & Store listed registers to memory addressed by base reg.\\
+    &           &    &          & 	  & base register incremented after each transfer\\
+\hline
+STM & \{cond.\} & IB & Rn \{!\} & reglist & Store listed registers to memory addressed by base reg.\\
+    &           &    &          & 	  & base register incremented before each ransfer\\
+\hline
+STM & \{cond.\} & DA & Rn \{!\} & reglist & Store listed registers to memory addressed by base reg.\\
+    &           &    &          & 	  & base register decremented after each transfer\\
+\hline
+STM & \{cond.\} & IA & Rn \{!\} & reglist & Store listed registers to memory addressed by base reg.\\
+    &           &    &          & 	  & base register decremented before each transfer\\
+\hline
+\hline
+LDM & \{cond.\} & FD & Rn \{!\} & reglist & Load listed registers from memory addressed by base reg.\\
+    &           &    &          & 	  & base register works as full descending stack\\
+\hline
+LDM & \{cond.\} & ED & Rn \{!\} & reglist & Load listed registers from memory addressed by base reg.\\
+    &           &    &          & 	  & base register works as empty descending stack\\
+\hline
+LDM & \{cond.\} & FA & Rn \{!\} & reglist & Load listed registers from memory addressed by base reg.\\
+    &           &    &          & 	  & base register works as full ascending stack\\
+\hline
+LDM & \{cond.\} & EA & Rn \{!\} & reglist & Load listed registers from memory addressed by base reg.\\
+    &           &    &          & 	  & base register works as empty aescending stack\\
+\hline
+\hline
+STM & \{cond.\} & FD & Rn \{!\} & reglist & Store listed registers to memory addressed by base reg.\\
+    &           &    &          & 	  & base register works as full descending stack\\
+\hline
+STM & \{cond.\} & ED & Rn \{!\} & reglist & Store listed registers to memory addressed by base reg.\\
+    &           &    &          & 	  & base register works as empty descending stack\\
+\hline
+STM & \{cond.\} & FA & Rn \{!\} & reglist & Store listed registers to memory addressed by base reg.\\
+    &           &    &          & 	  & base register works as full ascending stack\\
+\hline
+STM & \{cond.\} & EA & Rn \{!\} & reglist & Store listed registers to memory addressed by base reg.\\
+    &           &    &          & 	  & base register works as empty aescending stack\\
+\hline
+\end{tabular}
+\bigskip
+
+\newpage
+%==============================================================================
+\section{Integer Arithmetic Instructions}
+%==============================================================================
+{\rot Add- and Sub-Instructions}\\
+\\
+\begin{tabular}{|c|c|c|c|c|c|l|}
+\hline
+Instruction & Conditions & Con. changed & Result & 1.Parameter & 2.Parameter & Operation\\
+\hline
+ADD & cond. & \{S\} & Rd & Rn & FlexOffset & Result = 1.Parameter + 2.Parameter\\
+\hline
+ADC & cond. & \{S\} & Rd & Rn & FlexOffset & Result = 1.Parameter + 2.Parameter + carry flag\\
+\hline
+SUB & cond. & \{S\} & Rd & Rn & FlexOffset & Result = 1.Parameter - 2.Parameter\\
+\hline
+SBC & cond. & \{S\} & Rd & Rn & FlexOffset & Result = 1.Parameter - 2.Parameter - carry flag\\
+\hline
+RSB & cond. & \{S\} & Rd & Rn & FlexOffset & Result = 2.Parameter - 1.Parameter\\
+\hline
+RSC & cond. & \{S\} & Rd & Rn & FlexOffset & Result = 2.Parameter - 1.Parameter - carry flag\\
+\hline
+\end{tabular}\\
+\\
+{\rot Multiply-Instructions}\\
+\\
+\begin{tabular}{|c|c|c|c|c|c|c|l|}
+\hline
+Instruction & Conditions & Con. changed & Result\_low & Result\_high & 1.Parameter & 2.Parameter & Operation\\
+\hline
+SMULL & cond. & \{S\} & Rd\_low & Rd\_high & Rn & Rs & Result(64 Bit, signed) = Rn * Rs \\
+\hline
+UMULL & cond. & \{S\} & Rd\_low & Rd\_high & Rn & Rs & Result(64 Bit, unsigned) = Rn * Rs \\
+\hline
+MUL & cond. & \{S\} & Rd\_low &  & Rn & Rs & Result(32 Bit, unsigned) = Rn * Rs \\
+\hline
+\hline
+SMULWB & cond. &  & Rd\_low &  & Rn & Rs[15:0] & Result(32 Bit, signed) = Rn * Rs[15:0] \\
+\hline
+SMULWT & cond. &  & Rd\_low &  & Rn & Rs[31:16] & Result(32 Bit, signed) = Rn * Rs[31:16] \\
+\hline
+\hline
+SMULBB & cond. &  & Rd\_low &  & Rn[15:0] & Rs[15:0] & Result(32 Bit, signed) = Rn[15:0] * Rs[15:0] \\
+\hline
+SMULBT & cond. &  & Rd\_low &  & Rn[15:0] & Rs[31:16] & Result(32 Bit, signed) = Rn[15:0] * Rs[31:16] \\
+\hline
+SMULTB & cond. &  & Rd\_low &  & Rn[31:16] & Rs[15:0] & Result(32 Bit, signed) = Rn[31:16] * Rs[15:0] \\
+\hline
+SMULTT & cond. &  & Rd\_low &  & Rn[31:16] & Rs[31:16] & Result(32 Bit, signed) = Rn[31:16] * Rs[31:16] \\
+\hline
+\end{tabular}\\
+\\
+\newpage
+{\rot Multiply- and Add-Instructions}\\
+\\
+\begin{tabular}{|c|c|c|c|c|c|c|c|l|}
+\hline
+Instruction & Conditions & Con. changed & Result\_low & Result\_high & 1.Para. & 2.Para. & 3. Para. & Operation\\
+\hline
+SMLAL & cond. & \{S\} & Rd\_low & Rd\_high & Rn & Rs & & Result(64 Bit, signed) = Result + Rn * Rs \\
+\hline
+UMLAL & cond. & \{S\} & Rd\_low & Rd\_high & Rn & Rs & & Result(64 Bit, unsigned) = Result + Rn * Rs \\
+\hline
+MLA & cond. & \{S\} & Rd\_low &  & Rn & Rs & & Result(32 Bit, unsigned) = Result + Rn * Rs \\
+\hline
+\hline
+SMLALBB & cond. &  & Rd\_low & Rd\_high & Rn[15:0] & Rs[15:0] & & Result(64 Bit, signed) = Result + Rn[15:0] * Rs[15:0] \\
+\hline
+SMLALBT & cond. &  & Rd\_low & Rd\_high & Rn[15:0] & Rs[31:16] & & Result(64 Bit, signed) = Result + Rn[15:0] * Rs[31:16] \\
+\hline
+SMLALTB & cond. &  & Rd\_low & Rd\_high & Rn[31:16] & Rs[15:0] & & Result(64 Bit, signed) = Result + Rn[31:16] * Rs[15:0] \\
+\hline
+SMLALTT & cond. &  & Rd\_low & Rd\_high & Rn[31:16] & Rs[31:16] & & Result(64 Bit, signed) = Result + Rn[31:16] * Rs[31:16] \\
+\hline
+\hline
+SMLALWB & cond. &  & Rd\_low &  & Rn & Rs[15:0] & Ra & Result(32 Bit, signed) = Ra + Rn * Rs[15:0] \\
+\hline
+SMLALWT & cond. &  & Rd\_low &  & Rn & Rs[31:16] & Ra & Result(64 Bit, signed) = Ra + Rn * Rs[31:16] \\
+\hline
+\hline
+SMULBB & cond. &  & Rd\_low &  & Rn[15:0] & Rs[15:0] & Ra & Result(32 Bit, signed) = Ra + Rn[15:0] * Rs[15:0] \\
+\hline
+SMULBT & cond. &  & Rd\_low &  & Rn[15:0] & Rs[31:16] & Ra & Result(32 Bit, signed) = Ra + Rn[15:0] * Rs[31:16] \\
+\hline
+SMULTB & cond. &  & Rd\_low &  & Rn[31:16] & Rs[15:0] & Ra & Result(32 Bit, signed) = Ra + Rn[31:16] * Rs[15:0] \\
+\hline
+SMULTT & cond. &  & Rd\_low &  & Rn[31:16] & Rs[31:16] & Ra & Result(32 Bit, signed) = Ra + Rn[31:16] * Rs[31:16] \\
+\hline
+\end{tabular}\\
+\\
+
+{\rot Saturation Aritmetic}\\
+\\
+\begin{tabular}{|c|c|c|c|c|l|}
+\hline
+Instruction & Conditions  & Result  & 1.Parameter & 2.Parameter & Operation\\
+\hline
+QADD & cond. & Rd & Rn & Rs & Rd(signed sat.) = Rn + Rs \\
+\hline
+QSUB & cond. & Rd & Rn & Rs & Rd(signed sat.) = Rn - Rs \\
+\hline
+QDADD & cond. & Rd & Rn & Rs & Rd(signed sat.) = Rn + 2 * Rs \\
+\hline
+QDSUB & cond. & Rd & Rn & Rs & Rd(signed sat.) = Rn - 2 * Rs \\
+\hline
+\end{tabular}\\
+\\
+ 
+ 
+\newpage
+%==============================================================================
+\section{Logical Instructions}
+%==============================================================================
+{\rot Registers}\\
+\\
+\begin{tabular}{|c|c|c|c|c|c|l|}
+\hline
+Instruction & Conditions & Con. changed & Result & 1.Parameter & 2.Parameter & Operation\\ 
+\hline
+AND & \{cond.\} & \{S\} & Rd & Rn & FlexOffset & Result = 1.Parameter \& 2.Parameter\\
+\hline
+ORR & \{cond.\} & \{S\} & Rd & Rn & FlexOffset & Result = 1.Parameter \OR  2.Parameter\\
+\hline
+EOR & \{cond.\} & \{S\} & Rd & Rn & FlexOffset & Result = 1.Parameter \EOR 2.Parameter\\
+\hline
+NEG &  &  & Rd & Rn &  & Result = Negate Rn\\
+\hline
+BIC & \{cond.\} & \{S\} & Rd & Rn & FlexOffset & Result = 1.Parameter \& NOT(2.Parameter)\\
+\hline
+\end{tabular}
+\\
+\newline
+{\rot Shift}\\
+\\
+Shift instructions executed by the Barrel shifter (see FlexOffset) 
+
+\newpage
+%==============================================================================
+\section{Bit Manipulation Instructions}
+%==============================================================================
+\begin{tabular}{|c|c|c|c|l|}
+\hline
+Instruction & Conditions & Bitfield & 1.Operand & Operation\\
+\hline
+MSR & \{cond.\} & CPSR\_C & Offset & Load CPSR[7:0] (control field) from 1.Operand\\ 
+\hline
+MSR & \{cond.\} & CPSR\_X & Offset & Load CPSR[15:8] (extension field) from 1.Operand\\ 
+\hline
+MSR & \{cond.\} & CPSR\_S & Offset & Load CPSR[24:16] (status field) from 1.Operand\\ 
+\hline
+MSR & \{cond.\} & CPSR\_F & Offset & Load CPSR[31:24] (flags field) from 1.Operand\\ 
+\hline
+\hline
+MSR & \{cond.\} & SPSR\_C & Offset & Load SPSR[7:0] (control field) from 1.Operand\\ 
+\hline
+MSR & \{cond.\} & SPSR\_X & Offset & Load SPSR[15:8] (extension field) from 1.Operand\\ 
+\hline
+MSR & \{cond.\} & SPSR\_S & Offset & Load SPSR[24:16] (status field) from 1.Operand\\ 
+\hline
+MSR & \{cond.\} & SPSR\_F & Offset & Load SPSR[31:24] (flags field) from 1.Operand\\ 
+\hline
+\end{tabular}\\
+\\
+\\
+\begin{tabular}{|c|c|c|c|l|}
+\hline
+Instruction & Conditions & Result & 1.Operand & Operation\\
+\hline
+CLZ & \{cond\} & Rd & Rn & Count the leading zeros in Rn and store the number in Rd\\
+\hline
+\end{tabular}\\
+
+\newpage
+%==============================================================================
+\section{Control Instructions}
+%==============================================================================
+{\rot Test}\\
+\\
+\begin{tabular}{|c|c|c|c|l|}
+\hline
+Instruction & Conditions & 1.Operand & 2.Operand & Operationrel\\
+\hline
+CMP & \{cond\} & Rn & Offset & Compare (1.Operand - 2.Operand, set Flags) (Operands not changed)\\
+\hline
+CMN & \{cond\} & Rn & Offset & Compare (1.Operand - -2.Operand, set Flags) (Operands not changed)\\
+\hline
+TST & \{cond\} & Rn & Offset & Test (1.Operand \& 2.Operand, set Flags) (Operands not changed)\\
+\hline 
+TEQ & \{cond\} & Rn & Offset & Compare (1.Operand \EOR 2.Operand, set Flags) (Operands not changed)\\
+\hline
+\end{tabular}\\
+\\
+  
+ 
+{\rot Branch}\\
+\\
+\begin{tabular}{|c|c|c|l|}
+\hline
+Instruction & Conditions & Label & Operation\\
+\hline
+B & \{cond\} & Label & Branch to label\\
+\hline
+BL & \{cond\} & Label & Branch to label, load return address in LR\\
+\hline
+\end{tabular}\\
+\\
+\\
+\begin{tabular}{|c|c|c|l|}
+\hline
+Instruction & Conditions & Register & Operation\\
+\hline
+BX & \{cond\} & Rm & Branch to address hold in register Rm\\
+\hline
+BLX & \{cond\} & rm & Branch to address hold in register Rm, load return address in LR\\
+\hline
+\end{tabular}\\
+\\
+           
+
+\newpage
+%==============================================================================
+\section{Other Instructions}
+%==============================================================================
+{\rot Sytem}\\
+\begin{tabular}{|c|c|c|l|}
+\hline
+Instruction & Conditions & Imm & Operation\\
+\hline
+SWI & \{cond\} & immed\_24 & Change to Supervisor mode,branch to SWI vector\\ 
+\hline
+BKPT & \{cond\} & immed\_16 & Change to Debug mode, immed-value could be used in the debugger\\ 
+\hline
+\end{tabular}
+\\
+
+\end{landscape}
+}
+
+\newpage
+%==============================================================================
+\section{Vector Floating Point Instructions (VFP)}
+%==============================================================================
+
+\begin{center}
+Condition Codes (cond) VFP \\
+\begin{tabular}{|c|c|c|}
+\hline
+Common language & Instruction (VFP) & ARM Condition\\
+\hline
+== & FCMP & EQ\\
+\hline
+!= & FCMP & NE\\
+\hline
+\textgreater & FCMPE & GT\\
+\hline
+\textgreater= & FCMPE & GE\\
+\hline
+\textless & FCMPE & MI or CC\\
+\hline
+\textless= & FCMPE & LS\\
+\hline
+\end{tabular}
+\end{center}
+
+\begin{landscape} 
+%==============================================================================
+\section{VFP Transfer Instructions}
+%==============================================================================
+{\rot ARM-Register/VFP-Register}\\
+\\
+\begin{tabular}{|c|c|c|c|c|c|l|}
+\hline
+Instruction & Conditions & Operand Size & 1.Parameter & 2.Parameter & 3.Parameter & Operation\\
+\hline
+FMRS & \{cond.\} & single & Rd & Sn &  & Floating point move Rd from Sn\\
+\hline
+FMSR & \{cond.\} & single & Sd & Rn &  & Floating point move Sd from the Rn\\
+\hline
+\hline
+FCPYS & \{cond.\} & single & Sd & Sn &  & Single precision floating point copy Sd from Sn\\
+\hline
+FCPYD & \{cond.\} & double & Dd & Sd &  & Double prcision floating point copy Dd from Sd\\
+\hline
+\end{tabular}\\
+\\
+
+{\rot VFP-Register/Memory}\\
+\\
+\begin{tabular}{|c|c|c|c|c|c|l|}
+\hline
+Instruction & Conditions & Operand Size & 1.Parameter & 2.Parameter & 3.Parameter & Operation\\
+\hline
+FLDS & \{cond.\} & single & Sd & [Rn] &  & Single precision load Sd from memory [Rn, FlexOffset]\\
+\hline
+FLDD & \{cond.\} & double & Dd & [Rn] &  & Double precision load Dd from memory [Rn, FlexOffset]\\
+\hline
+\hline
+FSTS & \{cond.\} & single & Sd & [Rn] &  & Single precision store Sd to memory [Rn, FlexOffset]\\
+\hline
+FSTD & \{cond.\} & double & Dd & [Rn] &  & Double precision store Dd to memory [Rn, FlexOffset]\\
+\hline
+\end{tabular}\\
+\\
+
+%==============================================================================
+\section{VFP Conversion Instructions}
+%==============================================================================
+{\rot Float to Integer}\\
+\\
+\begin{tabular}{|c|c|c|c|c|c|l|}
+\hline
+Instruction & Conditions & Operand Size & 1.Parameter & 2.Parameter & 3.Parameter & Operation\\
+\hline
+FTOSIS & \{cond.\} & single & Sd & Sn &  & Floating point convert Sn to signed Integer Sd\\
+\hline
+FTOSIZS & \{cond.\} & single & Sd & Sn &  & Floating point convert (to zero) Sn to signed Integer Sd\\
+\hline
+FTOUIS & \{cond.\} & single & Sd & Sn &  & Floating point convert Sn to unsigned Integer Sd\\
+\hline
+FTOUIZS & \{cond.\} & single & Sd & Sn &  & Floating point convert (to zero) Sn to unsigned Integer Sd\\
+\hline
+\hline
+FTOSID & \{cond.\} & single/double & Sd & Dn &  & Floating point convert Dn to signed Integer Sd\\
+\hline
+FTOSIZD & \{cond.\} & single/double & Sd & Dn &  & Floating point convert (to zero) Dn to signed Integer Sd\\
+\hline
+FTOUIS & \{cond.\} & single/double & Sd & Dn &  & Floating point convert Dn to unsigned Integer Sd\\
+\hline
+FTOUIZS & \{cond.\} & single/double & Sd & Dn &  & Floating point convert (to zero) Dn to unsigned Integer Sd\\ 
+\hline
+\end{tabular}\\
+\\
+\newpage
+
+{\rot Integer to Float}\\
+\\
+\begin{tabular}{|c|c|c|c|c|c|l|}
+\hline
+Instruction & Conditions & Operand Size & 1.Parameter & 2.Parameter & 3.Parameter & Operation\\
+\hline
+FSITOS & \{cond.\} & single & Sd & Sn &  & Integer Sn convert to Floating point Sd\\
+\hline
+FUITOS & \{cond.\} & single & Sd & Sn &  & Unsigned integer Sn convert to Floating point Sd\\
+\hline
+FSITOD & \{cond.\} & double/single & Dd & Sn &  & Integer Sn convert to Floating point Dd\\
+\hline
+FUITOD & \{cond.\} & double/single & Dd & Sn &  & Unsigned integer Sn convert to Floating point Dd\\
+\hline
+\end{tabular}\\
+\\
+
+{\rot Precision Conversion}\\
+\\
+\begin{tabular}{|c|c|c|c|c|c|l|}
+\hline
+Instruction & Conditions & Operand Size & 1.Parameter & 2.Parameter & 3.Parameter & Operation\\
+\hline
+FCVTDS & \{cond.\} & double/single & Dd & Sn &  & Convert single precision Sn to double Dd\\
+\hline
+FCVTSD & \{cond.\} & single/double & Sd & Dn &  & Convert double precision Dn to single Sd\\
+\hline
+\end{tabular}\\
+\\
+
+\newpage
+%==============================================================================
+\section{VFP Arithmetic Instructions}
+%==============================================================================
+{\rot Basic Arithmetic-Instructions}\\
+\\
+\begin{tabular}{|c|c|c|c|c|c|l|}
+\hline
+Instruction & Conditions & Operand Size & Result & 1.Parameter & 2.Parameter & Operation\\
+\hline
+FADDS & cond. & single & Sd & Sn & Sm & Single Floating point Addition Result = 1.Parameter + 2.Parameter\\
+\hline
+FADDD & cond. & double & Dd & Dn & Dm & Double Floating point Addition Result = 1.Parameter + 2.Parameter\\
+\hline
+FSUBS & cond. & single & Sd & Sn & Sm & Single Floating point Substraction Result = 1.Parameter - 2.Parameter\\
+\hline
+FSUBD & cond. & double & Dd & Dn & Dm & Double Floating point Substraction Result = 1.Parameter - 2.Parameter\\
+\hline
+FMULS & cond. & single & Sd & Sn & Sm & Single Floating point Multiplication Result = 1.Parameter * 2.Parameter\\
+\hline
+FNMULS & cond. & single & Sd & Sn & Sm & Single Floating point Multiplication Result = -(1.Parameter * 2.Parameter)\\
+\hline
+FMULD & cond. & double & Dd & Dn & Dm & Double Floating point Multiplication Result = 1.Parameter * 2.Parameter\\
+\hline
+FNMULD & cond. & double & Dd & Dn & Dm & Double Floating point Multiplication Result = -(1.Parameter * 2.Parameter)\\
+\hline
+FDIVS & cond. & single & Sd & Sn & Sm & Single Floating point Division Result = 1.Parameter / 2.Parameter\\
+\hline
+FDIVD & cond. & double & Dd & Dn & Dm & Double Floating point Division Result = 1.Parameter / 2.Parameter\\
+\hline
+\end{tabular}\\
+\\
+{\rot Multiply and Add-Instructions}\\
+\\
+\begin{tabular}{|c|c|c|c|c|c|l|}
+\hline
+Instruction & Conditions & Operand Size & Result & 1.Parameter & 2.Parameter & Operation\\
+\hline
+FMACS & cond. & single & Sd & Sn & Sm & Single Floating point MAC = old result plus 1.Parameter * 2.Parameter\\
+\hline
+FMACD & cond. & double & Sd & Sn & Sm & Double Floating point MAC = old result plus 1.Parameter * 2.Parameter\\
+\hline
+FNMACS & cond. & single & Sd & Sn & Sm & Single Floating point MAC = old result minus 1.Parameter * 2.Parameter\\
+\hline
+FNMACD & cond. & double & Sd & Sn & Sm & Double Floating point MAC = old result minus 1.Parameter * 2.Parameter\\
+\hline
+\end{tabular}\\
+\\
+{\rot Other Arithmetical Instructions}\\
+\\
+\begin{tabular}{|c|c|c|c|c|c|l|}
+\hline
+Instruction & Conditions & Operand Size & Result & 1.Parameter & 2.Parameter & Operation\\
+\hline
+FABSS & cond. & single & Sd & Sn &  & Absolute value from Sn to Sd\\
+\hline
+FABSD & cond. & Double & Dd & Dn &  & Absolute value from Dn to Dd\\
+\hline
+FNEGS & cond. & single & Sd & Sn &  & Negated value from Sn to Sd\\
+\hline
+FNEGD & cond. & Double & Dd & Dn &  & Negated value form Dn to Dd\\
+\hline
+FSQRTS & cond. & single & Sd & Sn &  & Square root from Sn to Sd\\
+\hline
+FSQRTD & cond. & Double & Dd & Dn &  & Square root from Dn to Dd\\
+\hline
+\end{tabular}\\
+\\
+
+\newpage
+%==============================================================================
+\section{VFP Comparision Instructions}
+%==============================================================================
+{\rot Comparision of two Values (internal Substraction)}\\
+\\
+\begin{tabular}{|c|c|c|c|c|l|}
+\hline
+Instruction & Conditions & Operand Size & 1.Parameter & 2.Parameter & Operation\\
+\hline
+FCMPS & cond. & single  & Sd & Sm & Compare 1.Parameter with 2.Parameter\\
+\hline
+FCMPD & cond. & double  & Dd & Dm & Compare 1.Parameter with 2.Parameter\\
+\hline
+FCMPES & cond. & single  & Sd & Sm & Compare (including NAN-Exceptions) 1.Parameter with 2.Parameter\\
+\hline
+FCMPED & cond. & double  & Dd & Dm & Compare (including NAN-Exceptions) 1.Parameter with 2.Parameter\\
+\hline
+\end{tabular}\\
+\\
+\\
+{\rot Comparision with Zero}\\
+\\
+\begin{tabular}{|c|c|c|c|c|l|}
+\hline
+Instruction & Conditions & Operand Size & 1.Parameter & 2.Parameter & Operation\\
+\hline
+FCMPZS & cond. & single  & Sd &  & Compare 1.Parameter with Zero\\
+\hline
+FCMPZD & cond. & double  & Dd &  & Compare 1.Parameter with Zero\\
+\hline
+FCMPEZS & cond. & single  & Sd &  & Compare (including NAN-Exceptions) 1.Parameter with Zero\\
+\hline
+FCMPEZD & cond. & double  & Dd &  & Compare (including NAN-Exceptions) 1.Parameter with Zero\\
+\hline
+\end{tabular}\\
+\\
+\\
+
+\end{landscape}
+
+
+

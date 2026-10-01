@@ -1,0 +1,59 @@
+%%%% \aufg und \lsg werden hier umdefiniert, so dass nur noch die
+%%%% Lösungen gedruckt werden.
+
+
+%----------------------------------------------------------------------
+% Makro für Übungsaufgabe
+%----------------------------------------------------------------------
+\newcounter{AufgNrLsg}[chapter]
+%\renewcommand{\theAufgNr}{\arabic{chapter}.\arabic{AufgNrLsg}}
+\renewcommand{\theAufgNr}{\arabic{AufgNrLsg}}
+
+\renewcommand{\aufg}[1]{}%%%%%%%%%%Aufgabe %%%%%%%%%%%%
+\excludeversion{aufgenv}
+
+\newcommand{\matri}[8]{\left(\begin{array}{cc|cc}#1&#2&#5&#6\\#3&#4&#7&#8\\\end{array}\right)}
+
+%----------------------------------------------------------------------
+%----------------------------------------------------------------------
+%----------------------------------------------------------------------
+% Makro für Lösung
+%----------------------------------------------------------------------
+\renewcommand{\lsg}[1]
+        {\refstepcounter{AufgNrLsg}
+        \paragraph{Aufgabe \theAufgNr}
+\vspace*{-1ex}
+%       {\bf Aufgabe \theAufgNr\\[2ex]}
+         \setcounter{TeilaufgNr}{1}%
+        #1
+        }
+%%%{\subsubsection*{Aufgabe \theAufgNr} \setcounter{TeilaufgNr}{1} #1}
+
+%----------------------------------------------------------------------
+% Env für Lösung
+%----------------------------------------------------------------------
+\renewenvironment{lsgenv}
+        {\refstepcounter{AufgNrLsg}
+        \paragraph{Aufgabe \theAufgNr}
+\vspace*{-1ex}
+%       {\bf Aufgabe \theAufgNr\\[2ex]}
+         \setcounter{TeilaufgNr}{1}%
+        }{}
+%%%{\subsubsection*{Aufgabe \theAufgNr} \setcounter{TeilaufgNr}{1} #1}
+%----------------------------------------------------------------------
+% Macro für keine Lösung
+%----------------------------------------------------------------------
+\renewcommand{\keinelsg}{\refstepcounter{AufgNrLsg}}
+
+%----------------------------------------------------------------------
+% Makro für secueb
+%----------------------------------------------------------------------
+ \renewcommand{\sectionmark}[1]{\markright{#1}}
+\newcommand{\secueb}{\refstepcounter{section}\section*{Lösungen zu Kapitel \arabic{section}}\sectionmark{Lösungen zu Kapitel \arabic{section}}}
+\newcommand{\secuebanhang}{\refstepcounter{section}\section*{Lösungen zu Anhang \Alph{section}}\sectionmark{Lösungen zu Anhang \Alph{section}}}
+
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: t
+%%% End: 

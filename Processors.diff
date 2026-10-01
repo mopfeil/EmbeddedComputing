@@ -1,0 +1,628 @@
+1,314c1,312
+< %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+< \section{Processors for Embedded Systems}
+< %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+< \nsl{Embedded systems are application which needs a special processor mostly. A standard PC isn't suitable because the microprocessor which is used doesn't work alone. You have to spend motherboard mostly of a big size and big costs so that you get a running system.
+< \newline
+< On the other hand when you are looking on microcontroller application you will find that especially the 8-bit controllers have to small computer power and to hard restrictions in building appropriate internal or external memories so that these processors are also not suitable for a higher sophisticated embedded system. The mentioned restrictions are not so hard if you are working with 16- and 32-bit microcontrollers. A big advantage of microcontrollers is that nearly every interface is available which we have to use in the case of embedded systems.
+< \newline
+< If in an application you could spend a small motherboard (no hard discs, no graphical user interfaces mostly) than it makes sense to look for an ``embedded PC'' or a PC/104 system. Such systems contain a special so called ``mobile microprocessor'' like ``Pentium M'' or ``Geode'' or ``XScale''. These processors are variants of a standard 8086-like microprocessor (Pentium M and Geode). If you are working with these embedded PC's than you can get the support from the well known standard PC tools like compilers, linkers and operating systems. 
+< \newline
+< The last type of processor which could be involved in an embedded system is a signal processor. A signal processor has much more computer power as a microcontroller. But in contrary to a microprocessor a signal processor has nearly the same interfaces like a microcontroller. The disadvantage of the use of a signal processor is that there aren't such development tools.
+< }
+< 
+< \begin{description}
+< \bigskip
+< \item[{\rot\bf Microprocessors for Embedded Systems }]~\\[-3ex]
+< \bi
+< 	\ite use of a special version of an 8086-like microprocessor (Pentium M or Geode)
+< 	\ite these microprocessor is integrated in an ``embedded PC'' or a ``PC/104-system''
+< 	\ite these type of PC works without an harddisc (and without any cooling devices)
+< 	\ite instead of a harddisc a ``FLASH Memory'' are used (SD-Card for example)
+< 	\ite if a graphical user interface is available then the ``graphical processing unit'' is part of the microprocessor
+< \ei
+< \os{\newpage}
+< \begin{center}
+< \epsfig{file=figures/Fig_3_1_SBC,width=0.8\textwidth}\\
+< Fig 3.1 Embedded PC as Single Bord Computer
+< \end{center}
+< 
+< \begin{center}
+< \epsfig{file=figures/Fig_3_2_Blockdiagram_Geode,width=0.8\textwidth}\\
+< Fig 3.2 Blockdiagram of a Geode-Microprocessor
+< \end{center}
+< 
+< \begin{center}
+< \epsfig{file=figures/Fig_3_3_Embedded_PC,width=0.9\textwidth}\\
+< Fig 3.3 A different Embedded PC
+< \end{center}
+< \os{\newpage}
+< 
+< \item[{\rot\bf Signalprocessors for Embedded Systems }]~\\[-3ex]
+< \os{\bigskip}
+< \bi
+< 	\ite same structure as microcontrollers
+< 	\bi 
+< 		\ite a lot of interfaces
+< 		\ite external memory as instruction and data memory (havard architecture)
+< 		\ite building of programs as cross-development
+< 	\ei
+< 	\bigskip
+< 	\ite much higher computer power as microcontrollers 
+< 	\ite especially build for signal processing applications (like video compressing, audio processing)  
+< \ei
+< \os{\newpage}
+< \begin{center}
+< \epsfig{file=figures/Fig_3_4_DSP_MP3,width=0.9\textwidth}\\
+< Fig 3.4 MP3-Player, an Application for DSP-Processors
+< \end{center}
+< 
+< \os{\newpage}
+< 
+< \item[{\rot\bf Microcontrollers for Embedded Systems }]~\\[-3ex]
+< \os{\bigskip}
+< \bi
+< 	\ite most embedded systems works with a microcontroller
+< 	\ite differences in the use of internal memory and/or external memory
+< 	\ite human interface not exitend 
+< 	\ite human interface not existent or really small (in most cases)
+< \ei
+< \os{\newpage}
+< \begin{center}
+< \epsfig{file=figures/Fig_3_5_COBRA5485,width=0.8\textwidth}\\
+< Fig 3.5 Microcontroller Board COBRA5485
+< \end{center}
+< 
+< \end{description}
+< %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+< \section{Overview about Coldfire-Processors}
+< %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+< \begin{description}
+< \bigskip
+< \item[{\rot\bf Background }]~\\[-3ex]
+< \bi
+< 	\ite Coldfire-Processors build from M68k-Processors
+< 	\bi 
+< 		\ite same registermodel for address- and dataregister
+< 		\ite implementation of a superuser- and an usermode (priority of excecution)
+< 	\ei
+< 	\ite implementation of superscalare architecture
+< 	\ite integration of FPU coprocessor 
+< 	\ite in some microcontrollers integration of MMU (\underline{m}emory \underline{m}anagement \underline{u}nit) \pr important for operation systems
+< 	\ite integration of a lot of interfaces (like serial communication, CAN-Bus, digital and analogue interfaces, timer channels)
+< \ei
+< 
+< \os{\newpage}
+< 
+< \begin{center}
+< \epsfig{file=figures/Fig_3_6_OverviewColdfire,width=0.85\textwidth}\\
+< Fig 3.6 Overview about Coldfire-Processors
+< \end{center}
+< 
+< \end{description}
+< 
+< 
+< 
+< %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+< \section{Functions of Coldfire V4 (CFV4e)}
+< %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+< \begin{description}
+< \item[{\rot\bf General Functions }]~\\[-3ex]
+< \bigskip
+< \bi
+< 	\ite implements a superscalar architecture 
+< 	\ite internal harvard architecture based on two different Caches (I-Cache, D-Cache)
+< 	\ite memory management unit (MMU)
+< 	\ite controller for 32-bit double data rate (DDR) synchronous DRAM (SDRAM)
+< 	\bi 
+< 		\ite supports all necessary functions for SDRAM like refresh, address splitting, initialitation
+< 	\ei
+< 	\ite implementation of internal memory (inside in the standard address space)
+< 	\ite many interfaces bit- and byte-oriented
+< 	\bi 
+< 		\ite universal serial bus (USB) version 2.0 device controller
+< 		\ite DMA serial peripheral interface (DSPI)
+< 		\ite two CAN controller area network 2.0B controllers each with 16 message buffers
+< 		\ite I\begin{math}^{2}\end{math}C peripheral interface
+< 	\ei
+< \ei
+< 
+< \begin{center}
+< \epsfig{file=figures/Fig_3_7_Blockdiagram_CF4e,width=0.85\textwidth}\\
+< Fig 3.7 Blockdiagram Coldfire V4 (CF4e)
+< \end{center}
+< 
+< \item[{\rot\bf CFV4e-Core }]~\\[-3ex]
+< 
+< \bi 
+< 	\ite core contains 32-bit integer unit (could be used for signed, unsigned and fractional operations)
+< 	\ite hardware support instructions for
+< 	\bi 
+< 		\ite integer multipication and add operations (in one instruction)
+< 		\ite divide operations
+< 	\ei
+< 	\bigskip 
+< 	\ite works with RISC-operation on variable length instructions
+< 	\ite introduction a queue (instruction buffer)
+< 	\ite pipeline not visible for the user (only in some special instructions an insert of NOPs are necessary to synchronize the pipeline)
+< 	\ite to support the pipeline operation for branches (especially conditional branches) a branch cache is involved
+< \ei
+< \os{\newpage}
+< \begin{center}
+< \epsfig{file=figures/Fig_3_8_RISC,width=0.95\textwidth}\\
+< Fig 3.8 Pipeline-structure of Coldfire V4 (CF4e)
+< \end{center}
+< 
+< \item[{\rot\bf FPU (\underline{f}loating \underline{p}oint \underline{u}nit) }]~\\[-3ex]
+< 
+< \bi 
+< 	\ite superscale unit to support floating point operations
+< 	\ite works with a different set of registers
+< 	\bi 
+< 		\ite eight 64-bit floating-point data registers (FP0 - FP7)
+< 		\ite one 32-bit floating-point control register (FPCR)
+< 		\ite one 32-bit floating-point status register (FPSR)
+< 		\ite one 32-bit floating-point instruction address register (FPIAR)
+< 	\ei
+< 	\bigskip
+< 	\ite instructions for the core and for the FPU could be mixed without any restriction
+< 	\ite operands for the FPU are loaded from the memory (not from core-registers)
+< 	\ite FPU-register could be used as a stack or as an explicit register
+< 	\ite the memory-addressing is done with the standard addressing modes of the core
+< \ei
+< \os{\newpage}
+< \begin{center}
+< \epsfig{file=figures/Fig_3_9_Register_FPU,width=0.95\textwidth}\\
+< Fig 3.9 Register FPU
+< \epsfig{file=figures/Fig_3_10_FloatingPoint_Format,width=0.95\textwidth}\\
+< Fig 3.10 Format of floating point numbers 
+< \end{center}
+< \os{\newpage}
+< \bi 
+< 	\ite a floating point number is allways normalized
+< 	\ite there exist no carry bit or a doubling of the word format after a multiplication (very useful in combined arithmetical expressions)
+< 	\ite every floating point number could be characterized
+< \ei
+< \begin{center}
+< \epsfig{file=figures/Fig_3_11_FPCC,width=0.8\textwidth}\\
+< Fig 3.11 Flags from the FPCC-register (FPU-condition code)
+< \end{center}
+< \os{\newpage}
+< \item[{\rot\bf MMU (\underline{m}emory \underline{m}anagement \underline{u}nit) }]~\\[-3ex]
+< 
+< \bi 
+< 	\ite support a flexible, software-defined virtual environment
+< 	\bi
+< 		\ite this means the CFV4e with a external memory in linear addressing mode (typical for microcontroller application the virtual environment)
+< 		\ite or the CFV4e works with a virtual external memory
+< 	\ei
+< 	\bigskip
+< 	\ite in the case of virtual memory, the MMU supports 1-, 4-, 8-Kbyte or 1-Mbyte page sizes
+< 	\ite the pages addressed with separate, 32-entry, fully associative instruction and data TLBs (TLBs \underline{t}ranslation \underline{l}ookaside \underline{b}uffer)
+< 	\bi 
+< 		\ite the separation of instruction- and data-TLB allows a parallel access of both instructions and datas (Havard-architecture)
+< 		\ite the TLB works as registers (faster than memory based entries) 
+< 	\ei
+< 	\ite the MMU itself is memory-mapped (control, status, and fault registers)
+< 	\ite the access to the MMU starts with a control-register (MMUBAR MMU \underline{b}ase \underline{a}dd\underline{r}ess)
+< 	\ite MMU supports programmable address space priorisation steps (ASID \underline{a}ddress \underline{s}pace \underline{id}entifier)
+< 	\ite onchip-memories not under the control of the MMU
+< \ei
+< 
+< \begin{center}
+< \epsfig{file=figures/Fig_3_12_MMU,width=0.8\textwidth}\\
+< Fig 3.12 Principal functions of the MMU
+< \end{center}
+< \os{\newpage}
+< \item[{\rot\bf Onchip memory }]~\\[-3ex]
+< \bi
+< 	\ite onchip SRAM
+< 	\bi 
+< 		\ite organized in two blocks as 4048 x 32 bits
+< 		\ite the RAM base address registers (RAMBAR0 and RAMBAR1) define the logical base address attributes, and access types for the two SRAM modules
+< 		\ite byte, word, and longword address capabilities
+< 		\ite single-cycle throughput (the fastest memory after the registers)
+< 	\ei
+< 	\bigskip
+< 	\ite Cache
+< 	\bi
+< 		\ite organized as instruction cache (read cache, size 32 kByte)
+< 		\ite and data cache (read/write cache, 32 kByte)
+< 		\ite two parallel accesses possible (Harvard-architecture)
+< 		\ite works with the core-frequency
+< 		\ite cache memory isn't direct accessible (controlled by the cache-controller)
+< 		\ite the use of a cache does'nt allow to specify an precise execution time
+< 	\ei 
+< \ei
+< \os{\newpage}
+< \begin{center}
+< \epsfig{file=figures/Fig_3_13_Cache,width=0.9\textwidth}\\
+< Fig 3.13 Blockdiagram of the Data-Cache
+< \end{center}
+< \os{\newpage}
+< \item[{\rot\bf External memory }]~\\[-3ex]
+< \bi 
+< 	\ite FlexBus
+< 	\bi 
+< 		\ite multiplexed external 32-bit bus
+< 		\ite spends six independent, user-programmable chip-select signals (FBCS[5:0])
+< 		\ite generates an interface for SRAM, PROM, EPROM, EEPROM, Flash, and other peripherals
+< 		\ite allows the use of 8-, 16-, and 32-bit port sizes (transfer)
+< 		\ite transfer programmable for burst and burst-inhibited transfers (selectable for each chip select and transfer)
+< 		\ite timing behaviour programmable (access times for chip selects)
+< 	\ei
+< 
+< \ei
+< 
+< \os{\newpage}
+< \begin{center}
+< \epsfig{file=figures/Fig_3_14_External_Memory_Port,width=0.9\textwidth}\\
+< Fig 3.14 Connections for external Port Sizes
+< \end{center}
+< 
+< \begin{center}
+< \epsfig{file=figures/Fig_3_15_FlexBus,width=0.9\textwidth}\\
+< Fig 3.15 FlexBus
+< \end{center}
+< \bi 
+< 	\ite SDRAM
+< 	\bi 
+< 		\ite separate controller which generate the necessary signals and function to drive SDRAM
+< 		\ite 32-bit fixed memory port width
+< 		\ite build 64-bit data bus interface to internal bus
+< 		\ite supports page mode to maximize the data rate
+< 		\ite supports sleep mode and self-refresh mode
+< 		\ite maximum memory size 1 GByte
+< 		\ite programmable ``memory base address'' register to place the SDRAM on a specific position inside the address space 
+< 	\ei
+< \ei
+< 
+< \os{\newpage}
+< \begin{center}
+< \epsfig{file=figures/Fig_3_16_SDRAM_Controller,width=0.9\textwidth}\\
+< Fig 3.16 SDRAM Controller Blockdiagram
+< \end{center}
+< 
+< \item[{\rot\bf Interrupt Controller }]~\\[-3ex]
+< \bi 
+< 	\ite handle all interrupts and exceptions
+< 	\ite interupts \pr external inputs with a programmable interrupt-level (level 1 lowest level, 7 highest level)
+< 	\ite all interrupts and exceptions work with an appropriate interrupt vector
+< 	\ite the interrupt vector will be read in in the interrupt acknowledge cycle (1 byte value)
+< 	\ite if an interrupt or exeception was acknowledged the core generates an stackframe (contains of the ccr-register and the program counter) an starts with the excution of the interupt service routine 
+< 	\ite the start address of the interrupt service routine are placed in the interrupt vector table (contains of the interrupt vector base register + 4 * value of the interrupt vector)
+< 	\ite the external interrupts could be enabled and disabled
+< \ei
+< 
+< \os{\newpage}
+< 
+< \item[{\rot\bf BDM (\underline{b}ackground \underline{d}ebugger \underline{m}ode) }]~\\[-3ex]
+< \bi 
+< 	\ite an additional interface for debugging
+< 	\ite allows the download and test of programs without any other supports (no monitor programs or bootstrap loader)
+< 	\ite the BDM mode would be started with a hardware switch
+< 	\ite real-time trace support (the ability to determine the dynamic execution path through an
+<   application)
+< 	\ite the BDM interface is 8-bit parallel output bus that reports processor execution status and data to an external BDM emulator system
+< 	\ite in the BDM mode the processor is halted and a variety of commands can be sent to the processor to access memory and registers
+< \ei
+< \os{\newpage}
+< \begin{center}
+< \epsfig{file=figures/Fig_3_17_BDM,width=0.9\textwidth}\\
+< Fig 3.17 BDM Interface
+< \end{center}
+< \end{description}
+< 
+---
+> %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+> \section{Processors for Embedded Systems}
+> %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+> \nsl{Embedded systems need special processors. A standard PC processor isn't suitable, as the microprocessor used doesn't operate independently. It has to be implanted on a motherboard, which serves as the communication interface between the processor and other input/output devices. This involves increased costs and such a system occupies a large space.
+> \newline
+> Shifting our focus to microcontrollers, we observe that an 8-bit microcontroller possesses small computing power and has too many restrictions in building an appropriate internal or external memory. So these types of processors are also not suitable for a sophisticated embedded system. The above mentioned restrictions are not evident when working with 16- and 32-bit microcontrollers. A big advantage of these types of microcontrollers is that nearly every type of interface is available which we might have to use in an embedded system.
+> \newline
+> If an Embedded application/project allows us to use a small motherboard (no hard discs and usually no GUI 'graphical user interfaces' etc.) then it makes sense to deploy an ``Embedded PC'' or a PC/104 system. Such systems contain a special, so called ``Mobile microprocessor'' like ``Pentium M'' or ``Geode'' or ``XScale''. These processors are variants of standard 8086-type microprocessors (Pentium M and Geode). If we are working with these Embedded PC's, then you have access to support in the form of well known standard PC tools like compilers, linkers and operating systems. 
+> \newline
+> Another type of processor which could be present in an embedded system is a signal processor. A signal processor has much more computing power than a microcontroller. But on the contrary to a microprocessor, a signal processor has nearly the same interfaces available in a microcontroller. The disadvantage of using a signal processor is that there aren't much development tools available.
+> }
+> 
+> \begin{description}
+> \bigskip
+> \item[{\rot\bf Microprocessors for Embedded Systems }]~\\[-3ex]
+> \bi
+> 	\ite use a special version of an 8086-type of microprocessors (Pentium M or Geode)
+> 	\ite these microprocessor are integrated in an ``embedded PC'' or a ``PC/104-system''
+> 	\ite these type of PCs' work without any hard disc (and without any cooling system)
+> 	\ite instead of a hard disc, a ``FLASH Memory'' is used (e.g. SD-Card)
+> 	\ite if a graphical user interface is available, then the ``graphical processing unit'' is a part of the microprocessor.
+> \ei
+> \os{\newpage}
+> \begin{center}
+> \epsfig{file=figures/Fig_3_1_SBC,width=0.8\textwidth}\\
+> Fig 3.1 Embedded PC as Single Board Computer
+> \end{center}
+> 
+> \begin{center}
+> \epsfig{file=figures/Fig_3_2_Blockdiagram_Geode,width=0.8\textwidth}\\
+> Fig 3.2 Blockdiagram of a Geode-Microprocessor
+> \end{center}
+> 
+> \begin{center}
+> \epsfig{file=figures/Fig_3_3_Embedded_PC,width=0.9\textwidth}\\
+> Fig 3.3 A different type of Embedded PC
+> \end{center}
+> \os{\newpage}
+> 
+> \item[{\rot\bf Signal processors for Embedded Systems }]~\\[-3ex]
+> \os{\bigskip}
+> \bi
+> 	\ite same structure as microcontrollers
+> 	\bi 
+> 		\ite a lot of interfaces
+> 		\ite external memory available as instruction and data memory (Harvard architecture)
+> 		\ite building of programs using cross-development technique
+> 	\ei
+> 	\bigskip
+> 	\ite much higher computing power than microcontrollers 
+> 	\ite specially built for signal processing applications (e.g. video compression, audio processing etc.)  
+> \ei
+> \os{\newpage}
+> \begin{center}
+> \epsfig{file=figures/Fig_3_4_DSP_MP3,width=0.9\textwidth}\\
+> Fig 3.4 MP3-Player, an Application for DSP-Processors
+> \end{center}
+> 
+> \os{\newpage}
+> 
+> \item[{\rot\bf Microcontrollers for Embedded Systems }]~\\[-3ex]
+> \os{\bigskip}
+> \bi
+> 	\ite most embedded systems employ a microcontroller
+> 	\ite differences in the use of internal memory and/or external memory
+> 	\ite human interface almost nonexistent or really small 
+> 	
+> \ei
+> \os{\newpage}
+> \begin{center}
+> \epsfig{file=figures/Fig_3_5_COBRA5485,width=0.8\textwidth}\\
+> Fig 3.5 Microcontroller Board COBRA5485
+> \end{center}
+> 
+> \end{description}
+> %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+> \section{Overview about Coldfire-Processors}
+> %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+> \begin{description}
+> \bigskip
+> \item[{\rot\bf Background }]~\\[-3ex]
+> \bi
+> 	\ite Coldfire-Processors built from M68k-Processors
+> 	\bi 
+> 		\ite same register model for address- and data register.
+> 		\ite implementation of a super user- and a user mode. (Priority of execution)
+> 	\ei
+> 	\ite implementation of superscalar architecture (Processing unit focused on integer processing).
+> 	\ite integration of FPU coprocessor (Processing unit focused on Floating Point processing). 
+> 	\ite in some microcontrollers integration of MMU (\underline{m}emory \underline{m}anagement \underline{u}nit) \pr important for operation systems.
+> 	\ite integration of a lot of interfaces (like serial communication, CAN-Bus, digital and analogue interfaces, timer channels).
+> \ei
+> 
+> \os{\newpage}
+> 
+> \begin{center}
+> \epsfig{file=figures/Fig_3_6_OverviewColdfire,width=0.85\textwidth}\\
+> Fig 3.6 Overview about Coldfire-Processors
+> \end{center}
+> 
+> \end{description}
+> 
+> 
+> 
+> %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+> \section{Functions of Coldfire V4 (CFV4e)}
+> %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+> \begin{description}
+> \item[{\rot\bf General Functions }]~\\[-3ex]
+> \bigskip
+> \bi
+> 	\ite implements a superscalar architecture 
+> 	\ite internal Harvard architecture based on two different caches- Instruction and Data (I-Cache & D-Cache respectively).
+> 	\ite memory management unit (MMU).
+> 	\ite controller for 32-bit double data rate (DDR) synchronous DRAM (SDRAM).
+> 	\bi 
+> 		\ite supports all necessary functions for SDRAM like refresh, address splitting and initialization.
+> 	\ei
+> 	\ite implementation of internal memory (inside in the standard address space) allows us to store variables being used regularly and thus is faster.
+> 	\ite many interfaces which maybe bit- and/or byte-oriented.
+> 	\bi 
+> 		\ite universal serial bus (USB) version 2.0 device controller.
+> 		\ite DMA serial peripheral interface (DSPI).
+> 		\ite two CAN controller area network 2.0B controllers each with 16 message buffers.
+> 		\ite I\begin{math}^{2}\end{math}C peripheral interface.
+> 	\ei
+> \ei
+> 
+> \begin{center}
+> \epsfig{file=figures/Fig_3_7_Blockdiagram_CF4e,width=0.85\textwidth}\\
+> Fig 3.7 Blockdiagram Coldfire V4 (CF4e)
+> \end{center}
+> 
+> \item[{\rot\bf CFV4e-Core }]~\\[-3ex]
+> 
+> \bi 
+> 	\ite core contains 32-bit integer unit (could be used for signed, unsigned and fractional operations).
+> 	\ite hardware support instructions available for :
+> 	\bi 
+> 		\ite integer multiplication and add operations (in one instruction).
+> 		\ite divide operations.
+> 	\ei
+> 	\bigskip 
+> 	\ite works with RISC-operation on variable length instructions.
+> 	\ite introduction a queue (instruction buffer).
+> 	\ite pipeline not visible for the user (only in some special instructions an insert of NOPs are necessary to synchronize the pipeline).
+> 	\ite to support the pipeline operation for branches (especially conditional branches) a branch cache is involved.
+> \ei
+> \os{\newpage}
+> \begin{center}
+> \epsfig{file=figures/Fig_3_8_RISC,width=0.95\textwidth}\\
+> Fig 3.8 Pipeline-structure of Coldfire V4 (CF4e)
+> \end{center}
+> 
+> \item[{\rot\bf FPU (\underline{f}loating \underline{p}oint \underline{u}nit)- best for division }]~\\[-3ex]
+> 
+> \bi 
+> 	\ite superscale unit to support floating point operations.
+> 	\ite works with a different set of registers.
+> 	\bi 
+> 		\ite eight 64-bit floating-point data registers (FP0 - FP7).
+> 		\ite one 32-bit floating-point control register (FPCR).
+> 		\ite one 32-bit floating-point status register (FPSR).
+> 		\ite one 32-bit floating-point instruction address register (FPIAR).
+> 	\ei
+> 	\bigskip
+> 	\ite instructions for the core and for the FPU could be mixed without any restriction.
+> 	\ite operands for the FPU are loaded from the memory (not from core-registers).
+> 	\ite FPU-register could be used as a stack or as an explicit register.
+> 	\ite the memory-addressing is done with the standard addressing modes of the core.
+> \ei
+> \os{\newpage}
+> \begin{center}
+> \epsfig{file=figures/Fig_3_9_Register_FPU,width=0.95\textwidth}\\
+> Fig 3.9 Register FPU
+> \epsfig{file=figures/Fig_3_10_FloatingPoint_Format,width=0.95\textwidth}\\
+> Fig 3.10 Format of floating point numbers 
+> \end{center}
+> \os{\newpage}
+> \bi 
+> 	\ite a floating point number is always normalized.
+> 	\ite there exists no carry bit or a doubling of the word format after a multiplication (very useful in combined arithmetical expressions).
+> 	\ite every floating point number could be characterized.
+> \ei
+> \begin{center}
+> \epsfig{file=figures/Fig_3_11_FPCC,width=0.8\textwidth}\\
+> Fig 3.11 Flags from the FPCC-register (FPU-condition code)
+> \end{center}
+> \os{\newpage}
+> \item[{\rot\bf MMU (\underline{m}emory \underline{m}anagement \underline{u}nit) }]~\\[-3ex]
+> 
+> \bi 
+> 	\ite supports a flexible, software-defined virtual environment.
+> 	\bi
+> 		\ite this means the CFV4e with a external memory in linear addressing mode (typical for microcontroller application the virtual environment).
+> 		\ite or the CFV4e works with a virtual external memory.
+> 	\ei
+> 	\bigskip
+> 	\ite in the case of virtual memory, the MMU supports 1-, 4-, 8-Kbyte or 1-Mbyte page sizes.
+> 	\ite the pages addressed with separate, 32-entry, fully associative instruction and data TLBs (TLBs \underline{t}ranslation \underline{l}ookaside \underline{b}uffer).
+> 	\bi 
+> 		\ite the separation of instruction- and data-TLB allows a parallel access of both instructions and data (Harvard-architecture).
+> 		\ite the TLB works as registers (faster than memory based entries) .
+> 	\ei
+> 	\ite the MMU itself is memory-mapped (control, status, and fault registers).
+> 	\ite the access to the MMU starts with a control-register (MMUBAR MMU \underline{b}ase \underline{a}dd\underline{r}ess).
+> 	\ite MMU supports programmable address space priorisation steps (ASID \underline{a}ddress \underline{s}pace \underline{id}entifier).
+> 	\ite onchip-memories not under the control of the MMU.
+> \ei
+> 
+> \begin{center}
+> \epsfig{file=figures/Fig_3_12_MMU,width=0.8\textwidth}\\
+> Fig 3.12 Principal functions of the MMU
+> \end{center}
+> \os{\newpage}
+> \item[{\rot\bf Onchip memory }]~\\[-3ex]
+> \bi
+> 	\ite Onchip SRAM
+> 	\bi 
+> 		\ite organized in two blocks as 4048 x 32 bits.
+> 		\ite the RAM base address registers (RAMBAR0 and RAMBAR1) define the logical base address attributes, and access types for the two SRAM modules.
+> 		\ite byte, word, and longword address capabilities.
+> 		\ite single-cycle throughput (the fastest memory after the registers).
+> 	\ei
+> 	\bigskip
+> 	\ite Cache
+> 	\bi
+> 		\ite  is organized as instruction cache (read cache, size 32 Kbyte) and data cache (read/write cache, 32 Kbyte).
+> 		\ite two parallel accesses possible (Harvard-architecture).
+> 		\ite works with the core-frequency.
+> 		\ite cache memory isn't direct accessible (controlled by the cache-controller).
+> 		\ite the use of a cache doesn't allow to specify a precise execution time.
+> 	\ei 
+> \ei
+> \os{\newpage}
+> \begin{center}
+> \epsfig{file=figures/Fig_3_13_Cache,width=0.9\textwidth}\\
+> Fig 3.13 Blockdiagram of the Data-Cache
+> \end{center}
+> \os{\newpage}
+> \item[{\rot\bf External memory }]~\\[-3ex]
+> \bi 
+> 	\ite FlexBus:
+> 	\bi 
+> 		\ite multiplexed external 32-bit bus.
+> 		\ite spends six independent, user-programmable chip-select signals (FBCS[5:0]).
+> 		\ite generates an interface for SRAM, PROM, EPROM, EEPROM, Flash, and other peripherals.
+> 		\ite allows the use of 8-, 16-, and 32-bit port sizes (transfer).
+> 		\ite transfer programmable for burst and burst-inhibited transfers (selectable for each chip select and transfer).
+> 		\ite timing behaviour programmable (access times for chip selects).
+> 	\ei
+> 
+> \ei
+> 
+> \os{\newpage}
+> \begin{center}
+> \epsfig{file=figures/Fig_3_14_External_Memory_Port,width=0.9\textwidth}\\
+> Fig 3.14 Connections for external Port Sizes
+> \end{center}
+> 
+> \begin{center}
+> \epsfig{file=figures/Fig_3_15_FlexBus,width=0.9\textwidth}\\
+> Fig 3.15 FlexBus
+> \end{center}
+> \bi 
+> 	\ite SDRAM:
+> 	\bi 
+> 		\ite separate controller which generates the necessary signals and functions to drive SDRAM.
+> 		\ite 32-bit fixed memory port width.
+> 		\ite built 64-bit data bus interface to internal bus.
+> 		\ite supports page mode to maximize the data rate.
+> 		\ite supports sleep mode and self-refresh mode.
+> 		\ite maximum memory size 1 GByte.
+> 		\ite programmable ``memory base address'' register to place the SDRAM on a specific position inside the address space. 
+> 	\ei
+> \ei
+> 
+> \os{\newpage}
+> \begin{center}
+> \epsfig{file=figures/Fig_3_16_SDRAM_Controller,width=0.9\textwidth}\\
+> Fig 3.16 SDRAM Controller Blockdiagram
+> \end{center}
+> 
+> \item[{\rot\bf Interrupt Controller }]~\\[-3ex]
+> \bi 
+> 	\ite handles all interrupts and exceptions.
+> 	\ite interupts \pr external inputs with a programmable interrupt-level (level 1 lowest level, 7 highest level).
+> 	\ite all interrupts and exceptions work with an appropriate interrupt vector.
+> 	\ite the interrupt vector will be read in in the interrupt acknowledge cycle (1 byte value).
+> 	\ite if an interrupt or exception was acknowledged the core generates a stack frame (which holds contents of the CCR-register and the program counter PC) and starts with the execution of the interrupt service routine. 
+> 	\ite the start address of the interrupt service routine are placed in the interrupt vector table (contains of the interrupt vector base register + 4 * value of the interrupt vector).
+> 	\ite the external interrupts could be enabled and disabled.
+> \ei
+> 
+> \os{\newpage}
+> 
+> \item[{\rot\bf BDM (\underline{b}ackground \underline{d}ebugger \underline{m}ode) }]~\\[-3ex]
+> \bi 
+> 	\ite an additional interface for debugging.
+> 	\ite allows the download and test of programs without using any other support (no monitor programs or bootstrap loader).
+> 	\ite the BDM mode could be started with a hardware switch.
+> 	\ite real-time trace support (the ability to determine the dynamic execution path through an application).
+> 	\ite the BDM interface is 8-bit parallel output bus that reports processor execution status and data to an external BDM emulator system.
+> 	\ite in the BDM mode the processor is halted and a variety of commands can be sent to the processor to access memory and registers.
+> \ei
+> \os{\newpage}
+> \begin{center}
+> \epsfig{file=figures/Fig_3_17_BDM,width=0.9\textwidth}\\
+> Fig 3.17 BDM Interface
+> \end{center}
+> \end{description}
+> 

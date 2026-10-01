@@ -1,0 +1,373 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{General Requirements}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\nsl{The most embedded systems start with integration of a small microcontroller which performs some functions which are implemented in hardware. To emulate this function only a single program or several small-size programs are necessary. There is no need to build a model and to simulate the behaviour of the emulated functions. Also the documentation for such projects is small. The development starts with the programming and stops with a successful test. Then you could forget the project and start with the next.
+\newline
+But with changing times embedded systems have become more complex. So the development process has to be more structured. On of the major steps involved is  the documentation. Companies spend a lot of money for documentation of embedded systems. A tool which helps the documentation process is hence a basic requirement. Model based development tools help us achieve this goal.
+\newline
+The next step is to overcome the special constrains of an embedded system. Real-time aspects, dead-lock situations, failure safe behaviour are requirements of any typical embedded system. A model should help us achieve these goals. This means that not only the correct result of a designed algorithm have to be tested, the results have to be in compliance of the requirements of an embedded system. 
+}
+\bi
+	\ite Classification of systems from the point of programming
+\ei
+
+\begin{figure}[!hbtp]
+     \begin{center}
+	  \epsfig{file=figures/Fig_2_1_Classification,width=0.7\textwidth}\\
+	  \caption{Classification of embedded systems and real-time-systems}
+     \end{center}
+\end{figure}
+\os{\newpage
+}     
+
+\defn{def:embedded system}
+{An \textbf{embedded system} is a special-purpose computer system designed to perform a dedicated function. Unlike a general-purpose computer, such as a personal computer, an embedded system performs one or a few pre-defined tasks, usually with very specific requirements, and often includes task-specific hardware and mechanical parts not usually found in a general-purpose computer. [Wikipedia]}
+
+
+\defn{def:reaktive systems}
+{``A \textbf{reactive system} is one which is in continual interaction
+  with is environment and executes at a pace determined by
+  that environment'' [Berg\'{e}, 1995]}
+
+\bi 
+	\ite interaction with the system controlled by sensors or from the environment
+	\ite specification of minimal and maximal response time 
+	\ite system could contain parallel and distributed parts (subsystems)
+\ei
+
+\defn{def:real-time systems}
+{A \textbf{real-time system} have to give a responce as fast as required. So the system must respond to a signal, event or request fast enough to satisfy some requirement. Realtime often refers to process control and embedded systems}
+
+\bi 
+	\ite a real-time operating system (RTOS) facilitates the creation of a real-time system
+	\ite but real-time systems could operate without an RTOS
+	\ite if a real-time system responds deterministically \pr hard real-time system
+	\ite if a real-timesystem guarantees a deadline for responds \pr soft real-time system 
+\ei
+
+\os{\newpage}
+\begin{description}
+\item[{\rot\bf Requirements }]~\\[-3ex]
+
+\bi 
+	\ite concurrency \pr real-time systems are mostly concurrent
+	\ite synchronization and communication \pr modeling the communication between distributed systems 
+	\ite portability and flexibility
+	\ite programming elements \pr arithmetic operations, loops, and function calls should be available
+	\ite non-standard I/O devices \pr switches, analogue and digital I/O
+	\ite non-functional properties \pr e.g. fault-tolerance, disposability, EMC-properties, user friendliness, extendibility, expected life time, power consumption...
+	\ite Co-Design aspects \pr modeling hard- and software functions
+\ei
+\item[{\rot\bf but }]~\\[-3ex]
+\bi 
+	\ite models should be readable
+	\ite models should have a hierarchical structure \pr ``humans not capable to understand systems
+containing more than \begin{math} \sim \end{math} 5 objects''
+\ei
+\qbox{A model must be as simple as possible, but not simpler. [A. Einstein]}
+\end{description}
+
+\begin{figure}[!hbtp]
+     \begin{center}
+	  \epsfig{file=figures/Fig_2_2_Y_Chart_Gajski_Kuhn,width=0.8\textwidth}\\
+	  \caption{Y-Chart from Gajski-Kuhn}
+     \end{center}
+\end{figure}
+\os{\newpage}     
+
+\bi 
+	\ite a model could could change to different level in the Y-Chart
+	\ite Y-Chart are focused on the hardware-design
+	\ite concurrency and time behavior difficult to modeling
+\ei
+
+\begin{figure}[!hbtp]
+     \begin{center}
+	  \epsfig{file=figures/Fig_2_3_Different_Level_Y_Chart,width=0.5\textwidth}\\
+	  \caption{Different levels in a Y-Chart}
+     \end{center}
+\end{figure}
+\os{\newpage}
+
+\begin{figure}[!hbtp]
+     \begin{center}
+	  \epsfig{file=figures/Fig_2_4_4_D_CoDesign,width=0.9\textwidth}\\
+	  \caption{Hardware and Software Co-Design}
+     \end{center}
+\end{figure}
+\os{\newpage}
+
+\begin{description}
+\item[{\rot\bf Design methods }]~\\[-3ex]
+\bigskip
+\bi 
+	\ite capture and simulate
+	\bi 
+		\ite specification of the embedded system (development)
+		\ite generation of block diagrams (details not spezified)
+		\ite simulation and verification 
+	\ei
+\bigskip
+	\ite describe and synthesize
+	\bi 
+		\ite generate functions (software and hardware) from CAD-tools
+		\ite logic synthesis as an integral component of the draft
+		\ite use of hardware description languages (like VHDL)
+	\ei
+\bigskip
+	\ite specify-explore-refine
+	\bi 
+		\ite CAD/CASE-tools supports the explore-step (verification of different alternatives)
+		\ite unfortunately these steps are not supported for all levels of the Co-Design
+	\ei
+\ei
+\end{description}
+\os{\newpage}
+\begin{description}
+\item[{\rot\bf Different views on a model }]~\\[-3ex]
+\bigskip
+\bi 
+	\ite  behavioral view
+	\bi 
+		\ite use models or part of models as black boxes
+		\ite focus on states, processes, procedures
+	\ei
+\bigskip
+	\ite structural view 
+	\bi 
+		\ite specify the implementation of the system (e.g.connection of the components implies the behavior of the system)
+		\ite processors, racks, printed circuit boards in the foreground
+	\ei
+\bigskip
+	\ite view on physical components
+	\bi 
+		\ite specify the physical characteristics of the components (e.g. expansion, layer, physical characteristics of the connections)
+	\ei
+\ei
+\end{description}
+
+\os{\newpage}
+\begin{description}
+\item[{\rot\bf Classification of models }]~\\[-3ex]
+\bigskip
+	\bi 
+		\ite a model which fulfils all the requirements of embedded system doesn't exit
+		\ite actual models are focused on specific aspects
+		\os{\bigskip}
+		\bi 
+			\ite state space oriented
+			\os{\bigskip}
+			\ite activity oriented
+			\os{\bigskip}
+			\ite structural oriented
+			\os{\bigskip}
+			\ite data driven oriented
+			\os{\bigskip}
+			\ite heterogeneous oriented
+		\ei
+	\ei
+\end{description}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{State Space Oriented Models}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\bigskip
+\bi
+	\ite Classical automata (FSM, \underline{f}inite \underline{s}tate \underline{m}achine) are state space models 
+	\ite Two different versions: Moore- and Mealy-Automata
+\ei
+
+\begin{figure}[!hbtp]
+     \begin{center}
+	  \epsfig{file=figures/Fig_2_5_FSM,width=0.9\textwidth}\\
+	  \caption{Blockdiadram of a FSM}
+     \end{center}
+\end{figure}
+     
+\os{\newpage}
+ 
+\begin{eqnarray*}
+&Moore - automata\\
+&Y = \lambda (Z); \ Z^{+} = \delta(X,Z)\\
+\\
+&Mealy - automata\\
+&Y = \lambda(X,Z); \ Z^{+} = \delta(X,Z)\\
+\\
+&\lambda = output-function\\
+&\delta = computes \ the \ next \ state \ Z^{+}
+\end{eqnarray*}
+\os{\newpage}
+
+\begin{figure}[!hbtp]
+     \begin{center}
+	  \epsfig{file=figures/Fig_2_6_FSM_Detail,width=0.8\textwidth}\\
+	  \caption{FSM more in detail}
+     \end{center}
+\end{figure}
+
+\os{\newpage}
+\bi 
+	\ite FSM not useful for complex systems (to much details)
+	\ite Introduction of hierarchy in the FSM \pr StateCharts [Harel, 1987] 
+\ei
+
+\begin{figure}[!hbtp]
+     \begin{center}
+	  \epsfig{file=figures/Fig_2_7_State_Chart,width=0.7\textwidth}\\
+	  \caption{State Chart} 
+     \end{center}
+\end{figure}
+\os{\newpage}     
+
+\defn{def:State Chart}
+{Current states of FSMs are called \textbf{active states}.\\
+States which are not composed of other states are called \textbf{basic
+states}.\\
+States containing other states are called \textbf{super-states}.\\
+Super-states S are called \textbf{OR-super-states}, if exactly one of the
+sub-states of S is active whenever S is active.}
+
+\begin{figure}[!hbtp]
+     \begin{center}
+	  \epsfig{file=figures/Fig_2_8_Activ_Substate,width=0.6\textwidth}\\
+	  \caption{Active Substate in a Super-State}
+     \end{center}
+\end{figure}
+     
+\os{\newpage}
+\bi 
+	\ite In a OR-super-state only one sub-state is active
+	\ite Modeling of concurrency not possible 
+\ei
+
+\defn{def:AND-super-state}{A Super-states S are called \textbf{AND-super-states}, if in every AND-super-states exactly one sub-states is active.}
+
+
+\begin{figure}[!hbtp]
+     \begin{center}
+	  \epsfig{file=figures/Fig_2_9_OR_AND_Super_States,width=0.8\textwidth}\\
+	  \caption{Concurrency in a AND-Super-State}
+     \end{center}
+\end{figure}
+\os{\newpage}     
+
+\bi 
+	\ite In a AND-super-state \pr modeling of concurrent FSM possible
+	\ite Implementation of a AND-super-state with a ``Product-FSM''
+\ei
+
+\begin{figure}[!hbtp]
+     \begin{center}
+	  \epsfig{file=figures/Fig_2_10_AND_Superstate,width=0.8\textwidth}\\
+	  \caption{Example of a AND-Super-State}
+     \end{center}
+\end{figure}
+     
+\os{\newpage}
+
+\begin{figure}[!hbtp]
+     \begin{center}
+	  \epsfig{file=figures/Fig_2_10_AND_Product,width=0.9\textwidth}\\
+	  \caption{Decomposition of a AND-Super-State}
+     \end{center}
+\end{figure}
+\os{\newpage}     
+
+\bi 
+	\ite \textbf{Advantages of state charts modeling}
+	\bi 
+		\ite hierarchy allows arbitrary nesting of AND- and OR-super
+  states.
+  		\ite semantics defined in a follow-up paper to original paper.
+  		\ite large number of commercial simulation tools available (\textbf{StateMate, StateFlow, BetterState, ...})
+		\ite some "back-ends" translate StateCharts into C or VHDL, thus enabling software or hardware implementations
+	\ei
+	\bigskip
+	\ite \textbf{Disadvantages}
+	\bi 	
+		\ite generated C programs frequently inefficient
+		\ite not useful for distributed applications
+		\ite no program constructs
+		\ite no description of non-functional behavior 
+		\ite no object-orientation
+		\ite no description of structural hierarchy.
+	\ei 
+\ei
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Activity Oriented Models}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\bigskip
+\bi
+	\ite modeling of the flow of datas in an embedded system \pr \textbf{DFG} (\underline{d}ata \underline{f}low \underline{g}raph) 
+	\ite node contains the activity
+	\ite special nodes are input/output nodes and memory-nodes 
+	\ite shows the dependecies of data on all abstraction levels
+	\ite ideally for the specification phase and as input for scheduling, because there don't exits sequential defaults
+	\ite hierachical structure of DFG possible
+\ei
+
+\begin{figure}[!hbtp]
+     \begin{center}
+	  \epsfig{file=figures/Fig_2_11_DFG,width=0.9\textwidth}\\
+	  \caption{Flow Graph}
+     \end{center}
+\end{figure}    
+
+\begin{figure}[!hbtp]
+     \begin{center}
+	  \epsfig{file=figures/Fig_2_12_DFG_FFT,width=0.5\textwidth}\\
+	  \caption{DFG of a FFT-algorithm}
+     \end{center}
+\end{figure}     
+\os{\newpage}
+
+\bi 
+	\ite extension of a DFG with control flow \pr \textbf{CFG}
+	\ite introduction of ``control''-elements
+	\ite edges transfers the control flow
+	\ite CFG \pr Flow charts
+\ei
+\os{\newpage}
+\begin{center}
+\epsfig{file=figures/Fig_2_13_FlowChart,width=0.7\textwidth}\\
+Fig 2.13 Flow Chart of an Algorithm
+\end{center}
+\begin{description}
+\item[{\rot\bf Message Sequence Charts (MSC) }]~\\[-3ex]
+\bigskip
+\bi 
+	\ite modeling of timing and scheduling behaviour
+	\ite graphical means for representing schedules
+	\bi 
+		\ite time is a separate axis (timing aspects are explicitly shown) 
+		\ite time axis vertical
+		\ite activity axis horizontal
+	\ei
+
+\ei
+\os{\newpage}
+
+\begin{center}
+\epsfig{file=figures/Fig_2_14_MSG,width=1.0\textwidth}\\
+Fig 2.14 Message Sequence Chart
+\end{center}
+
+\bi 
+	\ite \textbf{Advantages of activity oriented modeling}
+	\bi 
+		\ite appropriate for visualizing schedules
+		\ite proven method for representing schedules in transportation
+		\ite hierarchy allowed in DFG and CFG  states.
+  	\ei
+	\bigskip
+	\ite \textbf{Disadvantages}
+	\bi 
+		\ite focused on one case, no timing tolerances or concurreny (MSC)
+		\ite no description of non-functional behavior 
+		\ite no object-orientation
+		\ite no description of structural hierarchy (MSC)
+	\ei 
+\ei
+\end{description}

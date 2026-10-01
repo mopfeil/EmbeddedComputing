@@ -1,0 +1,29 @@
+Skript zu Grundlagen der Informatik, W. Ertel, 6.2.06
+-------------------------------------------------------------------------------
+
+Inklude-Struktur der Latex-Dateien:
+
+mit "pdflatex docu" wird das Skript "docu.pdf" erzeugt
+mit "pdflatex slides" werden die Folien "slides.pdf" erzeugt
+
+Die beiden Root-Dateien sind slides.tex und docu.tex. Der Graph soll
+die Struktur verdeutlichen.
+
+                    -------------------------
+                    |                       |
+                slides.tex       docu.tex   |
+                /       \        /     \    |                       
+               /         \      /       \   |                       
+        macros-sl.tex    text.tex     macros.tex
+    mathmacros-sl.tex       |     mathmacros.tex                               
+                            |             
+                            |             
+  ----------------------------------------------------------------------------------
+  |              |              |              |           |         |             |
+einf.tex speicher.tex sekundaer_speicher.tex bus.tex einf8086.tex pentium.tex assembler.tex
+
+Um Teilausdrucke (z.B. Kapitel) zu realisieren kann folgendes Programm Helfen:
+
+pdftk docu.pdf cat 1-5 output docu_1_5.pdf	"Die ersten 5 Seiten werden in die Datei docu_1_5.pdf geschrieben"
+
+

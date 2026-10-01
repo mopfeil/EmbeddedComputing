@@ -1,0 +1,4690 @@
+#LyX file created by tex2lyx 1.5.4
+\lyxformat 247
+\begin_document
+\begin_header
+\textclass article
+\language english
+\inputencoding auto
+\font_roman default
+\font_sans default
+\font_typewriter default
+\font_default_family default
+\font_sc false
+\font_osf false
+\font_sf_scale 100
+\font_tt_scale 100
+\graphics default
+\paperfontsize default
+\spacing single
+\papersize default
+\use_geometry false
+\use_amsmath 0
+\cite_engine basic
+\use_bibtopic false
+\paperorientation portrait
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\defskip medskip
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\end_header
+
+\begin_body
+
+\begin_layout Standard
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\end_layout
+
+\begin_layout Standard
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+
+Processors for Embedded Systems
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\end_layout
+
+\begin_layout Standard
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+nsl
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+{
+\end_layout
+
+\end_inset
+
+Embedded systems need special processors. A standard PC processor isn't suitable, as the microprocessor used doesn't operate independently. It has to be implanted on a motherboard, which serves as the communication interface between the processor and other input/output devices. This involves increased costs and such a system occupies a large space. 
+\newline
+ Shifting our focus to microcontrollers, we observe that an 8-bit microcontroller possesses small computing power and has too many restrictions in building an appropriate internal or external memory. So these types of processors are also not suitable for a sophisticated embedded system. The above mentioned restrictions are not evident when working with 16- and 32-bit microcontrollers. A big advantage of these types of microcontrollers is that nearly every type of interface is available which we might have to use in an embedded system. 
+\newline
+ If an Embedded application/project allows us to use a small motherboard (no hard discs and usually no GUI 'graphical user interfaces' etc.) then it makes sense to deploy an 
+\begin_inset Quotes eld
+\end_inset
+
+Embedded PC
+\begin_inset Quotes erd
+\end_inset
+
+ or a PC/104 system. Such systems contain a special, so called 
+\begin_inset Quotes eld
+\end_inset
+
+Mobile microprocessor
+\begin_inset Quotes erd
+\end_inset
+
+ like 
+\begin_inset Quotes eld
+\end_inset
+
+Pentium M
+\begin_inset Quotes erd
+\end_inset
+
+ or 
+\begin_inset Quotes eld
+\end_inset
+
+Geode
+\begin_inset Quotes erd
+\end_inset
+
+ or 
+\begin_inset Quotes eld
+\end_inset
+
+XScale
+\begin_inset Quotes erd
+\end_inset
+
+. These processors are variants of standard 8086-type microprocessors (Pentium M and Geode). If we are working with these Embedded PC's, then you have access to support in the form of well known standard PC tools like compilers, linkers and operating systems. 
+\newline
+ Another type of processor which could be present in an embedded system is a signal processor. A signal processor has much more computing power than a microcontroller. But on the contrary to a microprocessor, a signal processor has nearly the same interfaces available in a microcontroller. The disadvantage of using a signal processor is that there aren't much development tools available. 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+
+
+\begin_inset VSpace bigskip
+\end_inset
+
+ 
+\end_layout
+
+\end_deeper
+\begin_layout Description
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+{
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+rot
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+bf
+\end_layout
+
+\end_inset
+
+ Microprocessors for Embedded Systems 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+}
+\end_layout
+
+\end_inset
+
+ \InsetSpace ~
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+
+\backslash
+[-3ex]
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+bi
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ use a special version of an 8086-type of microprocessors (Pentium M or Geode) 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ these microprocessor are integrated in an 
+\begin_inset Quotes eld
+\end_inset
+
+embedded PC
+\begin_inset Quotes erd
+\end_inset
+
+ or a 
+\begin_inset Quotes eld
+\end_inset
+
+PC/104-system
+\begin_inset Quotes erd
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ these type of PCs' work without any hard disc (and without any cooling system) 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ instead of a hard disc, a 
+\begin_inset Quotes eld
+\end_inset
+
+FLASH Memory
+\begin_inset Quotes erd
+\end_inset
+
+ is used (e.g. SD-Card) 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ if a graphical user interface is available, then the 
+\begin_inset Quotes eld
+\end_inset
+
+graphical processing unit
+\begin_inset Quotes erd
+\end_inset
+
+ is a part of the microprocessor. 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ei
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+os
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+{
+\end_layout
+
+\end_inset
+
+
+\newpage
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+}
+\end_layout
+
+\end_inset
+
+ 
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\align center
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+epsfig{file=figures/Fig_3_1_SBC,width=0.8
+\backslash
+textwidth}
+\end_layout
+
+\end_inset
+
+
+\newline
+ Fig 3.1 Embedded PC as Single Board Computer 
+\end_layout
+
+\begin_layout Standard
+\align center
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+epsfig{file=figures/Fig_3_2_Blockdiagram_Geode,width=0.8
+\backslash
+textwidth}
+\end_layout
+
+\end_inset
+
+
+\newline
+ Fig 3.2 Blockdiagram of a Geode-Microprocessor 
+\end_layout
+
+\begin_layout Standard
+\align center
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+epsfig{file=figures/Fig_3_3_Embedded_PC,width=0.9
+\backslash
+textwidth}
+\end_layout
+
+\end_inset
+
+
+\newline
+ Fig 3.3 A different type of Embedded PC 
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+os
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+{
+\end_layout
+
+\end_inset
+
+
+\newpage
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\begin_layout Description
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+{
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+rot
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+bf
+\end_layout
+
+\end_inset
+
+ Signal processors for Embedded Systems 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+}
+\end_layout
+
+\end_inset
+
+ \InsetSpace ~
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+
+\backslash
+[-3ex]
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+os
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+{
+\end_layout
+
+\end_inset
+
+
+\begin_inset VSpace bigskip
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+}
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+bi
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ same structure as microcontrollers 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+bi
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ a lot of interfaces 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ external memory available as instruction and data memory (Harvard architecture) 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ building of programs using cross-development technique 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ei
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset VSpace bigskip
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ much higher computing power than microcontrollers 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ specially built for signal processing applications (e.g. video compression, audio processing etc.) 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ei
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+os
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+{
+\end_layout
+
+\end_inset
+
+
+\newpage
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+}
+\end_layout
+
+\end_inset
+
+ 
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\align center
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+epsfig{file=figures/Fig_3_4_DSP_MP3,width=0.9
+\backslash
+textwidth}
+\end_layout
+
+\end_inset
+
+
+\newline
+ Fig 3.4 MP3-Player, an Application for DSP-Processors 
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+os
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+{
+\end_layout
+
+\end_inset
+
+
+\newpage
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\begin_layout Description
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+{
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+rot
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+bf
+\end_layout
+
+\end_inset
+
+ Microcontrollers for Embedded Systems 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+}
+\end_layout
+
+\end_inset
+
+ \InsetSpace ~
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+
+\backslash
+[-3ex]
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+os
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+{
+\end_layout
+
+\end_inset
+
+
+\begin_inset VSpace bigskip
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+}
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+bi
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ most embedded systems employ a microcontroller 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ differences in the use of internal memory and/or external memory 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ human interface almost nonexistent or really small
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ei
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+os
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+{
+\end_layout
+
+\end_inset
+
+
+\newpage
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+}
+\end_layout
+
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Standard
+\align center
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+epsfig{file=figures/Fig_3_5_COBRA5485,width=0.8
+\backslash
+textwidth}
+\end_layout
+
+\end_inset
+
+
+\newline
+ Fig 3.5 Microcontroller Board COBRA5485 
+\end_layout
+
+\end_deeper
+\begin_layout Standard
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\end_layout
+
+\begin_layout Standard
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+
+Overview about Coldfire-Processors
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\end_layout
+
+\begin_layout Standard
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+
+
+\begin_inset VSpace bigskip
+\end_inset
+
+ 
+\end_layout
+
+\end_deeper
+\begin_layout Description
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+{
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+rot
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+bf
+\end_layout
+
+\end_inset
+
+ Background 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+}
+\end_layout
+
+\end_inset
+
+ \InsetSpace ~
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+
+\backslash
+[-3ex]
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+bi
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ Coldfire-Processors built from M68k-Processors 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+bi
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ same register model for address- and data register. 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ implementation of a super user- and a user mode. (Priority of execution) 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ei
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ implementation of superscalar architecture (Processing unit focused on integer processing). 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ integration of FPU coprocessor (Processing unit focused on Floating Point processing). 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ in some microcontrollers integration of MMU (
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+underline{m}
+\end_layout
+
+\end_inset
+
+emory 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+underline{m}
+\end_layout
+
+\end_inset
+
+anagement 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+underline{u}
+\end_layout
+
+\end_inset
+
+nit) 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+pr
+\end_layout
+
+\end_inset
+
+ important for operation systems. 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ integration of a lot of interfaces (like serial communication, CAN-Bus, digital and analogue interfaces, timer channels). 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ei
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+os
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+{
+\end_layout
+
+\end_inset
+
+
+\newpage
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\align center
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+epsfig{file=figures/Fig_3_6_OverviewColdfire,width=0.85
+\backslash
+textwidth}
+\end_layout
+
+\end_inset
+
+
+\newline
+ Fig 3.6 Overview about Coldfire-Processors 
+\end_layout
+
+\end_deeper
+\begin_layout Standard
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\end_layout
+
+\begin_layout Standard
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+
+Functions of Coldfire V4 (CFV4e)
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\end_layout
+
+\begin_layout Standard
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Description
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+{
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+rot
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+bf
+\end_layout
+
+\end_inset
+
+ General Functions 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+}
+\end_layout
+
+\end_inset
+
+ \InsetSpace ~
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+
+\backslash
+[-3ex]
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset VSpace bigskip
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+bi
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ implements a superscalar architecture 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ internal Harvard architecture based on two different caches- Instruction and Data (I-Cache and D-Cache respectively). 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ memory management unit (MMU). 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ controller for 32-bit double data rate (DDR) synchronous DRAM (SDRAM). 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+bi
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ supports all necessary functions for SDRAM like refresh, address splitting and initialization. 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ei
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ implementation of internal memory (inside in the standard address space) allows us to store variables being used regularly and thus is faster. 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ many interfaces which maybe bit- and/or byte-oriented. 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+bi
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ universal serial bus (USB) version 2.0 device controller. 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ DMA serial peripheral interface (DSPI). 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ two CAN controller area network 2.0B controllers each with 16 message buffers. 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ I
+\begin_inset Formula \begin{math}^{2}\end{math}
+\end_inset
+
+C peripheral interface. 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ei
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ei
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\align center
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+epsfig{file=figures/Fig_3_7_Blockdiagram_CF4e,width=0.85
+\backslash
+textwidth}
+\end_layout
+
+\end_inset
+
+
+\newline
+ Fig 3.7 Blockdiagram Coldfire V4 (CF4e) 
+\end_layout
+
+\end_deeper
+\begin_layout Description
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+{
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+rot
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+bf
+\end_layout
+
+\end_inset
+
+ CFV4e-Core 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+}
+\end_layout
+
+\end_inset
+
+ \InsetSpace ~
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+
+\backslash
+[-3ex]
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+bi
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ core contains 32-bit integer unit (could be used for signed, unsigned and fractional operations). 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ hardware support instructions available for : 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+bi
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ integer multiplication and add operations (in one instruction). 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ divide operations. 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ei
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset VSpace bigskip
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ works with RISC-operation on variable length instructions. 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ introduction a queue (instruction buffer). 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ pipeline not visible for the user (only in some special instructions an insert of NOPs are necessary to synchronize the pipeline). 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ to support the pipeline operation for branches (especially conditional branches) a branch cache is involved. 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ei
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+os
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+{
+\end_layout
+
+\end_inset
+
+
+\newpage
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+}
+\end_layout
+
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Standard
+\align center
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+epsfig{file=figures/Fig_3_8_RISC,width=0.95
+\backslash
+textwidth}
+\end_layout
+
+\end_inset
+
+
+\newline
+ Fig 3.8 Pipeline-structure of Coldfire V4 (CF4e) 
+\end_layout
+
+\end_deeper
+\begin_layout Description
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+{
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+rot
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+bf
+\end_layout
+
+\end_inset
+
+ FPU (
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+underline{f}
+\end_layout
+
+\end_inset
+
+loating 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+underline{p}
+\end_layout
+
+\end_inset
+
+oint 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+underline{u}
+\end_layout
+
+\end_inset
+
+nit)- best for division 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+}
+\end_layout
+
+\end_inset
+
+ \InsetSpace ~
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+
+\backslash
+[-3ex]
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+bi
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ superscale unit to support floating point operations. 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ works with a different set of registers. 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+bi
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ eight 64-bit floating-point data registers (FP0 - FP7). 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ one 32-bit floating-point control register (FPCR). 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ one 32-bit floating-point status register (FPSR). 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ one 32-bit floating-point instruction address register (FPIAR). 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ei
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset VSpace bigskip
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ instructions for the core and for the FPU could be mixed without any restriction. 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ operands for the FPU are loaded from the memory (not from core-registers). 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ FPU-register could be used as a stack or as an explicit register. 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ the memory-addressing is done with the standard addressing modes of the core. 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ei
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+os
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+{
+\end_layout
+
+\end_inset
+
+
+\newpage
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+}
+\end_layout
+
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Standard
+\align center
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+epsfig{file=figures/Fig_3_9_Register_FPU,width=0.95
+\backslash
+textwidth}
+\end_layout
+
+\end_inset
+
+
+\newline
+ Fig 3.9 Register FPU 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+epsfig{file=figures/Fig_3_10_FloatingPoint_Format,width=0.95
+\backslash
+textwidth}
+\end_layout
+
+\end_inset
+
+
+\newline
+ Fig 3.10 Format of floating point numbers 
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+os
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+{
+\end_layout
+
+\end_inset
+
+
+\newpage
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+}
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+bi
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ a floating point number is always normalized. 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ there exists no carry bit or a doubling of the word format after a multiplication (very useful in combined arithmetical expressions). 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ every floating point number could be characterized. 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ei
+\end_layout
+
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Standard
+\align center
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+epsfig{file=figures/Fig_3_11_FPCC,width=0.8
+\backslash
+textwidth}
+\end_layout
+
+\end_inset
+
+
+\newline
+ Fig 3.11 Flags from the FPCC-register (FPU-condition code) 
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+os
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+{
+\end_layout
+
+\end_inset
+
+
+\newpage
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+}
+\end_layout
+
+\end_inset
+
+ 
+\end_layout
+
+\end_deeper
+\begin_layout Description
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+{
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+rot
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+bf
+\end_layout
+
+\end_inset
+
+ MMU (
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+underline{m}
+\end_layout
+
+\end_inset
+
+emory 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+underline{m}
+\end_layout
+
+\end_inset
+
+anagement 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+underline{u}
+\end_layout
+
+\end_inset
+
+nit) 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+}
+\end_layout
+
+\end_inset
+
+ \InsetSpace ~
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+
+\backslash
+[-3ex]
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+bi
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ supports a flexible, software-defined virtual environment. 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+bi
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ this means the CFV4e with a external memory in linear addressing mode (typical for microcontroller application the virtual environment). 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ or the CFV4e works with a virtual external memory. 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ei
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset VSpace bigskip
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ in the case of virtual memory, the MMU supports 1-, 4-, 8-Kbyte or 1-Mbyte page sizes. 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ the pages addressed with separate, 32-entry, fully associative instruction and data TLBs (TLBs 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+underline{t}
+\end_layout
+
+\end_inset
+
+ranslation 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+underline{l}
+\end_layout
+
+\end_inset
+
+ookaside 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+underline{b}
+\end_layout
+
+\end_inset
+
+uffer). 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+bi
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ the separation of instruction- and data-TLB allows a parallel access of both instructions and data (Harvard-architecture). 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ the TLB works as registers (faster than memory based entries) . 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ei
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ the MMU itself is memory-mapped (control, status, and fault registers). 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ the access to the MMU starts with a control-register (MMUBAR MMU 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+underline{b}
+\end_layout
+
+\end_inset
+
+ase 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+underline{a}
+\end_layout
+
+\end_inset
+
+dd
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+underline{r}
+\end_layout
+
+\end_inset
+
+ess). 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ MMU supports programmable address space priorisation steps (ASID 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+underline{a}
+\end_layout
+
+\end_inset
+
+ddress 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+underline{s}
+\end_layout
+
+\end_inset
+
+pace 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+underline{id}
+\end_layout
+
+\end_inset
+
+entifier). 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ onchip-memories not under the control of the MMU. 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ei
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\align center
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+epsfig{file=figures/Fig_3_12_MMU,width=0.8
+\backslash
+textwidth}
+\end_layout
+
+\end_inset
+
+
+\newline
+ Fig 3.12 Principal functions of the MMU 
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+os
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+{
+\end_layout
+
+\end_inset
+
+
+\newpage
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+}
+\end_layout
+
+\end_inset
+
+ 
+\end_layout
+
+\end_deeper
+\begin_layout Description
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+{
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+rot
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+bf
+\end_layout
+
+\end_inset
+
+ Onchip memory 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+}
+\end_layout
+
+\end_inset
+
+ \InsetSpace ~
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+
+\backslash
+[-3ex]
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+bi
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ Onchip SRAM 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+bi
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ organized in two blocks as 4048 x 32 bits. 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ the RAM base address registers (RAMBAR0 and RAMBAR1) define the logical base address attributes, and access types for the two SRAM modules. 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ byte, word, and longword address capabilities. 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ single-cycle throughput (the fastest memory after the registers). 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ei
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset VSpace bigskip
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ Cache 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+bi
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ is organized as instruction cache (read cache, size 32 Kbyte) and data cache (read/write cache, 32 Kbyte). 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ two parallel accesses possible (Harvard-architecture). 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ works with the core-frequency. 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ cache memory isn't direct accessible (controlled by the cache-controller). 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ the use of a cache doesn't allow to specify a precise execution time. 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ei
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ei
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+os
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+{
+\end_layout
+
+\end_inset
+
+
+\newpage
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+}
+\end_layout
+
+\end_inset
+
+ 
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\align center
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+epsfig{file=figures/Fig_3_13_Cache,width=0.9
+\backslash
+textwidth}
+\end_layout
+
+\end_inset
+
+
+\newline
+ Fig 3.13 Blockdiagram of the Data-Cache 
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+os
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+{
+\end_layout
+
+\end_inset
+
+
+\newpage
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+}
+\end_layout
+
+\end_inset
+
+ 
+\end_layout
+
+\end_deeper
+\begin_layout Description
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+{
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+rot
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+bf
+\end_layout
+
+\end_inset
+
+ External memory 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+}
+\end_layout
+
+\end_inset
+
+ \InsetSpace ~
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+
+\backslash
+[-3ex]
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+bi
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ FlexBus: 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+bi
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ multiplexed external 32-bit bus. 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ spends six independent, user-programmable chip-select signals (FBCS[5:0]). 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ generates an interface for SRAM, PROM, EPROM, EEPROM, Flash, and other peripherals. 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ allows the use of 8-, 16-, and 32-bit port sizes (transfer). 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ transfer programmable for burst and burst-inhibited transfers (selectable for each chip select and transfer). 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ timing behaviour programmable (access times for chip selects). 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ei
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ei
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+os
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+{
+\end_layout
+
+\end_inset
+
+
+\newpage
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+}
+\end_layout
+
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Standard
+\align center
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+epsfig{file=figures/Fig_3_14_External_Memory_Port,width=0.9
+\backslash
+textwidth}
+\end_layout
+
+\end_inset
+
+
+\newline
+ Fig 3.14 Connections for external Port Sizes 
+\end_layout
+
+\begin_layout Standard
+\align center
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+epsfig{file=figures/Fig_3_15_FlexBus,width=0.9
+\backslash
+textwidth}
+\end_layout
+
+\end_inset
+
+
+\newline
+ Fig 3.15 FlexBus 
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+bi
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ SDRAM: 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+bi
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ separate controller which generates the necessary signals and functions to drive SDRAM. 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ 32-bit fixed memory port width. 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ built 64-bit data bus interface to internal bus. 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ supports page mode to maximize the data rate. 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ supports sleep mode and self-refresh mode. 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ maximum memory size 1 GByte. 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ programmable 
+\begin_inset Quotes eld
+\end_inset
+
+memory base address
+\begin_inset Quotes erd
+\end_inset
+
+ register to place the SDRAM on a specific position inside the address space. 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ei
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ei
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+os
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+{
+\end_layout
+
+\end_inset
+
+
+\newpage
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+}
+\end_layout
+
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Standard
+\align center
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+epsfig{file=figures/Fig_3_16_SDRAM_Controller,width=0.9
+\backslash
+textwidth}
+\end_layout
+
+\end_inset
+
+
+\newline
+ Fig 3.16 SDRAM Controller Blockdiagram 
+\end_layout
+
+\end_deeper
+\begin_layout Description
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+{
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+rot
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+bf
+\end_layout
+
+\end_inset
+
+ Interrupt Controller 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+}
+\end_layout
+
+\end_inset
+
+ \InsetSpace ~
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+
+\backslash
+[-3ex]
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+bi
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ handles all interrupts and exceptions. 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ interupts 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+pr
+\end_layout
+
+\end_inset
+
+ external inputs with a programmable interrupt-level (level 1 lowest level, 7 highest level). 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ all interrupts and exceptions work with an appropriate interrupt vector. 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ the interrupt vector will be read in in the interrupt acknowledge cycle (1 byte value). 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ if an interrupt or exception was acknowledged the core generates a stack frame (which holds contents of the CCR-register and the program counter PC) and starts with the execution of the interrupt service routine. 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ the start address of the interrupt service routine are placed in the interrupt vector table (contains of the interrupt vector base register + 4 * value of the interrupt vector). 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ the external interrupts could be enabled and disabled. 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ei
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+os
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+{
+\end_layout
+
+\end_inset
+
+
+\newpage
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\begin_layout Description
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+{
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+rot
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+bf
+\end_layout
+
+\end_inset
+
+ BDM (
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+underline{b}
+\end_layout
+
+\end_inset
+
+ackground 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+underline{d}
+\end_layout
+
+\end_inset
+
+ebugger 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+underline{m}
+\end_layout
+
+\end_inset
+
+ode) 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+}
+\end_layout
+
+\end_inset
+
+ \InsetSpace ~
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+
+\backslash
+[-3ex]
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+bi
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ an additional interface for debugging. 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ allows the download and test of programs without using any other support (no monitor programs or bootstrap loader). 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ the BDM mode could be started with a hardware switch. 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ real-time trace support (the ability to determine the dynamic execution path through an application). 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ the BDM interface is 8-bit parallel output bus that reports processor execution status and data to an external BDM emulator system. 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ite
+\end_layout
+
+\end_inset
+
+ in the BDM mode the processor is halted and a variety of commands can be sent to the processor to access memory and registers. 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ei
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+os
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+{
+\end_layout
+
+\end_inset
+
+
+\newpage
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+}
+\end_layout
+
+\end_inset
+
+ 
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\align center
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+epsfig{file=figures/Fig_3_17_BDM,width=0.9
+\backslash
+textwidth}
+\end_layout
+
+\end_inset
+
+
+\newline
+ Fig 3.17 BDM Interface 
+\end_layout
+
+\end_deeper
+\end_body
+\end_document

@@ -1,0 +1,27 @@
+# LaTeX build artifacts
+*.aux
+*.log
+*.out
+*.toc
+*.brf
+*.synctex
+*.synctex.gz
+*.synctex(busy)
+*.bbl
+*.blg
+*.fls
+*.fdb_latexmk
+*-eps-converted-to.pdf
+docu.pdf
+slides.pdf
+
+# Large archives and third-party reference material (kept on disk, not versioned)
+*.zip
+*.tar.gz
+*.tar.bz2
+Sources/
+
+# Editor / tool leftovers
+.rawstudio/
+PaxHeader/
+Thumbs.db

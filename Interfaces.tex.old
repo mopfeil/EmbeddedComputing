@@ -1,0 +1,317 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{General Aspects}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\bi
+	\ite typical feature of microcontroller are the various interfaces
+	\ite every interface are controlled by one or more register which are part of the standard memory space 
+	\ite most of the interfaces could generate an interrupt (use an according interrupt service routine to program some actions)
+	\ite every interface has a flag also which makes it possible to write programs to ask in a ``polling method'' for interaction with the interface 
+	\ite to reduce the number of external pins, mostly the input/output pins are double or tripled used
+	\ite this means the number of interfaces are also reduced
+\ei
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Digital Ports}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\bi
+	\ite the microcontroller CFV4e has a lot of digital input/output lines (interfaces)
+	\ite these lines are grouped in 8 bit, 7 bit, 5 bit and 4 bit ports.
+	\ite every port is programmable as an input or an output port.
+	\ite an mix of input line and output lines in one port is allowed
+	\ite the output lines are driven in a ``Pushpull-mode'' (this means a connection of two or more output lines isn't possible)
+	\os{\newpage}
+	\ite  8 bit Ports (Portlines \_x[7 .. 0])
+\ei
+\begin{center}
+	\begin{tabular}{c c c c c c}
+	  Port  & Addr. PODR\_x & Addr. PDDR\_x & Addr. PPDSDR\_x & Addr PCLR\_x \\
+	 \hline
+	  FBCTL  & A000 & A010 & A020 & A030 \\
+	  FEC0H  & A004 & A014 & A024 & A034 \\
+	  FEC0L  & A005 & A015 & A025 & A035 \\
+	  FEC1H  & A006 & A016 & A026 & A036 \\
+	  FEC1L  & A007 & A017 & A027 & A037 \\
+	  PSC3PSC2  & A00C & A01C & A02C & A03C \\
+	  PSC1PSC0  & A00D & A01D & A02D & A03D \\
+	\end{tabular}
+	\end{center}
+\bigskip
+\bi 
+	\ite 7 bit Port (Portlines \_x[6 ..0])
+\ei
+	\begin{center}
+	\begin{tabular}{c c c c c c}
+	  Port  & Addr. PODR\_x & Addr. PDDR\_x & Addr. PPDSDR\_x & Addr PCLR\_x \\
+	 \hline
+	  DSPI  & A00E & A01E & A02E & A03E \\
+	\end{tabular}
+	\end{center}
+
+\bigskip
+\bi 
+	\ite 5 bit Ports (Portlines \_x[4 ..0])
+\ei
+	\begin{center}
+	\begin{tabular}{c c c c c c}
+	  Port  & Addr. PODR\_x & Addr. PDDR\_x & Addr. PPDSDR\_x & Addr PCLR\_x \\
+	 \hline
+	  PCIBG  & A009 & A019 & A029 & A039 \\
+	  PCIBR  & A00A & A01A & A02A & A03A \\
+	\end{tabular}
+	\end{center}
+
+\bigskip
+\bi 
+	\ite 4 bit Ports (Portlines \_x[3 ..0])
+\ei
+	\begin{center}
+	\begin{tabular}{c c c c c c}
+	  Port  & Addr. PODR\_x & Addr. PDDR\_x & Addr. PPDSDR\_x & Addr PCLR\_x \\
+	 \hline
+	  DMA  & A002 & A012 & A022 & A032 \\
+	  FECI2C  & A008 & A018 & A028 & A038 \\
+	\end{tabular}
+	\end{center}
+
+\os{\newpage}
+\begin{center}
+\epsfig{file=figures/Fig_5_1_Read_Write_Digital_Ports,width=0.9\textwidth}\\
+Fig 5.1 Blockdiagram of a Read- and Write-Access to a Digital Port
+\end{center}	 
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Serial Ports}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\bi
+	\ite the CFV4e supports different kinds of serial interfaces
+	\bi
+		\ite programmable serial controller (PSC) for standard asynchrone serial communications
+		\ite DMA serial peripheral interface (DSPI) which supports a synchronous serial communication
+		\ite universal serial bus (USB) for serial bus-oriented communication
+		\ite controller area network (CAN)
+		\ite inter-integrated circuit communication (I\begin{math}^{2}\end{math}C)
+	\ei
+
+\ei
+\os{\newpage}
+
+\begin{description}
+\item[{\rot\bf PSC programmable serial controller}]~\\[-3ex]
+\bigskip
+\bi 
+	\ite supports four independent serial channels which could be configured to operate in the
+following modes
+	\bi 
+		\ite universal asynchronous receiver transmitter (UART) mode with 5,6,7,8 bits of data plus parity transfer
+		\ite IrDA 1.0 SIR mode (SIR) with a baudrate in a range of 2400 - 115200 bps
+		\ite IrDA 1.1 MIR mode (MIR) with a baudrate from 0.576 or 1.152 Mbps
+		\ite IrDA 1.1 FIR mode (FIR) with a baudrate of 4.0 Mbps
+		\ite 8-bit soft modem mode (modem8)
+		\ite 16-bit soft modem mode (modem16)
+		\ite AC97 soft modem mode (AC97)
+	\ei
+	\bigskip
+	\ite programmable baudrate generator
+	\ite the PSC doesn't offer driver devices (have to be placed on the development kit)
+\ei
+
+\begin{center}
+\epsfig{file=figures/Fig_5_2_Blockdiagram_PSC,width=0.95\textwidth}\\
+Fig 5.2 Blockdiagram of PSC
+\end{center}	
+
+\bi 
+	\ite the baudrate of the operating modes of the PSC are programmable and have to be selected from different sources 
+	\ite specification have to be done for the UART- and the SIR-mode
+	\ite MIR- and FIR-mode runs with fixed baudrates
+\ei
+
+\begin{center}
+\epsfig{file=figures/Fig_5_3_Baudrate,width=0.95\textwidth}\\
+Fig 5.3 Selection of Sources to fix the Baudrate of the PSC in UART- and FIR-Mode
+\end{center}
+\os{\newpage}
+\bi 
+	\ite the protocol of the UART-mode fix mostly a 8 bit transfer, 1 start bit and 1 or 2 stop bits
+	\ite the protocol habe to be the same for the transmit- and the receive-interface (no opportunity to check the protocol directly if the transmission failed)
+	\ite both the transmit- and the receive-interface set flags and could generate interrupts if a transfer is finished 
+	\ite no error-check methods in the UART-mode (only parity-checking is possible) 
+\ei
+
+\begin{center}
+\epsfig{file=figures/Fig_5_4_UART,width=0.95\textwidth}\\
+Fig 5.4 Protocol of a 8 Bit UART-Transfer
+\end{center}
+\os{\newpage}
+\bi 
+	\ite the SIR-mode has near relationsships with the UART-mode
+	\ite every 0-bit generates an IR-puls of a fixed duration (depends on the baudrate)
+\ei
+\begin{center}
+\epsfig{file=figures/Fig_5_5_SIR,width=0.95\textwidth}\\
+Fig 5.5 Protocol of a SIR-Transfer
+\end{center}
+\os{\newpage}
+\bi 
+	\ite the MIR-mode has the same bit-coding as the SIR-mode, but with shorter IR-pulses (higher baudrates)
+	\ite in this mode the data are transferd in frames (HDLC-Frames)with a start-of-frame and stop-of-frame sequence (STA, STO)
+	\ite the frames are checked with an error check (CRC)
+\ei
+\begin{center}
+\epsfig{file=figures/Fig_5_6_MIR,width=0.95\textwidth}\\
+Fig 5.6 Protocol of a MIR-Transfer
+\end{center}
+\os{\newpage}
+\bi 
+	\ite the FIR-mode use 4 PPM (4 pulse position modulation), each IR-pulse has a duration
+of 125 ns
+	\ite the data transfer is done in frames
+	\ite the frames are checked with an error check (CRC)
+\ei
+\begin{center}
+\epsfig{file=figures/Fig_5_7_FIR,width=0.95\textwidth}\\
+Fig 5.7 Protocol of a FIR-Transfer
+\end{center}
+\end{description}
+
+\os{\newpage}
+\begin{description}
+\item[{\rot\bf DSPI (DMA serial peripheral interface)}]~\\[-3ex]
+\bigskip
+\bi 
+	\ite supports synchronous serial data transfer with a DMA access
+	\ite interfaces drives two data lines and a clock line (three-wire synchronous transfers)
+	\ite the interfaces could run as a master or a slave in a point to point connection
+	\ite a bus connection with one master and one ore more slaves are also possible
+\ei
+\begin{center}
+\epsfig{file=figures/Fig_5_8_DSPI_Master_Slave,width=0.95\textwidth}\\
+Fig 5.8 DSPI-Interfaces as Master and Slave
+\end{center}
+
+\begin{center}
+\epsfig{file=figures/Fig_5_9_DSPI,width=0.95\textwidth}\\
+Fig 5.9 Blockdiagram DSPI
+\end{center}
+\end{description}
+
+\os{\newpage}
+\begin{description}
+\item[{\rot\bf USB (universal serial bus)}]~\\[-3ex]
+\bigskip
+\bi 
+	\ite supports the high-speed operation up to 480 Mbps and full-speed operation at 12 Mbps (USB 2.0 Specification)
+	\ite burst-transfer, interrupt and isochronous transport modes 
+	\ite 4 kbytes of shared  FIFO RAM and 1 kbyte descriptor RAM
+\ei
+\os{\newpage}
+\begin{center}
+\epsfig{file=figures/Fig_5_10_USB,width=0.95\textwidth}\\
+Fig 5.10 Blockdiagram USB
+\end{center}
+\end{description}
+
+\os{\newpage}
+\begin{description}
+\item[{\rot\bf CAN (controller area network)}]~\\[-3ex]
+\bigskip
+\bi 
+	\ite programmable bit rate up to 1 Mbps
+	\ite two independend CAN-Interfaces
+	\ite up to 16 message buffers of 0 - 8 bytes data length, each configurable as Rx or Tx, all
+supporting standard and extended messages
+	\ite time Stamp based on 16-bit free-running timer
+\ei
+\os{\newpage}
+\begin{center}
+\epsfig{file=figures/Fig_5_11_CAN_System,width=0.7\textwidth}\\
+Fig 5.11 Typical CAN-System
+\end{center}
+\begin{center}
+\epsfig{file=figures/Fig_5_12_CAN_Interface,width=0.9\textwidth}\\
+Fig 5.12 Blockdiagram of the CAN-Interface
+\end{center}
+\os{\newpage}
+\item[{\rot\bf I\begin{math}^{2}\end{math}C (inter-integrated circuit communication)}]~\\[-3ex]
+\bi 
+	\ite an interface to connect hardware decices (e.g. LCD-Displays, keyboards, switches)
+	\ite multi-master operation
+	\ite different serial clock frequencies are programmable
+	\ite interrupt driven byte-by-byte data transfer possible
+\ei
+\os{\newpage}
+\begin{center}
+\epsfig{file=figures/Fig_5_13_I2C_Blockdiagram,width=0.8\textwidth}\\
+Fig 5.13 I\begin{math}^{2}\end{math}C-Blockdiagram 
+\end{center}
+\begin{center}
+\epsfig{file=figures/Fig_5_14_I2C_Data_Diagram,width=0.8\textwidth}\\
+Fig 5.14 Typical Data Transfer Protocol of a I\begin{math}^{2}\end{math}C-Interface 
+\end{center}
+\end{description}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Timers}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{description}
+\item[{\rot\bf GPT (general purpose timer)}]~\\[-3ex]
+\bigskip
+\bi 
+	\ite implementation of 4 indegendend timer channels
+	\ite every timer channel could operate in
+	\bi 
+		\ite a input capture-mode (in this mode the counters run until the specified capture event
+occurs (rise, fall, or pulse) on appropriate TIN[3:0]-signal)
+		\ite a output capture-mode (in this mode the counters run until they reach the programmed
+terminal count value. At this point, the specified output event is generated (toggle, pulse high, or
+pulse low) on TOUT[3:0])
+		\ite a PWM-mode (in this mode the user can program period and width values to
+create an adjustable, repeating output waveform on TOUT[3:0])
+		\ite CPU Timer-mode (The I/O signal is not used in this mode. Once enabled, the counters run until they reach a programmed terminal count and then an interrupt can be generated to the CPU)
+	\ei
+	\os{\newpage}
+	\ite the timer-channel(0) could operate in a ``watchdog''-mode also (The terminal count value is
+programmable. If the counter is allowed to expire, a full reset occurs. To prevent the watchdog
+timer from expiring, software must periodically write 0xA5 to the GMS0[OCPW] field. This
+causes the counter to reset)
+\ei
+\bigskip
+\bi 
+	\ite input capture mode
+	\ite suitable for measurements of the time behaviour of signals 
+\ei
+\begin{center}
+\epsfig{file=figures/Fig_5_15_Input_Capture,width=0.8\textwidth}\\
+Fig 5.15 Blockdiagram of the Input Capture Mode
+\end{center}	
+
+\bi 
+	\ite output capture mode
+	\ite mode to generate a specific behaviour of an signal (e.g. signal to control a stepper motor) 
+\ei
+\begin{center}
+\epsfig{file=figures/Fig_5_16_Output_Capture,width=0.9\textwidth}\\
+Fig 5.16 Blockdiagram of the Output Capture Mode
+\end{center}
+\os{\newpage}	
+\bi 
+	\ite PWM-mode
+	\ite suitable to emulate an analogue output signal (with an additional operational amplifier)
+\ei
+\begin{center}
+\epsfig{file=figures/Fig_5_17_PWM,width=0.9\textwidth}\\
+Fig 5.17 Blockdiagram of the PWM Mode
+\end{center}
+\os{\newpage}
+\item[{\rot\bf SLT (slice timer)}]~\\[-3ex]
+\bigskip
+\bi 
+	\ite two slice timers implemented to generate shorter term periodic interrupts (SLT0 and SLT1)
+	\ite typical application is the time slice mechanismn in an operating system
+	\ite each timer consists of a 32-bit counter with no prescale (the counters count down from a prescribed value and expire/interrupt when they reach zero)
+	\ite after they had reached zero, the timers reload and start the counting procedure one's more 
+\ei	
+\end{description}
+

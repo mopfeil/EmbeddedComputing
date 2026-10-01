@@ -1,0 +1,233 @@
+\newenvironment{folie}[1]{\section{#1}}{}
+
+\nsl{The lecture on Embedded Computing focuses on different aspects in computer science. Starting with a short introduction on the development of computers, we will try to get an idea about the special requirements of embedded systems. In modern times, Embedded Systems finds application in almost every field.They are used not only in cars, washing machines and toasters but also in every mobile phone you'll find one microprocessor/microcontroller. It is interesting to note that the number of microcontrollers in use is much more than the number of Personal Computers. If you are looking on an application which includes a microcontroller you will have an embedded system. 
+\newline
+Embedded systems on the contrary to a standard PC don't have graphical user interfaces (GUI), hard discs, keyboards etc. A typical example is an embedded system which controls the breaking mechanism in your car. This controller doesn't ask you in a command line (or with a click on an icon) what should be done. This system simple controls the brakes and hopefully stops your car in a dangerous situation. To fulfil such a typical requirement embedded systems have to deal with different aspects and have different requirements than standard PC. In the chapter ``Modelling'' we will try to find out what are the special conditions which embedded systems should fulfil.
+\newline
+After a general view about the requirements for embedded systems we shall shift our focus to processors. In principle, an embedded system can be realized using several different types on processors. This decision is based on factors such as application requirements, costs, computational needs etc. A standard processor of choice for an embedded system is a microcontroller. We shall focus on 'Coldfire', a 32-bit microcontroller from Motorola (or Freescale). This controller allows us to build simple stand alone applications or applications with the support of operating systems (real-time operating system).  
+\newline
+Real-time operating systems are an important part in modern embedded systems. PC based computing is not very time critical e.g. If you are running a word- processor (like MS Word) a time delay of a few seconds in opening a new document is not critical. However, imagine if the same delay occurs in deploying of Air-bags during a car crash. Hence, embedded systems have special needs and the operating system of choice for such applications are the Real-time operating systems. They offer us a lot of features which makes it easier to build more complex applications. The drawback is that real-time operating systems have bigger requirements on the onboard memory and the support of special functions of the microcontroller like a memory management unit and so on.  
+The last aspect of this lecture is, to give an introduction about the opportunities to store an algorithm on a chip directly. This so called ``solution on chip'' works with a FPGA-Chip (field programmable gate array) and offers a solution with the fast execution times.      
+\newpage
+}
+
+
+%==============================================================================
+\section{Historical Background}
+%==============================================================================
+\begin{description}
+\item[{\rot First programmable computers}]~\\[-3ex]
+\bi
+	\ite Development of computers
+	\bi
+		\ite started in 1940 (1941 Zuse Z3, Aiken Mark I)
+		\ite classification in generations
+	\ei
+\ei
+
+\begin{center}
+\begin{tabular}{|c|c|c|c|}
+\hline
+Generation & Period & Technology & Characteristics\\
+\hline
+1 & 1950 - 1959 & vacuum tube & mainframe\\
+\hline
+2 & 1960 - 1968 & transitor & mainframe, process control\\
+\hline
+3 & 1969 - 1977 & Integrated circuits & minicomputer\\
+\hline
+4 & 1978 - & LSI, VLSI & Workstation, PC\\
+\hline
+5 & 1993 - & LSI, VLSI & parallel processing\\
+
+\hline
+\end{tabular}
+\end{center}
+
+\os{\newpage}
+
+\begin{figure}[!hbtp]%
+     \begin{center}
+	  \epsfig{file=figures/Bild1_1_ZuseZ3.jpg,width=0.6\textwidth}\\
+	  \caption {First programmable computer Zuse Z3}
+     \end{center}
+\end{figure}
+
+\os{\newpage}
+
+\begin{figure}[!hbtp]%
+     \begin{center}
+     \epsfig{file=figures/Bild1_2_ZuseZ3_Blockschaltbild,width=0.6\textwidth}\\
+     \caption{Blockdiagram of Zuse Z3}
+     \end{center}
+\end{figure}
+
+\os{\newpage}
+\begin{figure}[!hbtp]%
+     \begin{center}
+     \epsfig{file=figures/Bild1_3_MarkI,width=0.6\textwidth}\\
+     \caption{Computer Mark I}
+     \end{center}
+\end{figure}
+
+\os{\newpage}
+
+\begin{figure}[!hbtp]%
+     \begin{center}
+     \epsfig{file=figures/Bild1_4_central_vs_distributed,width=1.0\textwidth}\\
+     \caption{Central vs. distributed applications}
+     \end{center}
+\end{figure}
+
+\os{\newpage}     
+
+\end{description}
+
+
+%==============================================================================
+\section{Typical Applications}
+%==============================================================================
+\begin{description}
+\item Microcontrollers in Embedded systems
+\bi
+	\ite no \underline{G}raphical \underline{U}ser \underline{I}nterface (GUI)
+	\ite no hard discs
+	\ite use of special real-time operating systems instead of complex standard operating system (like Windows or full feature-Linux)
+\ei
+
+\item Features of microcontrollers
+\bi
+	\ite On-chip memory, 
+	\ite I/O-devices (analogue, digital)
+	\ite Timer/Counter-channels
+	\ite One-chip-solutions
+\ei
+\item Differences in the programming of microcontrollers
+\bi
+	\ite Cross development (using PC, workstation)
+\os{\newpage}    		
+	\ite Function oriented programming language (most 'C')            	
+        \bi  
+		\ite application without an operating system
+		\ite application with parts of an operating systems (e.g. ECOS)
+		\ite applications with a special real-time operating system
+	\ei
+\ei
+\begin{figure}[!hbtp]
+     \begin{center}
+	  \epsfig{file=figures/Fig_1_5_Embedded_Systems_Car,width=0.8\textwidth}
+	  \caption{Embedded systems in modern car}
+     \end{center}
+\end{figure}
+
+\os{\newpage}
+\begin{figure}[!hbtp]
+     \begin{center}
+	  \epsfig{file=figures/Fig_1_6_Big_Size_Controller,width=0.3\textwidth}
+	  \caption{Microcontroller in a standard size}
+     \end{center}
+\end{figure}
+\begin{figure}[!hbtp]
+     \begin{center}
+          \epsfig{file=figures/Fig_1_7_Small_Size_Controller,width=0.3\textwidth}
+	  \caption{Small size microcontroller}
+     \end{center}
+\end{figure}
+   
+\begin{figure}[!hbtp]
+     \begin{center}
+	  \epsfig{file=figures/Fig_1_8_Robot,width=0.3\textwidth}\\
+	  \caption{A last example for embedded systems}
+     \end{center}
+\end{figure}
+
+\end{description}
+
+%==============================================================================
+\section{Charateristics of Embedded Systems}
+%==============================================================================
+\begin{description}
+\item[{\rot\bf Dependability of embedded systems }]~\\[-3ex]
+\bi
+	\ite Reliability
+	\bi 
+		\ite probability of system working correctly provided that is was working at t=0
+		\ite continuous execution for long times (sometimes more than years)
+		\ite system could recover by themselves (implemented with watch dog-functions)
+	\ei
+	\ite Maintainbility
+	\bi 
+		\ite indicates repair friendliness   
+		\ite could be expressed as the probability of system working
+correctly d time units after error occurred.
+	\ei
+	\ite Availability
+	\bi 
+		\ite probability of system working at time t
+		\ite the availability expresses the probability that the system at the actual time is available
+	\ei
+	\ite Safety
+	\bi 
+		\ite probability that the system works correct or that no harms will be caused
+		\ite indicates that a system could fail without dangerous effects
+	\ei
+\ei
+
+\qbox {Conclusion
+\newline
+Even perfectly designed systems can fail if the assumptions
+  about the workload and possible errors turn out to be wrong.
+\newline
+Making the system dependable must not be an after-thought, it
+  must be considered from the very beginning.
+}
+\os{\newpage}
+
+\item[{\rot\bf Efficiency of embedded systems }]~\\[-3ex]
+\bi
+	\ite Energy
+	\bi 
+		\ite low power consumption by microcontrollers
+		\ite different operating modes (sleep-mode)
+	\ei
+	\ite Code-size
+	\bi 
+		\ite small external memories (SRAM or EPROM)
+		\ite no external hard disc
+		\ite in some cases one chip solutions
+	\ei
+	\ite Run-time
+	\bi 
+		\ite have to fulfil real-time constraints
+		\ite in principal, 'a right answers that arrives too late, is wrong'
+	\ei
+	\ite Size and Weight
+	\bi 
+		\ite especially in industrial applications there exits strong requirements
+	\ei
+	\ite Cost
+	\bi 
+		\ite depends on the number on installations and the cost of device (hardware)
+		\ite software cost mostly dedicated to one embedded system project (no general purpose software available)
+	\ei 
+\ei
+
+\begin{figure}[!hbtp]
+     \begin{center}
+	  \epsfig{file=figures/Fig_1_9_Blockdiagram_Embedded_Computing,width=0.7\textwidth}\\
+	  \caption{Blockdiagram Embedded Computing vs. Embedded System}
+     \end{center}
+\end{figure}
+     
+\os{\newpage}
+\bigskip
+\begin{figure}[!hbtp]
+     \begin{center}
+     	\epsfig{file=figures/Fig_1_10_Blockdiagram_Embedded_System,width=0.8\textwidth}\\
+	\caption{Blockdiagram Embedded System}
+     \end{center}
+\end{figure}
+
+\end{description}
+
+

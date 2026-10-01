@@ -1,0 +1,493 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Operating Systems for Embedded Systems}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\nsl{Advances in microcontroller technology continue to open up new application fields for embedded systems. In parallel with this trend, 
+the equipment controlled by embedded systems has become more sophisticated, often incorporating many functions in one product. 
+As a result, embedded systems have grown in scale and complexity. Moreover, as products increasingly adopt digital technology, 
+advanced processors have enabled more of the processing to be implemented in software, making embedded systems all the more important.
+\newline
+This means, in new application the developer is more and more interested to do the software development 
+with the support of an operating system. Especially in large scale systems the effect on reducing development cost with an operating system is important.
+\newline
+Even in the small-scale embedded system field, the growing scale and complexity of software and the need for fast 
+development turnaround time have made improving software productivity a pressing need. The use of C and other high-level languages 
+have become increasingly common for this reason.
+\newline
+Real time operating systems fulfil all the requirements from the developer. They guarantee a response of the system in specific time. 
+The development cycle becomes much shorter if the user could do the development on the target. Cross-development involves the downloading 
+of the executable program on the target, testing it, changing it and repeating the same procedure once more for the next error 
+is not an optimal development cycle. Real time operating systems offer a good support for the debugging.
+\newline
+There exist only a few drawbacks if you are looking for appropriate real time operating system. The first most important disadvantages 
+of the most real time operating systems are the costs. The second one is that real time operating systems need virtual memory system which is in 
+special not available in small microcontrollers.
+\newline
+The virtual memory system itself is really suitable for general purpose applications like a desktop PC. 
+But for embedded systems a virtual memory system makes the application more difficult. In such systems really often an access to the hardware 
+is necessary (control interfaces). These programming aspects could only be done in the so called ``kernel-mode'' with the result that such 
+programs more dangerous (collapse of the operating system) and more difficult to test.
+\newline
+In this chapter we will discuss some aspects of operating systems and than come to the uCLinux or other ``embedded Linux Systems'', operating systems 
+for microcontroller with and without a virtual memory system.
+}
+\bigskip
+\bi
+	\ite a lot of embedded systems runs without a operating system
+	\bi 
+		\ite only  small algorithm (e.g. 'control the window' open/close system in a car).
+		\ite hard restrictions in the size of memory especially by 8- and 16-bit microcontrollers.
+		\ite costs of an operating system. 
+	\ei
+	\bigskip
+	\ite reasons for the use of an operating system
+	\bi 
+		\ite generally the same reasons why we need one for a traditional computer.
+		\ite but in the case of embedded systems not all services of an operating systems are needed for any device.
+		\ite embedded systems have a large variety of requirements and environments.
+		\bi 
+			\ite critical applications with high functionality (medical applications, aircraft systems ..).
+			\ite critical applications with small functionality (ABS, cardiac pacemaker ..).
+			\ite not very critical applications with varying functionality (mobile phone microwave ofen, washing machine ..).
+		\ei
+ 
+	\ei
+\ei
+
+\begin{description}
+\item[{\rot\bf Special operating system (OS) for embedded systems}]~\\[-3ex]
+\bigskip
+\bi
+	\ite a standard OS (like Windows or Linux) isn't suitable because :
+	\bi 
+		\ite monolithic kernel has too many features which are not necessary in a specific application.
+		\ite monolithic kernel is not modular, fault-tolerant, configurable, modifiable.
+		\ite needs too much memory space (virtual memory).
+		\ite not designed for mission-critical applications.	
+	\ei
+\ei
+\bigskip
+\item[{\rot\bf Key features of an OS for embedded systems }]~\\[-3ex]
+\bigskip
+\bi 
+	\ite configurability \pr no single OS will fit all needs, so configurability needed
+	\bi 
+		\ite simplest form \pr remove unused functions (by linker ?)
+		\ite conditional compilation (using \#if and \#ifdef commands)
+		\ite dynamic data might be replaced by static data
+		\ite removes unnecessary functions or modules by a kernel programming (Linux, eCos, VxWORKS).
+	\ei
+	\bigskip
+	\ite handling of device drivers
+	\bi 
+		\ite access to interfaces. 
+		\ite device drivers handled by tasks instead of integrated drivers.
+		\ite improve predictability; everything goes through scheduler.
+  		\ite in embedded systems mostly a lot of different interfaces are available, so not every device needs support by all versions of the OS.
+	\ei
+\ei
+ 
+\begin{figure}[!hbtp]
+     \begin{center}
+	  \epsfig{file=figures/Fig_6_1_RTOS_StandardOS,width=0.8\textwidth}\\
+	  \caption{Integration of Devices Drivers in an OS}
+     \end{center}
+\end{figure}
+\os{\newpage}    
+
+\bigskip
+\bi 
+	\ite handling of interupts
+	\bi 
+		\ite for standard OS: serious source of unreliability.
+		\ite it should be possible to let interrupts directly start or stop tasks (by storing the tasks start address in the interrupt table).
+	\ei
+\ei
+
+\item[{\rot\bf Available OS for embedded systems}]~\\[-3ex]
+\bigskip
+\bi
+	\ite QNX
+	\bi 
+		\ite real time operating system based on micro core technology.
+		\ite suitable for small and large embedded systems.
+		\ite tasks are separated in its one address space.
+		\ite scheduling event driven (restrictions in time based scheduling) .
+	\ei
+	\bigskip
+	\ite VxWORKS
+	\bi 
+		\ite small VxWorks Kernel.
+		\ite no virtual memory space (dangerous if a task is not cooperative).
+		\ite scheduling time, priority and event driven.
+		\ite implemented on a lot of microcontrollers.
+	\ei
+	\bigskip
+	\ite OSEK/VDX
+	\bi
+		\ite scalable real time OS build for application in the automotive area.
+		\ite event driven execution of tasks.
+		\ite operates with fixed priorities.
+		\ite tasks are grouped in basic tasks and extended tasks.
+		\ite no virtual memory system.
+	\ei 
+	\os{\newpage}
+	\ite eCos
+	\bi
+		\ite open source system.
+		\ite scalable system (the configuration allows the application writer to impose their requirements on the run-time component).
+		\ite OS and application software are specific for an embedded system.
+		\ite scheduling is time and event driven.
+		\ite no virtual memory system.
+	\ei
+	\bigskip
+	\ite embedded Linux
+	\bi
+		\ite open source system.
+		\ite scalable and portable (especially for 32 bit microcontrollers).
+		\ite run with a non virtual and a virtual memory system.
+		\ite scheduling is time and priority driven.
+		\ite with the RTAI (\underline{r}eal \underline{t}ime \underline{a}pplication \underline{i}nterface) also a event driven scheduling mechanismn possible.
+		\ite for small and large embedded systems.
+	\ei
+\ei 
+\end{description}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Functions of Embedded Linux}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\bi 
+	\ite the general idea of an ``embedded Linux'' is to store an image (Kernel plus necessary modules) in a non-volatile memory (Flash-EEPROM, SD-Card).
+	\ite after a reset (or power on reset) the image is copied in the RAM and executed.
+	\ite the size of the copied image is also known as a ``footprint''.
+	\ite the additional feature of embedded CLinux (Linux for microcontrollers) is has the opportunity to work without a virtual memory system (VM).
+	\bi 
+		\ite suitable for processors without MMU.
+		\ite low memory footprint.
+		\ite according to the processors low power consumption applications are possible.
+	\ei
+	\bigskip
+	\ite with the ARM-Processors (MMU is available)  embedded Linux could run with a virtual memory system or with a non virtual memory system. 
+\ei
+\os{\newpage}
+\begin{description}
+\item[{\rot\bf Boot sequence}]~\\[-3ex]
+\bigskip
+\bi
+	\ite the boot procedure of embedded Linux differs from a standard boot procedure.
+	\ite this procedure offers two advantages:
+	\bi 
+		\ite the development process of building a Linux system is nearly the same as in a standard Linux (the same tools are available).
+		\ite the execution time of programs which runs in a RAM is much more faster than in a Flash-EPROM).
+	\ei
+	\bigskip
+	\ite boot procedure starts immediately after the reset (an interaction with the user isn't necessary).
+\ei
+\os{\newpage}
+\begin{figure}[!hbtp]
+     \begin{center}
+	  \epsfig{file=figures/Fig_6_2_Boot,width=0.4\textwidth}\\
+	  \caption{Boot Procedure}
+     \end{center}
+\end{figure}
+\os{\newpage}
+
+\item[{\rot\bf Scalable behaviour of embedded Linux}]~\\[-3ex]
+\bi 
+	\ite building of a new image (binaries of embedded Linux systems) starts with a configuration part.
+	\ite first part is the selection of the ``vendor''. 
+	\ite specification of hardware details of the development kit (RAM addresses, ROM addresses).
+	\ite the next step is the configuration of necessary modules and drivers.
+
+\ei
+
+\os{\newpage}
+\begin{figure}[!hbtp]
+     \begin{center}    
+	  \epsfig{file=figures/Fig_6_3_Vendor,width=0.8\textwidth}\\
+	  \caption{Specification of Hardware Details}
+     \end{center}
+\end{figure}
+\os{\newpage}
+\begin{figure}[!hbtp]
+     \begin{center}   
+	  \epsfig{file=figures/Fig_6_4_Drivers,width=0.8\textwidth}\\
+	  \caption{Configuration through a Selection of Moduls or Drivers}
+     \end{center}
+\end{figure}
+\os{\newpage}
+
+\item[{\rot\bf Build procedure}]~\\[-3ex]
+\bi 
+	\ite after the configuration (make menuconfig)
+	\bi 
+		\ite start the build process with ``make dep''.
+		\ite  and ``make''.
+	\ei
+	\bigskip
+	\ite the Kernel-compilation need a special compiler (gcc-version for the ARM-Processor) und a special binutils (as, ld objtools for the ARM-Processor).
+	\ite the result of the Kernel-compilation is a image which is available in two versions. 
+	\bi 
+		\ite file ``linux.bin or Kernel.img'' .
+		\bi 
+			\ite a loadable image.
+			\ite could be downloaded (serial or usb-interface, needs a monitor program on the target side ).
+			\ite execute after a poweron reset or with a jump on a specific address (monitor function).
+			\ite useful for test of a configuration.
+		\ei
+		\bigskip
+		\ite file ``romfs''
+		\bi 
+  			\ite a image which could be loaded in the FlashEPROM.
+			\ite need a ``Flash''-load program like CF-Flasher.
+			\ite embedded Linux starts after the next reset or power-on-reset with the mentioned boot sequence.
+		\ei
+	\ei
+\ei
+
+\item[{\rot\bf Working with embedded Linux in the target}]~\\[-3ex]
+
+\bi 
+	\ite establish a serial communication link between the target and the PC.
+	\bi 
+		\ite works as standard input/output (stdio) for messages from embedded Linux.
+		\ite on the PC-side, a terminal program like ``minicom''  for Linux or ''Hyperterminal'' for Windows is useful.
+	\ei
+\ei
+\os{\newpage}
+\begin{figure}[!hbtp]
+     \begin{center}
+	  \epsfig{file=figures/Fig_6_5_Minicom,width=0.8\textwidth}\\
+	  \caption{Serial Communication Tool Minicom}
+     \end{center}
+\end{figure}
+
+\os{\newpage}
+\begin{figure}[!hbtp]
+     \begin{center}
+	  \epsfig{file=figures/Fig_6_5_Minicom_P,width=0.6\textwidth}\\
+	  \caption{Configuration of Minicom}
+     \end{center}
+\end{figure}
+
+\os{\newpage}
+\bi 
+	\ite if an ethernet link is established
+	\bi 
+	  \ite generate a remote connection (via ssh)
+	  \bi
+	    \ite execution of commandline instructions on the target
+	  \ei  
+	  \ite mount PC partition by NFS
+	  \bi
+	    \ite target-filesystem can be mounted in the development-filesystem
+	    \ite execute programs on the development-side and on the target-side
+	  \ei  
+	\ei
+\ei
+\begin{center}
+\epsfig{file=figures/Fig_6_6_uCLinux,width=0.9\textwidth}\\
+Fig 6.6 Standard Commandline Interface on the Target-side
+\end{center}
+\os{\newpage}
+\item[{\rot\bf Restrictions when using non VM-systems}]~\\[-3ex]
+\bigskip
+\bi 
+	\ite ARM-Processors could operate with a VM (virtual memory) and a non VM System.
+	\ite in the case of working without a VM-System:
+	\bi 
+		\ite a user program has full access to the whole memory space.
+		\ite as a result, no segmentation fault is possible.
+		\ite no dynamic heap \pr instead uCLinux uses a global memory pool (kernel free memory pool).
+		\ite no obvious implementation of malloc due to lack of heap.
+		\ite no fork sytem call \pr an implementation of ``copy on write'' strategy isn't possible (an alternative is the old BSD vfork and all its limits).
+	\ei
+\ei
+\end{description}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Cross Compilation}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\bi 
+	\ite cross compilation is widely used for programming in embedded systems.
+	\ite the programs are written, linked and simulated on a PC (for example) for an embedded system.
+	\ite then these executable programs have to be downloaded and started on the target under the control of a monitor program (mostly with a serial connection between the PC and the target).
+	\ite after the test in the target the executable program could be stored in the EPROM and executed without a monitoring program
+\ei
+\os{\newpage}
+\begin{center}
+\epsfig{file=figures/Fig_6_7_CrossCompilation,width=0.9\textwidth}\\
+Fig 6.7 Cross Compilation
+\end{center} 
+
+\os{\newpage}
+\begin{description}
+\item [{\rot\bf Cross compilation with embedded Linux}]~\\[-3ex]
+\bigskip
+\bi 
+	\ite in embedded Linux systems the cross compilation is done for the same reasons as for a standard system.
+	\ite the advantage in this case is that the same debugging tools that are available for the test on the PC are also available on tests on the target system (remote debugging).
+	\bigskip
+	\ite to compile a program for the ARM-Processor a specific toolchain is necessary
+	\ite the same toolchain is also used to build the embedded Linux System for the target. 
+	\ite to generate all parts of the toolchain the standard C-compiler and C-libraries are also involved:
+\ei
+\os{\newpage}
+\begin{center}
+ \begin{tabular}{|l|l|}
+\hline
+Tool & Description\\
+\hline
+arm-linux-gcc & C-Compiler for ARM-Processor\\
+\hline
+arm-linux-as & Assembler for ARM-Processor\\
+\hline
+arm-linux-ld & Linker for ARM-Processor\\
+\hline
+\hline
+arm-linux-ar & Archiver, tool to build, extract and show the contents \\  & of libraries \\
+\hline 
+arm-linux-nm & extracts the symbols of an executable file\\
+\hline
+arm-linux-objdump & extract the contents of an executable file \\
+ & (e.g. disassemble files)\\
+\hline
+arm-linux-objcopy & tool to generate loadable files from \\
+ & the output of the linker (e.g. ``x.bin'' or ``x.ihex'') \\
+\hline
+ \end{tabular}
+\end{center}
+\os{\newpage}
+\item [{\rot\bf Executable files}]~\\[-3ex]	
+\bigskip
+\bi 
+	\ite standard output of the linker (``x.elf'') isn't downloadable.
+	\bi 
+		\ite this file needs a VM-System for loading and execution.
+	\ei
+	\bigskip
+	\ite instead of ``x.elf'' the tool arm-linux-objcopy generates a ``x.bin'' and/or ``x.ihex''-file.
+	\bi 
+		\ite both files are directly downloadable and don't need a VM-System for execution.
+		\ite this means both file are linked on an absolute address.
+		\ite the ``x.bin''-format is a binary format (could not be read with an editor).
+		\ite the ``x.ihex''.format is a text format which is readable with any standard editor.
+	\ei
+\ei
+\os{\newpage}
+\begin{center}
+\epsfig{file=figures/Fig_6_8_Info_ELF,width=0.9\textwidth}\\
+Fig 6.8 Information in a ``x.elf''-file
+\end{center} 
+ 
+
+\end{description}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{User Programming in uCLinux}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%	
+\bi 
+	\ite user programming implies that a program runs in the user mode of the ARM-Processor. 
+	\ite if the VM-System is activated \pr the user doesn't have an access to an absolute memory address.
+	\bi 
+		\ite especially a direct access to the registers of interfaces isn't allowed.
+	\ei
+	\bigskip
+	\ite the restrictions imply also that an access to R-, S-, D-registers, CPSR and etc. are not allowed.
+	\ite these access could only be done in the supervisor mode (kernel program).
+\ei
+\bigskip
+\bi
+	\ite Development of program should be done in tree steps: 
+	\bi
+           \ite first try to generate a program with a cross-compilation for the target, load and then test it.
+	      \ite then merge the program together with an image of the operating system and load it.
+	      \ite lastly, if necessary implement a "autoexec" function in the init process of the embedded Linux.
+      \ei
+\ei
+\begin{description}
+\item[{\rot\bf Cross-compilation with embedded Linux}]~\\
+\bi 
+	\ite the cross-compilation with embedded Linux has the same procedure as the standard cross-compilation for ARM-Processors.
+	\ite in preparation for the next two steps it is helpful to use a separate directory which holds all the necessary files (C-files, Header-files, makefile).
+	\ite put this directory in the ARM-Linux-file-system '/armLinux/user/' .
+	\ite after the compilation mount the directory with NFS in the uCLinux for the target and execute and test the program.
+\ei
+\bigskip
+\item[{\rot\bf Download together with an image of  embedded Linux}]~\\
+\bi
+	\ite the second step is to integrate the program in an image of uCLinux.
+	\ite additional to the cross-compilation, the program also has to be integrated in the build procedure of uCLinux.
+	\bi 
+		\ite the ``central''-makefile for building all the user applications \\ (/armLinux/user/makefile) should expanded with an instruction like:
+		\\ \begin{tabular}{l l l l}
+		    DIRSc\$(CONFIG\_USER\_CAN)& += & can4linux & (present line)\\
+		    DIRSc\$(CONFIG\_USER\_PROGRAM)& += & program & (new line)\\
+		   \end{tabular}
+		\ite to make the program visible in configuration tool (make menuconfig) of armLinux the file 'config.in' (/armLinux/user/config.in) should expand by:
+		\\ \begin{tabular}{l l l}
+		    bool 'can4linux' & CONFIG\_USER\_CAN & (present line) \\
+		    bool 'program' & CONFIG\_USER\_PROGRAM & (new line) \\
+		   \end{tabular}
+		\ite to get some more information about the program and how somebody can do the configuration the file Configure.help \\
+		(/armLinux/user/Documentation/Configure.help) should expand by
+		\\ \begin{tabular}{l l}
+		   CONFIG\_USER\_CAN& \\
+		    & This package contains some examples\\
+		    & using can4linux device driver.\\
+		    & \\
+		   CONFIG\_USER\_PROGRAM& \\
+		    & This programm adds my first functions \\
+		    & to uCLinux. I'm not sure whether \\
+		    & somebody can use these functions.\\
+		   \end{tabular}
+		\os{\newpage}
+		\ite if in the configuration step, the program is selected, the resulting image contains the program
+		\ite to test the image (armLinux) and the program once more, it can be downloaded with the monitor
+		\ite the downloaded armLinux (including the program) could be started after a reboot or a reset
+	\ei
+\os{\newpage}
+\ei
+\item[{\rot\bf Autostart of a program with embedded Linux}]~\\
+\bi 
+	\ite if the program (which was downloaded together with the armLinux-image) has to be used, the user has to start it.
+	\ite embedded Linux offers an automatic start of programs (function of the program init which execute the sript file /etc/inittab).
+	\ite the sript-file inittab ask an another skript-file rcS (placed in /etc/rc.d/rcS) and this file switch over to rc.local (/etc/rc.d/rc.local).
+	\ite an auto start could be done by addition in the file rc.local (but this means that the user has to change this file and this is obviously not an autostart, escpecially not for the first time).
+	\ite to do a 'real' auto start of the file \\
+	/armLinux/defconfigs/vendors/senTec/etc/rc.d/rc.local has to changed and then a new image has to be created.
+	\ite when this image is loaded in the FlushEPROM (with the program CFFlusher) then after a reset the program is automatical started without an interaction with the user.
+\ei
+
+%\os{\newpage}
+%\item[{\rot\bf Applications for ARM Cortex on a BeagleBoard or a Rasberry Pi Board}]~\\
+%\begin{center}
+%\begin{tabular}{|l|l|}
+%\hline
+%Exercice 1 & \textbf{BeagleBoard: Digital I/O} \\
+%\hline
+%Participants & Ramachandran, Mahalinam; Amar, Jadhav \\
+%\hline
+%Presentation & Mo. 24.6.2013, 16.00 \\
+%\hline
+%\hline
+%Exercice 2 & \textbf{BeagleBoard: Set up an Eclipse-based } \\
+%	   & \textbf{Cross Compilation} \\
+%\hline
+%Participants & Jamshid, Ummattam; Archana, Basavalingappa; \\
+%	     & Sharath, Chandra \\
+%\hline
+%Presentation & Wed. 24.6.2013, 16.15 \\
+%\hline
+%\hline
+%Exercice 3 & \textbf{BeagleBoard: Use  GPIO and a external} \\
+%	   & \textbf{D/A-Converter to build a Function Generator} \\
+%\hline
+%Participants & MD. Arifur Rahman, Neecati, Gouthan \\
+%\hline
+%Presentation & Wed. 24.6.2013, 16.30 \\
+%\hline
+%\end{tabular}
+%\end{center}
+
+
+
+\end{description}

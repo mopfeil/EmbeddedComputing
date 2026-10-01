@@ -1,0 +1,53 @@
+\documentclass[a4paper,10pt,twoside,openany]{book}
+\usepackage{color,bezier,epsfig,amsmath,amsfonts,latexsym,longtable,ecltree,epic,eepic,fancybox,moreverb,url,version,ifthen,alltt}
+\usepackage[backref,colorlinks=true,pdfpagemode=None]{hyperref}
+\usepackage{fancybox}
+\usepackage{shadow}
+\usepackage{lscape}
+
+%\usepackage[T1]{fontenc}
+\usepackage[latin1]{inputenc}
+\textwidth 170mm     
+\textheight 255mm
+\topmargin -20mm
+\evensidemargin -5mm
+\oddsidemargin -5mm
+\parindent 0mm
+
+
+%*********************** div. Macropakete ******************************
+\excludeversion{lsgenv}
+\input ./mathmacros
+\input macros
+\renewcommand{\lsg}[1]{}
+
+
+\newcommand{\konf}[4]{\ldots\Box\Box \mathtt{#1}
+        \stackrel{\raisebox{1mm}{\footnotesize #2}}
+                 {\mathtt{#3}} \mathtt{#4}\Box\Box\ldots}
+\newcommand{\fib}{\mbox{\it fib}}
+\newcommand{\nexta}{\raisebox{1pt}{\mbox{\scriptsize\bf $|\!$---$\!$--}}}
+
+
+\pagestyle{plain}
+\renewcommand{\bi}{\begin{itemize}\itemsep 0ex}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+\bibliographystyle{unsrt}
+\nocite{*}
+
+\include{cover}
+
+\setcounter{tocdepth}{1}
+\tableofcontents
+
+\input{text.tex}
+
+
+\newpage
+\baselineskip 5mm
+\def\refname{Literatur}
+\bibliography{refs}
+\addcontentsline{toc}{chapter}{References}
+\end{document}

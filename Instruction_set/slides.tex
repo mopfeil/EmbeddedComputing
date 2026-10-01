@@ -1,0 +1,82 @@
+\documentclass[12pt,a5paper,landscape,openany.pdftex]{book}
+\usepackage{color,bezier,epsfig,amsmath,amsfonts,latexsym,longtable,ecltree,epic,eepic,fancybox,moreverb,url,version,ifthen,alltt,fancyheadings}
+\usepackage[backref,colorlinks=true,pdfpagemode=FullScreen]{hyperref}
+\usepackage{fancybox}
+\usepackage{shadow}
+\usepackage[latin1]{inputenc}
+
+\textwidth 195mm     
+\textheight 138mm
+\topmargin -30mm   
+\evensidemargin -20mm
+\oddsidemargin -20mm
+\parindent 0em     
+\parskip 2ex     
+\footskip 0mm
+\setcounter{tocdepth}{0}
+
+\excludeversion{lsgenv}
+\input ./mathmacros
+\input ./mathmacros-sl
+\input macros
+\renewcommand{\lsg}[1]{}
+
+
+\newcommand{\konf}[4]{\ldots\Box\Box \mathtt{#1}
+        \stackrel{\raisebox{1mm}{\footnotesize #2}}
+                 {\mathtt{#3}} \mathtt{#4}\Box\Box\ldots}
+\newcommand{\fib}{\mbox{\it fib}}
+\newcommand{\nexta}{\raisebox{1pt}{\mbox{\scriptsize\bf $|\!$---$\!$--}}}
+
+
+
+\pagestyle{plain}
+
+\definecolor{hellgelb}{cmyk}{0,0,0.2,0}
+%\newcommand{\pagecol}{hellgelb}
+\renewenvironment{beweis}{\noindent{\bf Beweis: }}{\hfill\raisebox{-.1ex}{$\Box$}\\}
+
+\begin{document}
+\bibliographystyle{unsrt}
+\pagecolor{\pagecol}
+
+\sffamily\Large
+
+\vspace*{-5mm}
+\begin{tabular}{p{5cm}|p{14cm}}
+\\[1cm]
+&Slices to
+\\[5mm]
+&{\Huge\sf Instruction Set ARM-Cortex-A8}
+\\[1cm]
+
+
+&{\large Prof. Dr.-Ing. Franz Br\"{u}mmer}\\[1cm]
+&\today\\
+\\
+\\[5mm]
+
+\hspace*{-1mm}\epsfig{file=hslogo,width=5.4cm} &\\%[4mm]
+{\scriptsize \copyright~~F.\ Br\"{u}mmer}
+\end{tabular}
+
+%\newpage
+
+\begin{center}\parbox{0.6\textwidth}{\large \parskip -2mm
+\tableofcontents}
+\end{center}
+
+\baselineskip 5mm
+\nocite{*}
+\def\refname{Literatur}
+\bibliography{refs}
+\addcontentsline{toc}{chapter}{Reference}
+
+\renewcommand{\chapter}[1]{\refstepcounter{chapter}\newpage
+       \textcolor{headcol}{\begin{center}\Huge\bfseries
+      \thechapter~ #1\end{center}}\addcontentsline{toc}{chapter}{#1}
+}
+
+\input{text.tex}
+
+\end{document}
