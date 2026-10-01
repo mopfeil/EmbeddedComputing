@@ -1,233 +1,215 @@
-\newenvironment{folie}[1]{\section{#1}}{}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Chapter: Introduction
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\nsl{Most computers are not on a desk. They are built into washing machines,
+cars, heating systems, medical devices and smartphones, and they control
+these devices without the user ever noticing that a computer is involved.
+Such embedded systems have their own requirements. They must react in time,
+work for years without a reset, run on a battery, cost a few euros at most,
+and they must never endanger anybody.
+\newline
+This lecture covers the whole path from the requirements to a working
+device. It starts with models and cyber-physical systems, continues with
+processors and their programming in assembly, C, Rust and MicroPython, then
+treats the peripherals and interfaces of a microcontroller, networking and
+real-time operating systems. All examples run in the browser-based simulator
+Wokwi or on Replit, so they can be tried without any hardware.
+\newpage}
 
-\nsl{The lecture on Embedded Computing focuses on different aspects in computer science. Starting with a short introduction on the development of computers, we will try to get an idea about the special requirements of embedded systems. In modern times, Embedded Systems finds application in almost every field.They are used not only in cars, washing machines and toasters but also in every mobile phone you'll find one microprocessor/microcontroller. It is interesting to note that the number of microcontrollers in use is much more than the number of Personal Computers. If you are looking on an application which includes a microcontroller you will have an embedded system. 
-\newline
-Embedded systems on the contrary to a standard PC don't have graphical user interfaces (GUI), hard discs, keyboards etc. A typical example is an embedded system which controls the breaking mechanism in your car. This controller doesn't ask you in a command line (or with a click on an icon) what should be done. This system simple controls the brakes and hopefully stops your car in a dangerous situation. To fulfil such a typical requirement embedded systems have to deal with different aspects and have different requirements than standard PC. In the chapter ``Modelling'' we will try to find out what are the special conditions which embedded systems should fulfil.
-\newline
-After a general view about the requirements for embedded systems we shall shift our focus to processors. In principle, an embedded system can be realized using several different types on processors. This decision is based on factors such as application requirements, costs, computational needs etc. A standard processor of choice for an embedded system is a microcontroller. We shall focus on 'Coldfire', a 32-bit microcontroller from Motorola (or Freescale). This controller allows us to build simple stand alone applications or applications with the support of operating systems (real-time operating system).  
-\newline
-Real-time operating systems are an important part in modern embedded systems. PC based computing is not very time critical e.g. If you are running a word- processor (like MS Word) a time delay of a few seconds in opening a new document is not critical. However, imagine if the same delay occurs in deploying of Air-bags during a car crash. Hence, embedded systems have special needs and the operating system of choice for such applications are the Real-time operating systems. They offer us a lot of features which makes it easier to build more complex applications. The drawback is that real-time operating systems have bigger requirements on the onboard memory and the support of special functions of the microcontroller like a memory management unit and so on.  
-The last aspect of this lecture is, to give an introduction about the opportunities to store an algorithm on a chip directly. This so called ``solution on chip'' works with a FPGA-Chip (field programmable gate array) and offers a solution with the fast execution times.      
-\newpage
-}
+%==============================================================================
+\section{What is an Embedded System?}
+%==============================================================================
+\begin{description}
+\item[{\rot\bf Definition}]~\\
+\defn{def:embedded system intro}
+{An \textbf{embedded system} is a computer system that is part of a larger technical system and performs dedicated functions in it -- usually with requirements on timing, energy, reliability and cost.}
+\bi
+	\ite the user sees the device (a car, a coffee machine), not the computer in it
+	\ite interaction with the environment through \textbf{sensors} and \textbf{actuators}, often without a screen or keyboard
+	\ite the software is fixed for the purpose (``firmware''), updates are rare and must be safe
+\ei
+\os{\newpage}
 
+\item[{\rot\bf Embedded systems are everywhere}]~\\[-3ex]
+\bi
+	\ite tens of billions of microcontrollers are produced every year -- many times more than PC and server processors
+	\ite a modern car contains 70 to over 100 control units (engine, brakes, airbag, lights, seats, infotainment)
+	\ite household: washing machine, heating, smart meter, router, TV, smart speaker
+	\ite industry: programmable logic controllers, robots, drives, sensors with network interfaces
+	\ite medicine: pacemakers, insulin pumps, ventilators
+	\ite communication: smartphones (several processors), base stations, satellites
+\ei
+\os{\newpage}
+
+\item[{\rot\bf Structure of an embedded system}]~\\[-3ex]
+\begin{figure}[!hbtp]
+     \begin{center}
+	  \epsfig{file=figures/Fig_1_10_Blockdiagram_Embedded_System,width=0.75\textwidth}\\
+	  \caption{Block diagram of an embedded system}
+     \end{center}
+\end{figure}
+\os{\newpage}
+
+\begin{figure}[!hbtp]
+     \begin{center}
+	  \epsfig{file=figures/Fig_1_9_Blockdiagram_Embedded_Computing,width=0.7\textwidth}\\
+	  \caption{Embedded computing and the embedded system around it}
+     \end{center}
+\end{figure}
+\os{\newpage}
+\end{description}
 
 %==============================================================================
 \section{Historical Background}
 %==============================================================================
 \begin{description}
-\item[{\rot First programmable computers}]~\\[-3ex]
-\bi
-	\ite Development of computers
-	\bi
-		\ite started in 1940 (1941 Zuse Z3, Aiken Mark I)
-		\ite classification in generations
-	\ei
-\ei
-
+\item[{\rot\bf From room-sized computers to the microcontroller}]~\\[-3ex]
+\begin{figure}[!hbtp]
 \begin{center}
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[font=\sffamily\scriptsize,>=Stealth]
+	\draw[->,thick] (0,0) -- (17.5,0);
+	\foreach \x/\y/\t/\up in {
+		0.3/1941/Zuse Z3: first programmable computer/1,
+		1.4/1944/Harvard Mark I/0,
+		2.6/1966/Apollo Guidance Computer/1,
+		3.8/1971/Intel 4004: first microprocessor/0,
+		5.0/1974/TMS1000: first microcontroller/1,
+		6.2/1980/Intel 8051/0,
+		7.4/1996/Atmel AVR/1,
+		8.6/2004/ARM Cortex-M3/0,
+		9.8/2005/Arduino/1,
+		11.0/2010/RISC-V starts/0,
+		12.2/2012/Raspberry Pi/1,
+		13.4/2016/ESP32: Wi-Fi MCU/0,
+		14.6/2021/RP2040/1,
+		15.8/2024/RP2350: ARM or RISC-V/0} {
+		\fill (\x,0) circle (2pt);
+		\ifnum\up=1
+			\draw (\x,0) -- (\x,0.6); \node[above,align=center,text width=16mm] at (\x,0.6) {\textbf{\y}\\\t};
+		\else
+			\draw (\x,0) -- (\x,-0.6); \node[below,align=center,text width=16mm] at (\x,-0.6) {\textbf{\y}\\\t};
+		\fi
+	}
+\end{tikzpicture}}
+\caption{Milestones on the way to today's embedded systems}
+\end{center}
+\end{figure}
+\bi
+	\ite the first computers (Zuse Z3 1941, Mark I 1944) filled rooms; the Apollo Guidance Computer (1966) was one of the first computers built into a vehicle
+	\ite the microprocessor (1971) and the microcontroller with memory and I/O on one chip (1974) made embedded systems cheap
+	\ite today a 32 bit microcontroller with Wi-Fi costs about one euro
+\ei
+\os{\newpage}
+
+\item[{\rot\bf Computer generations}]~\\[-3ex]
+\begin{center}
+\resizebox{0.95\textwidth}{!}{%
 \begin{tabular}{|c|c|c|c|}
 \hline
-Generation & Period & Technology & Characteristics\\
+\textbf{generation} & \textbf{period} & \textbf{technology} & \textbf{typical systems}\\
 \hline
-1 & 1950 - 1959 & vacuum tube & mainframe\\
+1 & 1945 -- 1955 & vacuum tubes & mainframes \\
+2 & 1955 -- 1965 & transistors & mainframes, process control \\
+3 & 1965 -- 1975 & integrated circuits & minicomputers \\
+4 & 1975 -- & LSI / VLSI, microprocessors & workstations, PCs, microcontrollers \\
+today & & systems on chip, many cores & smartphones, IoT, AI accelerators \\
 \hline
-2 & 1960 - 1968 & transitor & mainframe, process control\\
-\hline
-3 & 1969 - 1977 & Integrated circuits & minicomputer\\
-\hline
-4 & 1978 - & LSI, VLSI & Workstation, PC\\
-\hline
-5 & 1993 - & LSI, VLSI & parallel processing\\
-
-\hline
-\end{tabular}
+\end{tabular}}
 \end{center}
-
+\bi
+	\ite the trend continues: more functions on one chip, less energy per operation, lower price
+	\ite \textbf{central vs.\ distributed}: instead of one central computer, many small connected controllers close to the sensors and actuators
+\ei
 \os{\newpage}
-
-\begin{figure}[!hbtp]%
-     \begin{center}
-	  \epsfig{file=figures/Bild1_1_ZuseZ3.jpg,width=0.6\textwidth}\\
-	  \caption {First programmable computer Zuse Z3}
-     \end{center}
-\end{figure}
-
-\os{\newpage}
-
-\begin{figure}[!hbtp]%
-     \begin{center}
-     \epsfig{file=figures/Bild1_2_ZuseZ3_Blockschaltbild,width=0.6\textwidth}\\
-     \caption{Blockdiagram of Zuse Z3}
-     \end{center}
-\end{figure}
-
-\os{\newpage}
-\begin{figure}[!hbtp]%
-     \begin{center}
-     \epsfig{file=figures/Bild1_3_MarkI,width=0.6\textwidth}\\
-     \caption{Computer Mark I}
-     \end{center}
-\end{figure}
-
-\os{\newpage}
-
-\begin{figure}[!hbtp]%
-     \begin{center}
-     \epsfig{file=figures/Bild1_4_central_vs_distributed,width=1.0\textwidth}\\
-     \caption{Central vs. distributed applications}
-     \end{center}
-\end{figure}
-
-\os{\newpage}     
-
 \end{description}
 
-
 %==============================================================================
-\section{Typical Applications}
+\section{Characteristics of Embedded Systems}
 %==============================================================================
 \begin{description}
-\item Microcontrollers in Embedded systems
+\item[{\rot\bf Dependability}]~\\[-3ex]
 \bi
-	\ite no \underline{G}raphical \underline{U}ser \underline{I}nterface (GUI)
-	\ite no hard discs
-	\ite use of special real-time operating systems instead of complex standard operating system (like Windows or full feature-Linux)
-\ei
-
-\item Features of microcontrollers
-\bi
-	\ite On-chip memory, 
-	\ite I/O-devices (analogue, digital)
-	\ite Timer/Counter-channels
-	\ite One-chip-solutions
-\ei
-\item Differences in the programming of microcontrollers
-\bi
-	\ite Cross development (using PC, workstation)
-\os{\newpage}    		
-	\ite Function oriented programming language (most 'C')            	
-        \bi  
-		\ite application without an operating system
-		\ite application with parts of an operating systems (e.g. ECOS)
-		\ite applications with a special real-time operating system
+	\ite \textbf{reliability}: probability that the system works correctly for a given time, provided it worked at the start
+	\bi
+		\ite operation for years without restart; recovery from errors by itself (watchdog)
 	\ei
+	\ite \textbf{maintainability}: how quickly the system works again after an error
+	\ite \textbf{availability}: probability that the system works at a given time
+	\ite \textbf{safety}: the system does not endanger people or the environment -- even if it fails
+	\ite \textbf{security}: the system resists attacks; connected devices must be protected and updatable
 \ei
-\begin{figure}[!hbtp]
-     \begin{center}
-	  \epsfig{file=figures/Fig_1_5_Embedded_Systems_Car,width=0.8\textwidth}
-	  \caption{Embedded systems in modern car}
-     \end{center}
-\end{figure}
-
+\qbox{Even perfectly designed systems can fail if the assumptions about the workload and possible errors turn out to be wrong.
+\newline
+Dependability must be considered from the very beginning -- it cannot be added afterwards.}
 \os{\newpage}
-\begin{figure}[!hbtp]
-     \begin{center}
-	  \epsfig{file=figures/Fig_1_6_Big_Size_Controller,width=0.3\textwidth}
-	  \caption{Microcontroller in a standard size}
-     \end{center}
-\end{figure}
-\begin{figure}[!hbtp]
-     \begin{center}
-          \epsfig{file=figures/Fig_1_7_Small_Size_Controller,width=0.3\textwidth}
-	  \caption{Small size microcontroller}
-     \end{center}
-\end{figure}
-   
-\begin{figure}[!hbtp]
-     \begin{center}
-	  \epsfig{file=figures/Fig_1_8_Robot,width=0.3\textwidth}\\
-	  \caption{A last example for embedded systems}
-     \end{center}
-\end{figure}
 
+\item[{\rot\bf Efficiency}]~\\[-3ex]
+\bi
+	\ite \textbf{energy}: battery operation for months or years, sleep modes, energy harvesting
+	\ite \textbf{code size and memory}: kilobytes instead of gigabytes; no hard disk
+	\ite \textbf{run time}: real-time requirements -- a correct answer that arrives too late is wrong
+	\ite \textbf{size and weight}: the electronics must fit into the device
+	\ite \textbf{cost}: in a series of millions every cent counts; the development costs are spread over the number of devices
+\ei
+\os{\newpage}
+
+\item[{\rot\bf Further characteristics}]~\\[-3ex]
+\bi
+	\ite \textbf{reactive}: continuous interaction with the environment, at its pace (chapter Modelling)
+	\ite \textbf{real time}: deadlines are part of the specification (chapter Operating Systems)
+	\ite \textbf{dedicated}: one purpose, known in advance -- hardware and software can be optimised for it
+	\ite \textbf{heterogeneous}: hardware and software, analog and digital, different processors and networks in one system
+	\ite \textbf{long lifetime}: industrial devices and cars are used for 10 to 20 years -- software must be maintained that long
+	\ite \textbf{cyber-physical}: computation and physics are coupled in feedback loops (chapter Cyber-Physical Systems)
+\ei
+\os{\newpage}
 \end{description}
 
 %==============================================================================
-\section{Charateristics of Embedded Systems}
+\section{About this Lecture}
 %==============================================================================
 \begin{description}
-\item[{\rot\bf Dependability of embedded systems }]~\\[-3ex]
+\item[{\rot\bf Contents}]~\\[-3ex]
+\begin{center}
+\resizebox{0.95\textwidth}{!}{%
+\begin{tabular}{|c|l|l|}
+\hline
+\textbf{chapter} & \textbf{topic} & \textbf{platform of the examples} \\
+\hline
+2 & Modelling: state machines, data flow & Pico (coffee machine FSM) \\
+3 & Cyber-physical systems, Modelica & OpenModelica, Python \\
+4 & Processors: AVR, Cortex-M, RISC-V & compiler output for 4 processors \\
+5 & Programming: build process, assembly, C, Rust, MicroPython, debugging & Pico, PC \\
+6 & Peripherals and interfaces: GPIO, interrupts, timers, ADC, UART, I$^2$C, SPI & Pico \\
+7 & Networking: Wi-Fi, IP, TCP/UDP, sockets, HTTP, MQTT & ESP32-C3, PC \\
+8 & Operating systems: FreeRTOS, Embassy, embedded Linux & ESP32-C3 \\
+\hline
+\end{tabular}}
+\end{center}
 \bi
-	\ite Reliability
-	\bi 
-		\ite probability of system working correctly provided that is was working at t=0
-		\ite continuous execution for long times (sometimes more than years)
-		\ite system could recover by themselves (implemented with watch dog-functions)
-	\ei
-	\ite Maintainbility
-	\bi 
-		\ite indicates repair friendliness   
-		\ite could be expressed as the probability of system working
-correctly d time units after error occurred.
-	\ei
-	\ite Availability
-	\bi 
-		\ite probability of system working at time t
-		\ite the availability expresses the probability that the system at the actual time is available
-	\ei
-	\ite Safety
-	\bi 
-		\ite probability that the system works correct or that no harms will be caused
-		\ite indicates that a system could fail without dangerous effects
-	\ei
+	\ite every example exists in \textbf{C} and in \textbf{Rust} (some also in Python); all are in the folder \texttt{examples/} of the lecture repository
 \ei
-
-\qbox {Conclusion
-\newline
-Even perfectly designed systems can fail if the assumptions
-  about the workload and possible errors turn out to be wrong.
-\newline
-Making the system dependable must not be an after-thought, it
-  must be considered from the very beginning.
-}
 \os{\newpage}
 
-\item[{\rot\bf Efficiency of embedded systems }]~\\[-3ex]
+\item[{\rot\bf Tools}]~\\[-3ex]
 \bi
-	\ite Energy
-	\bi 
-		\ite low power consumption by microcontrollers
-		\ite different operating modes (sleep-mode)
+	\ite \textbf{Wokwi} (\url{https://wokwi.com}): simulator for Raspberry Pi Pico, ESP32, Arduino and STM32 in the browser -- with LEDs, buttons, sensors, displays, logic analyzer and Wi-Fi
+	\bi
+		\ite C (Arduino core + SDK) and MicroPython run directly in the browser
+		\ite Rust: build locally with \texttt{cargo}, simulate with the Wokwi extension for VS Code
 	\ei
-	\ite Code-size
-	\bi 
-		\ite small external memories (SRAM or EPROM)
-		\ite no external hard disc
-		\ite in some cases one chip solutions
-	\ei
-	\ite Run-time
-	\bi 
-		\ite have to fulfil real-time constraints
-		\ite in principal, 'a right answers that arrives too late, is wrong'
-	\ei
-	\ite Size and Weight
-	\bi 
-		\ite especially in industrial applications there exits strong requirements
-	\ei
-	\ite Cost
-	\bi 
-		\ite depends on the number on installations and the cost of device (hardware)
-		\ite software cost mostly dedicated to one embedded system project (no general purpose software available)
-	\ei 
+	\ite \textbf{Replit} (\url{https://replit.com}) or your own PC: programs for the PC side (sockets, Python, Rust tests)
+	\ite \textbf{Rust}: \texttt{rustup}, \texttt{cargo}, targets \texttt{thumbv6m-none-eabi} (Pico) and \texttt{riscv32imc-unknown-none-elf} (ESP32-C3)
+	\ite \textbf{git}: all sources of the lecture and the examples are under version control
+	\ite real hardware is optional: Raspberry Pi Pico and ESP32-C3 boards cost a few euros, and the same programs run on them
 \ei
-
-\begin{figure}[!hbtp]
-     \begin{center}
-	  \epsfig{file=figures/Fig_1_9_Blockdiagram_Embedded_Computing,width=0.7\textwidth}\\
-	  \caption{Blockdiagram Embedded Computing vs. Embedded System}
-     \end{center}
-\end{figure}
-     
 \os{\newpage}
-\bigskip
-\begin{figure}[!hbtp]
-     \begin{center}
-     	\epsfig{file=figures/Fig_1_10_Blockdiagram_Embedded_System,width=0.8\textwidth}\\
-	\caption{Blockdiagram Embedded System}
-     \end{center}
-\end{figure}
 
+\item[{\rot\bf Exercises}]~\\[-3ex]
+\bi
+	\ite List ten embedded systems in your home. For each: which sensors, which actuators, which communication?
+	\ite Which of the characteristics (dependability, efficiency, real time, cost) is most important for an airbag control unit, a smart light bulb and a heart pacemaker?
+	\ite Open \url{https://wokwi.com}, start a new Raspberry Pi Pico project and let the on-board LED blink.
+\ei
 \end{description}
-
-
