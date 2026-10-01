@@ -1,0 +1,19 @@
+[package]
+name = "pico-programming"
+version = "0.1.0"
+edition = "2024"
+description = "Rust examples for the chapter 'Programming' (Raspberry Pi Pico, simulated in Wokwi)"
+
+[dependencies]
+cortex-m = "0.7.7"
+cortex-m-rt = "0.7.5"
+embedded-hal = "1.0.0"
+panic-halt = "1.0.0"
+rp-pico = "0.9.0"
+debounce = { path = "../debounce" }   # our own, hardware independent library
+
+[profile.dev]
+opt-level = 1
+
+[profile.release]
+debug = 2            # keep symbols for the debugger

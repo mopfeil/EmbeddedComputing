@@ -1,0 +1,9 @@
+# Wokwi for VS Code: simulate one of the examples.
+# 1. cargo build --release
+# 2. set the example in the two paths below
+# 3. F1 -> "Wokwi: Start Simulator" (or "... and Wait for Debugger", then GDB on port 3333)
+[wokwi]
+version = 1
+firmware = "target/thumbv6m-none-eabi/release/asm_sum"
+elf = "target/thumbv6m-none-eabi/release/asm_sum"
+gdbServerPort = 3333
