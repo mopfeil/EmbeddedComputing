@@ -13,6 +13,9 @@
 \usepackage{chngcntr}
 \usepackage{verbatim}
 \graphicspath{{./}{./images/}}   % images/ holds the figures of tcp_ip_serial.tex
+\usepackage{tikz}                % own drawings (block diagrams, signals)
+\usetikzlibrary{arrows.meta,positioning,calc,decorations.pathreplacing}
+\usepackage{tikz-timing}         % timing diagrams (UART, I2C, SPI, ...)
 
 \usepackage{listings}
 \definecolor{codegreen}{rgb}{0,0.6,0}
@@ -104,7 +107,8 @@ numbersep=9pt,
 tabsize=2,
 breaklines=true,
 showtabs=false,
-captionpos=b
+captionpos=b,
+columns=flexible       % natural character width - avoids wrapped lines
 }
 
 %define Rust language (listings has no built-in Rust)
