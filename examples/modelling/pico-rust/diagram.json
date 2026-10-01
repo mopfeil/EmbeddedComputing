@@ -1,0 +1,209 @@
+{
+  "version": 1,
+  "author": "Embedded Computing lecture",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "type": "wokwi-pi-pico",
+      "id": "pico",
+      "top": 0,
+      "left": 0,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "btn_left",
+      "top": -90,
+      "left": -180,
+      "attrs": {
+        "color": "blue",
+        "label": "LEFT"
+      }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "btn_right",
+      "top": -30,
+      "left": -180,
+      "attrs": {
+        "color": "blue",
+        "label": "RIGHT"
+      }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "btn_ready",
+      "top": 30,
+      "left": -180,
+      "attrs": {
+        "color": "yellow",
+        "label": "READY"
+      }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led_coffee",
+      "top": -60,
+      "left": 200,
+      "attrs": {
+        "color": "orange",
+        "label": "COFFEE"
+      }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r_coffee",
+      "top": -10,
+      "left": 150,
+      "rotate": 90,
+      "attrs": {
+        "value": "220"
+      }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led_milk",
+      "top": 0,
+      "left": 200,
+      "attrs": {
+        "color": "white",
+        "label": "MILK"
+      }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r_milk",
+      "top": 50,
+      "left": 150,
+      "rotate": 90,
+      "attrs": {
+        "value": "220"
+      }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led_sugar",
+      "top": 60,
+      "left": 200,
+      "attrs": {
+        "color": "yellow",
+        "label": "SUGAR"
+      }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r_sugar",
+      "top": 110,
+      "left": 150,
+      "rotate": 90,
+      "attrs": {
+        "value": "220"
+      }
+    }
+  ],
+  "connections": [
+    [
+      "$serialMonitor:RX",
+      "pico:GP0",
+      "",
+      []
+    ],
+    [
+      "$serialMonitor:TX",
+      "pico:GP1",
+      "",
+      []
+    ],
+    [
+      "pico:GP10",
+      "btn_left:1.r",
+      "blue",
+      []
+    ],
+    [
+      "btn_left:2.r",
+      "pico:GND.1",
+      "black",
+      []
+    ],
+    [
+      "pico:GP11",
+      "btn_right:1.r",
+      "blue",
+      []
+    ],
+    [
+      "btn_right:2.r",
+      "pico:GND.2",
+      "black",
+      []
+    ],
+    [
+      "pico:GP12",
+      "btn_ready:1.r",
+      "blue",
+      []
+    ],
+    [
+      "btn_ready:2.r",
+      "pico:GND.3",
+      "black",
+      []
+    ],
+    [
+      "pico:GP16",
+      "r_coffee:1",
+      "orange",
+      []
+    ],
+    [
+      "r_coffee:2",
+      "led_coffee:A",
+      "orange",
+      []
+    ],
+    [
+      "led_coffee:C",
+      "pico:GND.6",
+      "black",
+      []
+    ],
+    [
+      "pico:GP17",
+      "r_milk:1",
+      "orange",
+      []
+    ],
+    [
+      "r_milk:2",
+      "led_milk:A",
+      "orange",
+      []
+    ],
+    [
+      "led_milk:C",
+      "pico:GND.7",
+      "black",
+      []
+    ],
+    [
+      "pico:GP18",
+      "r_sugar:1",
+      "orange",
+      []
+    ],
+    [
+      "r_sugar:2",
+      "led_sugar:A",
+      "orange",
+      []
+    ],
+    [
+      "led_sugar:C",
+      "pico:GND.8",
+      "black",
+      []
+    ]
+  ],
+  "dependencies": {}
+}

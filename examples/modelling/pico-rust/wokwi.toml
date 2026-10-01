@@ -1,0 +1,6 @@
+# Wokwi for VS Code: cargo build --release, then F1 -> "Wokwi: Start Simulator"
+[wokwi]
+version = 1
+firmware = "target/thumbv6m-none-eabi/release/coffee_machine"
+elf = "target/thumbv6m-none-eabi/release/coffee_machine"
+gdbServerPort = 3333

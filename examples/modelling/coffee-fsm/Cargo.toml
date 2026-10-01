@@ -1,0 +1,7 @@
+[package]
+name = "coffee-fsm"
+version = "0.1.0"
+edition = "2024"
+description = "Moore state machine of the coffee machine - hardware independent, tested on the PC"
+
+[dependencies]
