@@ -1,0 +1,27 @@
+[package]
+name         = "esp32-os"
+version      = "0.1.0"
+edition      = "2024"
+rust-version = "1.95"
+description  = "Rust (Embassy) examples for the chapter 'Operating Systems' (ESP32-C3, simulated in Wokwi)"
+
+[dependencies]
+esp-hal                = { version = "~1.2.2", features = ["esp32c3", "log-04", "unstable"] }
+esp-rtos               = { version = "0.4.0", features = ["embassy", "esp32c3", "log-04"] }
+esp-bootloader-esp-idf = { version = "0.6.0", features = ["esp32c3", "log-04"] }
+esp-backtrace          = { version = "0.20.0", features = ["esp32c3", "panic-handler", "println"] }
+esp-println            = { version = "0.18.0", features = ["esp32c3", "log-04"] }
+
+embassy-executor = { version = "0.10.0" }
+embassy-time     = { version = "0.5.0" }
+embassy-sync     = "0.8.0"
+nb               = "1.1.0"
+
+[profile.dev]
+opt-level = "s"
+
+[profile.release]
+codegen-units = 1
+debug         = 2     # keep symbols for the Wokwi debugger
+lto           = "fat"
+opt-level     = "s"

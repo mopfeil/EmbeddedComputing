@@ -1,0 +1,9 @@
+# Wokwi for VS Code: simulate one of the examples.
+# 1. cargo build --release
+# 2. set the example in the two paths below
+# 3. F1 -> "Wokwi: Start Simulator"
+[wokwi]
+version = 1
+firmware = "target/riscv32imc-unknown-none-elf/release/tasks"
+elf = "target/riscv32imc-unknown-none-elf/release/tasks"
+gdbServerPort = 3333
