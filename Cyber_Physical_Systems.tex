@@ -1,331 +1,349 @@
-\nsl{Cyber-Physical Systems (CPS) are typical mechatronics systems because there are based on mechanical systems augmented with communication capabilities and connectivity controlled
- by IT-components. The basic idea is to take physical systems, described by a set of physical entities and equations and control or monitored these systems by computer based algorithm.
-All the components have first to be described and the behavior simulated and during the development process an exchange between the simulated an the real parts take place. 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Chapter: Cyber-Physical Systems
+% Examples: examples/cps (Modelica models, the same equations in Python)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Overview}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\nsl{An embedded system never works alone. It measures and influences a
+physical process: the temperature of a room, the speed of a motor, the
+position of a robot arm. Cyber-physical systems (CPS) are systems in which
+this coupling of computation and physics is essential. They are often
+distributed and connected, as in a car, a factory, a power grid or an
+aircraft. Their behaviour can only be understood if both parts are
+described together: the physics with differential equations, the software
+with algorithms and state machines.
 \newline
-Today we find cyber-physical systems especially in bigger projects which deals with aerospace, automotive, chemical, energy, manufacturing applications. CPS involves interdisciplinary approaches 
-like system engineering, control theorie but also mechanical design and design in general. In interesting link exsist between CPS and the new technology Internet of Things (IoT).
-\newline
-In this chapter we'll first try to get a shorter look at cyber-physical systems. Then we focus on a tool which gives as an opportunity to modelling different physical systems 
-like mechanical and electrical systems but also question about the thermal requirements we'll try to answer. The modelling tool (Modelica) offers methods to write physical equations or to use a graphical 
-user interface to describe systems. The systems itself can have a simple input output behaviour but also complex relationsships.  
+Because building and testing the real system is expensive and sometimes
+dangerous, CPS are developed with models and simulation. This chapter
+introduces the idea of CPS and the steps from a model to the real system.
+It then shows how physical systems are modelled with the equation-based
+language Modelica, using the free tool OpenModelica, and with a few lines of
+Python.
+\newpage}
 
-}
-
-
-%==============================================================================
-\section{Overview, Delimitation of the Topic}
-%==============================================================================
 \begin{description}
-\item[{\rot Topics of Cyber-Physical Systems}]~\\[-3ex]
-\bi
-	\ite Combination between: 
-	\bi
-		\ite mechanical components 
-		\ite electrical components
-		\ite design aspects
-		\ite communication capabilities
-		\ite IT-components
-	\ei
-	\ite simulation of all different components
-	\ite study of the dependencies between the components
-	\ite mix between simulated components and real hardware (Hardware in the Loop, HIL)
-\ei
-
+\item[{\rot\bf What is a cyber-physical system?}]~\\
 \defn{def:Cyber-Physical System}
-{An \textbf{Cyber-Physical Systems} are integrations of computation with physical processes. Embedded computers and networks monitor and control the physical processes, usually with 
-     feedback loops where physical processes affect computations and vice versa. [Edward A. Lee, 2008]}
+{\textbf{Cyber-physical systems} are integrations of computation with physical processes. Embedded computers and networks monitor and control the physical processes, usually with feedback loops where physical processes affect computations and vice versa. [Edward A.\ Lee, 2008]}
+\bi
+	\ite combination of mechanical, electrical, thermal, \ldots{} components with software and communication
+	\ite examples: driver assistance systems, industrial robots, smart grids, medical devices, building automation
+	\ite related terms: \textbf{Internet of Things} (focus on connectivity), \textbf{Industry 4.0} (production), \textbf{digital twin} (a model of a real system that is kept up to date with data from the system)
+\ei
 \os{\newpage}
 
+\item[{\rot\bf The feedback loop}]~\\[-3ex]
 \begin{figure}[!hbtp]
-     \begin{center}
-	  \epsfig{file=figures/Fig_3_1_CPS.png,width=0.8\textwidth}\\
-	  \caption {Architecture of a Cyber-Physical System}
-     \end{center}
+\begin{center}
+\resizebox{0.85\textwidth}{!}{%
+\begin{tikzpicture}[font=\sffamily\small,>=Stealth,
+	b/.style={draw,thick,rounded corners,minimum width=30mm,minimum height=12mm,align=center}]
+	\node[b,fill=green!15] (proc) at (0,0) {physical process\\(e.g.\ room, motor)};
+	\node[b,fill=orange!15] (sens) at (-4.5,2.2) {sensors\\+ ADC};
+	\node[b,fill=blue!10] (comp) at (0,4.4) {computation\\(controller, state machine)};
+	\node[b,fill=orange!15] (act) at (4.5,2.2) {actuators\\+ PWM, DAC};
+	\node[b,fill=gray!10] (net) at (6.5,5.6) {network\\other systems};
+	\draw[->,thick] (proc) -| node[pos=0.75,left,font=\sffamily\scriptsize]{measured values} (sens);
+	\draw[->,thick] (sens) |- (comp);
+	\draw[->,thick] (comp) -| (act);
+	\draw[->,thick] (act) |- node[pos=0.25,right,font=\sffamily\scriptsize]{forces, heat, \ldots} (proc);
+	\draw[<->,thick,dashed] (comp.north east) -- (net);
+	\node[font=\sffamily\scriptsize] at (-4.5,4.9) {cyber};
+	\node[font=\sffamily\scriptsize] at (-4.5,-0.6) {physical};
+	\draw[dashed,gray] (-6.5,1.2) -- (7.5,1.2);
+\end{tikzpicture}}
+\caption{A cyber-physical system: computation and physical process in a closed loop}
+\end{center}
 \end{figure}
-
-\os{\newpage}    
-
 \bi
-     \ite Study of the behaviour of Cyber-Physical Systems
-     \bi
-	  \ite Simulationtools
-	  \ite use of linear and nonlinear equations systems
-	  \ite modeling time continuing and time discret systems
-	  \ite models with concentrated parameters
-	  \ite blockoriented systems
-	  \ite objectorieted systems
-     \ei
+	\ite the physical process runs continuously in time; the computer samples and acts at discrete times
+	\ite timing is part of the correctness: a controller that reacts too late can make the loop unstable
 \ei
-
-\bi
-     \ite typical tools for the simulations
-     \bi
-	  \ite MatLab (Simulink)
-	  \ite Mathematica
-	  \ite Modelica (Dymola)
-	  \ite OpenModelica
-     \ei	  
-\ei
-
-\bi
-     \ite standard methods in technical applications \pr blockoriented modells (systems)
-     \ite fixed input/output relations (causal dependency, assignments)
-     \ite often with the use of graphical input/output support
-\ei
-
-\begin{figure}[!hbtp]
-     \begin{center}
-	  \epsfig{file=figures/Fig_3_2_Simulink,width=0.8\textwidth}\\
-	  \caption {Blockoriented Modell (Simulink)}
-     \end{center}
-\end{figure}
 \os{\newpage}
- 
+
+\item[{\rot\bf From model to product}]~\\[-3ex]
 \bi
-	\ite in physical systems objectorieted methods are more useful
-	\ite focus on physical behavior (equations)
-	\ite input/output relations more in the background (assigments not fixed)
+	\ite the system is developed and tested in steps, replacing models by real parts one after the other
 \ei
+\begin{figure}[!hbtp]
+\begin{center}
+\resizebox{0.8\textwidth}{!}{%
+\begin{tikzpicture}[font=\sffamily\small,>=Stealth,
+	b/.style={draw,thick,rounded corners,minimum height=16mm,text width=30mm,align=center}]
+	\node[b,fill=blue!8] (mil) at (0,0) {\textbf{MiL}\\model in the loop\\controller model + plant model};
+	\node[b,fill=blue!15] (sil) at (4,0) {\textbf{SiL}\\software in the loop\\real code on the PC + plant model};
+	\node[b,fill=orange!15] (pil) at (8,0) {\textbf{PiL}\\processor in the loop\\code on the target processor};
+	\node[b,fill=orange!25] (hil) at (12,0) {\textbf{HiL}\\hardware in the loop\\real ECU + simulated plant in real time};
+	\foreach \a/\b in {mil/sil,sil/pil,pil/hil} \draw[->,thick] (\a) -- (\b);
+\end{tikzpicture}}
+\caption{Test levels from the model to the real hardware}
+\end{center}
+\end{figure}
+\bi
+	\ite \textbf{HiL}: the real control unit runs against a real-time plant simulator -- dangerous or rare situations can be tested safely and repeatably
+	\ite our Wokwi simulations are a kind of PiL test: the real firmware on a simulated processor
+	\ite \textbf{FMI} 3.0 (2022): standard to exchange models between tools as \textbf{FMU}s for co-simulation
+\ei
+\os{\newpage}
+
+\item[{\rot\bf Simulation of physical systems}]~\\[-3ex]
+\bi
+	\ite physical systems are described by \textbf{differential equations}, often with algebraic constraints (differential-algebraic equations, DAE)
+	\ite models with lumped parameters (masses, springs, resistors) -- ordinary differential equations
+	\ite continuous-time physics combined with discrete-time controllers and events (hybrid systems)
+	\ite tools
+	\bi
+		\ite \textbf{block oriented}: MATLAB/Simulink, Xcos (Scilab) -- signals flow in one direction from block to block
+		\ite \textbf{equation based} (object oriented): Modelica with OpenModelica (free) or Dymola (commercial) -- components are described by their physical equations
+		\ite general programming languages: Python with \texttt{numpy}/\texttt{scipy}, Julia (ModelingToolkit)
+	\ei
+\ei
+\os{\newpage}
+
+\item[{\rot\bf Block oriented modelling}]~\\[-3ex]
+\bi
+	\ite the system is a diagram of blocks with inputs and outputs: gain, sum, integrator, transfer function
+	\ite every connection has a fixed direction (causality): the modeller decides what is computed from what
+\ei
+\begin{figure}[!hbtp]
+\begin{center}
+\resizebox{0.6\textwidth}{!}{%
+\begin{tikzpicture}[font=\sffamily\small,>=Stealth,
+	b/.style={draw,thick,minimum width=14mm,minimum height=10mm}]
+	\node[b] (gain) at (0,0) {$-a$};
+	\node[b] (int) at (3,0) {$\displaystyle\int dt$};
+	\draw[->,thick] (gain) -- node[above]{$\dot x$} (int);
+	\draw[->,thick] (int) -- (5,0) node[right]{$x$};
+	\draw[->,thick] (4.3,0) |- (1.5,-1.4) -| ($(gain.west)+(-0.6,0)$) -- (gain.west);
+	\fill (4.3,0) circle (1.5pt);
+	\node[below,font=\sffamily\scriptsize] at (3,0.9) {$x(0)=1$};
+\end{tikzpicture}}
+\caption{Block diagram of $\dot x = -a\,x$: the output of the integrator is fed back}
+\end{center}
+\end{figure}
+\bi
+	\ite natural for control engineering and signal processing
+	\ite for physical networks (electrical circuits, mechanics) the modeller must first solve the equations for the right variables by hand -- this is what equation-based tools avoid
+\ei
+\os{\newpage}
+\end{description}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Modelling with Modelica}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\nsl{Modelica is a language for describing physical systems by equations. A
+model states which relations hold, for example Ohm's law $u = R \cdot i$,
+without saying which variable is computed from which. The compiler sorts the
+equations, solves them symbolically where possible and generates simulation
+code. Components can be connected like real parts: connecting a resistor to
+a capacitor automatically produces Kirchhoff's laws. Modelica is
+standardised by the Modelica Association. OpenModelica is a free
+implementation with a graphical editor (OMEdit) and an extensive standard
+library for electrical, mechanical, thermal, fluid and control components.}
+
+\begin{description}
+\item[{\rot\bf Features of Modelica / OpenModelica}]~\\[-3ex]
+\bi
+	\ite \textbf{equation based} (acausal): equations instead of assignments -- the tool decides the order of computation
+	\ite \textbf{object oriented}: classes, instances, inheritance, packages; parameters separate from the structure (a resistor model, used with different values)
+	\ite \textbf{multi-domain}: electrical, mechanical, thermal, hydraulic, \ldots{} components in one model
+	\ite \textbf{connectors} with potential variables (voltage, temperature) and flow variables (current, heat flow): \texttt{connect()} creates the equations ``potentials equal, sum of flows zero''
+	\ite physical units for all quantities (\texttt{unit = "V"}) -- the tool checks them
+	\ite graphical (drag and drop in OMEdit) and textual modelling of the same model
+	\ite export as FMU for co-simulation; code generation for controllers
+\ei
+\os{\newpage}
+
+\item[{\rot\bf OpenModelica: graphical modelling}]~\\[-3ex]
 \begin{figure}[!hbtp]%
      \begin{center}
 	  \epsfig{file=figures/Fig_3_3_OpenModelica,width=0.8\textwidth}\\
-	  \caption {OpenModelica Modell of a Heattransfer}
+	  \caption{OpenModelica model of a heat transfer}
      \end{center}
-\end{figure}     
+\end{figure}
 \os{\newpage}
-\end{description}
 
-%==============================================================================
-\section{OpenModelica}
-%==============================================================================
-\begin{description}
-\item Features of OpenModelica
+\item[{\rot\bf First elements of Modelica}]~\\[-3ex]
 \bi
-	\ite objectoriented modeling and simulation
-	\ite integration of hardware components in the simulation (HIL, \underline{H}ardware \underline{i}n the \underline{l}oop)
-	\ite standardisation of interfaces for simulation (FMI, \underline{F}unctional \underline{m}ookup \underline{i}nterface)
-	\ite description of a physikal system by a set of equations
-	\ite no specific description of of input/output relations (equation systems has no assignments)
-	\ite focus on physical dimension system (SI dimensions)
+	\ite data types: \texttt{Real} (64 bit floating point), \texttt{Integer}, \texttt{Boolean}, \texttt{String}, enumerations
+	\ite \texttt{parameter}: constant during a simulation, can be changed between simulations
+	\ite \texttt{der(x)}: time derivative $\dot x$
+	\ite \texttt{start}: initial value; \texttt{fixed = true}: the initial value must hold exactly
+	\ite example: $\dot x = -a \cdot x$
 \ei
-
-\item Features as an objectoriented modelling and simulation tool
-\bi
-	\ite data structure with objects (dada objects) and methods (functions) 
-	\ite features and methods are linked to objects
-	\ite features of objects are grouped in classes
-	\ite classes can be parts of other classes (hierachical dada structures, modells)
-	\ite group of classes in packages
-	\ite separation between declaration and quantity (e.g. declaration of a resistor and specification of values)
-	\ite inhertance of classes and subclasses
-\ei
-\item Features as a multi-domain modelling an simulation tool
-\bi
-	\ite declarative language (equation set, acausal modelling, high level specification)
-	\ite combine modelling of electrical, mechanical, thermodynamic, hydraulic biological .. systems)
-	\ite visual component modelling and simulation
-     	\ite code generation opportunity (control application)
-
-\ei
-
-\end{description}
-
-\begin{description}
-     \item [{\rot\bf First Elements of OpenModelica}]~\\[-3ex]
-\bi
-     \ite Data types
-     \bi
-	  \ite Boolean: true, false
-	  \ite Integer: 32-bit Integer-number (same as in C)
-	  \ite Real: 64-bit floating point number (same as double in C)
-	  \ite String: char-string
-	  \ite enumeration: (same as in C)
-     \ei
-     \bigskip
-     \bi
-	  \ite acausal equation (no assigments, but description of relation between the Potential and the Flow)
-	  \ite parameter
-	  \ite example: simple differential equation \begin{math}\dot{x} = -a \cdot x\end{math}
-     \ei	  
-\ei     
-\begin{lstlisting}
-     class HDE
-	  Real x(start = 1);
-	  parameter Real a = 1;
-     equation
-	  der(x) = - a*x;
-     end HDE;
+\begin{lstlisting}[language={}]
+model HDE
+  Real x(start = 1, fixed = true);
+  parameter Real a = 1;
+equation
+  der(x) = -a*x;
+end HDE;
 \end{lstlisting}
+\os{\newpage}
 
-\os{\newpage}
 \begin{figure}[!hbtp]
      \begin{center}
-	  \epsfig{file=figures/Fig_3_4_HDE_OMEdit,width=0.8\textwidth}\\
-	  \caption {Modell HDE in OMEdit}
-     \end{center}
-\end{figure}
-\os{\newpage}
-\begin{figure}[!hbtp]
-     \begin{center}
-	  \epsfig{file=figures/Fig_3_5_HDE_Plot,width=0.8\textwidth}\\
-	  \caption {Plot of the Modell HDE}
+	  \epsfig{file=figures/Fig_3_4_HDE_OMEdit,width=0.75\textwidth}\\
+	  \caption{Model HDE in OMEdit}
      \end{center}
 \end{figure}
 \os{\newpage}
 
+\begin{figure}[!hbtp]
+     \begin{center}
+	  \epsfig{file=figures/cps_hde.pdf,width=0.75\textwidth}\\
+	  \caption{Solution of the model HDE: simulation and exact solution $x(t) = e^{-a t}$}
+     \end{center}
+\end{figure}
+\os{\newpage}
+
+\item[{\rot\bf Differential-algebraic equations: the pendulum}]~\\[-3ex]
 \bi
-     \ite number equations which describes of relation between the Potential and the Flow indicates the number of variables (state variables)
-     \ite additionally a modell can contain algebraic equation (no derivatives)
-     \ite example: Planar Pendulum 
+	\ite a model can contain algebraic equations (without derivatives) besides the differential equations
+	\ite example: a planar pendulum, a mass $m$ on a rod of length $L$; the rod force $F$ is unknown
 \ei
-\begin{figure}[!hbtp]
-     \begin{center}
-	  \epsfig{file=figures/Fig_3_6_Pendulum,width=0.3\textwidth}\\
-	  \caption {Planar Pendulum}
-     \end{center}
-\end{figure}
-\os{\newpage}
-
+\begin{minipage}{0.3\textwidth}
 \begin{center}
-     \begin{eqnarray*}  
-	  m\dot{v}_x = -\frac{x}{L}F
-     \end{eqnarray*}\
-     \begin{eqnarray*}  
-	  m\dot{v}_y = -\frac{y}{L} - mg
-     \end{eqnarray*}\
-     \begin{eqnarray*}  
-	  \dot{x} = v_x
-     \end{eqnarray*}\
-     \begin{eqnarray*}  
-	  \dot{y} = v_x
-     \end{eqnarray*}\
-      \begin{eqnarray*}  
-	  x^2 + y^2 = L^2
-     \end{eqnarray*}\
+\epsfig{file=figures/Fig_3_6_Pendulum,width=0.8\textwidth}
 \end{center}
+\end{minipage}
+\begin{minipage}{0.65\textwidth}
+\begin{eqnarray*}
+m\,\dot{v}_x &=& -\frac{x}{L}\,F \\
+m\,\dot{v}_y &=& -\frac{y}{L}\,F - m\,g \\
+\dot{x} &=& v_x \\
+\dot{y} &=& v_y \\
+x^2 + y^2 &=& L^2
+\end{eqnarray*}
+\end{minipage}
+\bi
+	\ite 5 equations for 5 unknowns ($x, y, v_x, v_y, F$); the last equation is the constraint of the rod
+\ei
 \os{\newpage}
 
-\begin{lstlisting}
-     class Pendulum
-	  constant Real PI;
-	  parameter Real m = 1, g = 9,81, L = 0.5;
-	  Real F;
-	  output Real x(start = 0.5), y(start = 0);
-	  output Real vx, vy;
-     equation
-	  m*der(vx)=-(x/L)*F;
-	  m*der(vy)=-(y/L)*F - m*g;
-	  der(x)=vy;
-	  der(y)=vy;
-	  x^2 + y^2 = L^2;	/* algebraic equation */
-     end Pendulum;
+\item[{\rot\bf The pendulum in Modelica}]~\\[-3ex]
+\begin{lstlisting}[language={}]
+model Pendulum "Planar pendulum"
+  parameter Real m = 1, g = 9.81, L = 0.5;
+  Real F;
+  Real x(start = 0.5, fixed = true), y(start = 0);
+  Real vx, vy;
+equation
+  m*der(vx) = -(x/L)*F;
+  m*der(vy) = -(y/L)*F - m*g;
+  der(x) = vx;
+  der(y) = vy;
+  x^2 + y^2 = L^2;   // algebraic equation (constraint of the rod)
+end Pendulum;
 \end{lstlisting}
-
+\bi
+	\ite the equations are written as in the physics book; OpenModelica reduces the DAE (index reduction) and chooses the state variables itself
+\ei
 \os{\newpage}
+
 \begin{figure}[!hbtp]
      \begin{center}
-	  \epsfig{file=figures/Fig_3_7_Pendulum_Plot,width=0.8\textwidth}\\
-	  \caption {Horizontal and Vertical Position of a Planar Pendulum}
+	  \epsfig{file=figures/cps_pendulum.pdf,width=0.8\textwidth}\\
+	  \caption{Horizontal and vertical position of the pendulum, started with the rod horizontal}
      \end{center}
 \end{figure}
-\os{\newpage}
-
-\end{description}
- 
-\begin{description}
-\item[{\rot\bf Classes and Instances of OpenModelica }]~\\[-3ex]
 \bi
-	\ite Classes
-	\bi 
-		\ite every object has a class that defines the data and its behavior
-		\ite a class has to kind of members:
-	        \bi
-		    \ite data variables (constants, parameter, result of computations)
-		    \ite equations specifing the behaviour of the data (sometimes interact with other other equations, program execution)
-		    \ite classes can be members of other classes
-		\ei
-		\ite example of a class
-				
-	\ei
-\ei
-\begin{lstlisting}
-     class Point	/* Point in a three-dimensional space	*/
-	 Real x;
-	 Real y;
-	 Real z;
-     end Point;;
-\end{lstlisting}     
-
-\bi
-     \ite Instances
-     \bi
-	  \ite instances are generated by the use of classes
-	  \ite excample of instances of the class point (and define a new class triangle)
-     \ei
-\ei
-
-\begin{lstlisting}
-     class Triangle
-	 Point point1;
-	 Point point;
-	 Point point;
-     end Triangle;;
-\end{lstlisting}  
-
-\bi
-     \ite with the instantiation an initializatiion can take place 
-\ei
-\begin{lstlisting}
-     class Triangle
-	  Point point1(start={1,2,3}];
-	  Point point;
-	  Point point;
-     end Triangle;;
-\end{lstlisting}  
-
-\bi
-     \ite electrical example with different classes and initializations 
+	\ite $y$ is always $\le 0$: the mass swings below the pivot; the period is longer than for small angles
 \ei
 \os{\newpage}
-\begin{figure}[!hbtp]
-     \begin{center}
-	  \epsfig{file=figures/Fig_3_8_RLC,width=0.5\textwidth}\\
-	  \caption {RLC-Circuit}
-     \end{center}
-\end{figure}
-\begin{lstlisting}
-Model RLC1 \* A resistor-inductor-capacitor circuit model */
-     type Voltage=Real(unit="V");
-     type Current=Real(unit="A");
-     type Resistance=Real(unit="Ohm");
-     type Capacitance=Real(unit="F");
-     type Inductance=Real(unit="H");
-     parameter Voltage Vb=24 "Battery Voltage";
-     parameter Inductance L = 1;
-     parameter Resistance R = 100;
-     parameter Capacitance C = 1e-3;
-     Voltage V;
-     Current i_L;
-     Current i_R;
-     Current i_C;
+
+\item[{\rot\bf Classes and instances}]~\\[-3ex]
+\bi
+	\ite every object has a class that defines its data and its behaviour
+	\ite a class has variables (constants, parameters, computed values), equations, and can contain instances of other classes
+\ei
+\begin{lstlisting}[language={}]
+class Point "Point in a three-dimensional space"
+  Real x;
+  Real y;
+  Real z;
+end Point;
+
+class Triangle
+  Point point1;
+  Point point2;
+  Point point3;
+end Triangle;
+
+class Triangle2 "with modification of an instance"
+  Point point1(x = 1, y = 2, z = 3);
+  Point point2;
+  Point point3;
+end Triangle2;
+\end{lstlisting}
+\os{\newpage}
+
+\item[{\rot\bf An electrical example}]~\\[-3ex]
+\begin{minipage}{0.35\textwidth}
+\begin{center}
+\epsfig{file=figures/Fig_3_8_RLC,width=0.9\textwidth}
+\end{center}
+\end{minipage}
+\begin{minipage}{0.6\textwidth}
+\begin{lstlisting}[language={}]
+model RLC1 "A resistor-inductor-capacitor circuit"
+  type Voltage = Real(unit = "V");
+  type Current = Real(unit = "A");
+  parameter Voltage Vb = 24 "Battery voltage";
+  parameter Real L(unit = "H") = 1;
+  parameter Real R(unit = "Ohm") = 100;
+  parameter Real C(unit = "F") = 1e-3;
+  Voltage V;
+  Current i_L, i_R, i_C;
 equation
   V = i_R*R;
   C*der(V) = i_C;
-  L*der(i_L) = (Vb-V);
-  i_L=i_R+i_C;
-end RLC1;  
-\end{lstlisting}  
-
-
+  L*der(i_L) = Vb - V;
+  i_L = i_R + i_C;
+end RLC1;
+\end{lstlisting}
+\end{minipage}
 \os{\newpage}
+
 \begin{figure}[!hbtp]
      \begin{center}
-	  \epsfig{file=figures/Fig_3_9_RLC_Plot,width=0.8\textwidth}\\
-	  \caption {Behaviour of the different Currents in a RLC-Circuit}
+	  \epsfig{file=figures/cps_rlc.pdf,width=0.8\textwidth}\\
+	  \caption{Currents in the RLC circuit after switching on the battery}
      \end{center}
 \end{figure}
+\bi
+	\ite damped oscillation ($\omega_0 = 1/\sqrt{LC} \approx 31.6$\,s$^{-1}$, i.e.\ about 5\,Hz); final state $i_L = i_R = V_b/R = 0.24$\,A, $i_C = 0$
+\ei
 \os{\newpage}
 
+\item[{\rot\bf The same equations in Python}]~\\[-3ex]
+\begin{lstlisting}[language=Python]
+from scipy.integrate import solve_ivp
+
+Vb, L, R, C = 24.0, 1.0, 100.0, 1e-3
+
+def rlc(t, s):            # state: capacitor voltage V, inductor current i_L
+    V, iL = s
+    return [(iL - V / R) / C,      # C dV/dt   = i_C = i_L - V/R
+            (Vb - V) / L]          # L di_L/dt = Vb - V
+
+sol = solve_ivp(rlc, (0, 1.5), [0.0, 0.0], max_step=1e-3)
+print("final i_L =", sol.y[1][-1])   # 0.240 A
+\end{lstlisting}
+\bi
+	\ite here the equations had to be solved for the derivatives by hand -- for the RLC circuit easy, for the pendulum DAE not (we used the angle as the only state)
+	\ite this is exactly the work Modelica does automatically for large models
+	\ite the plots of this chapter were created with this script (\texttt{examples/cps/simulate.py}, runs on Replit)
+\ei
+\os{\newpage}
+
+\item[{\rot\bf Exercises}]~\\[-3ex]
+\bi
+	\ite Simulate \texttt{HDE}, \texttt{Pendulum} and \texttt{RLC1} in OpenModelica and compare with the plots of the Python script.
+	\ite Change $R$ in the RLC circuit to $10\,\Omega$ and $1000\,\Omega$. When does the circuit stop oscillating? Compare with the condition $R = \frac{1}{2}\sqrt{L/C}$.
+	\ite Build the RLC circuit graphically from the Modelica standard library (\texttt{Modelica.Electrical.Analog}) and compare the generated equations with \texttt{RLC1}.
+	\ite Add a two-point controller to a heated room model: heating on below 20\,$^\circ$C, off above 21\,$^\circ$C. How does the hysteresis influence the switching frequency?
+\ei
 \end{description}
-
-
