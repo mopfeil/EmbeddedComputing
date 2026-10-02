@@ -3,7 +3,7 @@
 
 LATEXMK = latexmk -pdf -interaction=nonstopmode -halt-on-error
 
-.PHONY: all script slides clean
+.PHONY: all script slides publish clean
 
 all: script slides
 
@@ -12,6 +12,11 @@ script:
 
 slides:
 	$(LATEXMK) slides.tex
+
+# Copy the built PDFs into pdf/, the versioned copies linked from README.md
+publish: all
+	cp docu.pdf pdf/EmbeddedComputing_Script.pdf
+	cp slides.pdf pdf/EmbeddedComputing_Slides.pdf
 
 clean:
 	latexmk -c docu.tex slides.tex
