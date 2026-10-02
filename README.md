@@ -9,6 +9,7 @@ with kind permission of Prof. Dr.-Ing. Franz Brümmer).
 | `*.tex`     | LaTeX sources of script and slides (WS 2026/27)          |
 | `examples/` | Runnable examples for each chapter, in C and Rust        |
 | `Lab-2021/` | The earlier lab with the ET1 robot (see below)           |
+| `archive/`  | Older scripts (2020), instruction set notes, print orders |
 
 ## Script and slides
 
