@@ -167,6 +167,152 @@ Dependability must be considered from the very beginning -- it cannot be added a
 \end{description}
 
 %==============================================================================
+\section{Software Development and AI}
+%==============================================================================
+\nsl{AI tools write code. Since 2021 they have gone from completing the
+current line to working on whole projects: they edit several files, run the
+compiler and repair their own mistakes. Most developers use them today, and
+so did we when we revised this lecture.
+\newline
+Two questions follow for an embedded systems course. What changes in the
+daily work? And what does an engineer still need to know when a machine
+writes much of the code? The studies disagree on how much time AI saves.
+Some measured faster delivery, one controlled experiment measured the
+opposite. On the second question they are clearer. The generated code is
+often almost right, and the last errors are found by people who understand
+the hardware, read the datasheet, write tests and know how to debug. We
+found the same while preparing this lecture. So it still teaches these
+things in detail, with or without AI.
+\newpage}
+
+\begin{description}
+\item[{\rot\bf From code completion to agents}]~\\[-3ex]
+\bi
+	\ite \textbf{code completion} (e.g.\ GitHub Copilot, 2021): the tool proposes the next lines while you type
+	\ite \textbf{chat assistants} (since 2022): questions in natural language, explanations, code snippets to copy
+	\ite \textbf{agents} (since about 2025, e.g.\ Claude Code, Copilot agent mode, Cursor, OpenAI Codex): the tool reads the repository, changes several files, runs compiler and tests and repairs its own mistakes
+	\ite ``vibe coding'' (A.\ Karpathy, 2025): accept generated code without reading it; fine for a throw-away prototype, not for a product
+	\ite the developer types less and reviews, tests and decides more
+\ei
+\os{\newpage}
+
+\item[{\rot\bf How a language model writes code}]~\\[-3ex]
+\bi
+	\ite a large language model continues a text with the most probable next words, learned from huge amounts of public code and documentation
+	\ite good at frequent patterns: boilerplate, explanations of code, translation between C and Rust, test cases, summaries of documentation
+	\ite weak at
+	\bi
+		\ite rare or new things: a specific chip variant, the latest version of a HAL, an erratum in the datasheet
+		\ite things that are not visible in the code: timing, electrical limits, the state of the hardware
+		\ite it cannot tell when it is wrong; an invented function or register looks just as convincing as a real one (``hallucination'')
+	\ei
+	\ite the answer is only as good as the context: give it the datasheet section, the existing code, the exact error message and the tool versions
+\ei
+\os{\newpage}
+
+\item[{\rot\bf What studies show}]~\\[-3ex]
+\begin{center}
+\resizebox{0.95\textwidth}{!}{%
+\begin{tabular}{|l|l|}
+\hline
+\textbf{study} & \textbf{finding} \\
+\hline
+Stack Overflow 2025 \cite{so2025} & 84\,\% use or plan to use AI tools \\
+49\,000 developers & 46\,\% distrust the accuracy; 45\,\% find debugging AI code slow \\
+\hline
+DORA 2025 \cite{dora2025} & 90\,\% use AI at work; more changes delivered, \\
+5\,000 professionals & but delivery is less stable; AI amplifies a team's habits \\
+\hline
+METR 2025 \cite{metr2025} & experienced developers 19\,\% \textbf{slower} with AI, \\
+randomised trial & although they felt 20\,\% faster; 2026: probably faster, uncertain \cite{metr2026} \\
+\hline
+Veracode 2025 \cite{veracode2025} & 45\,\% of generated code samples had security flaws \\
+\hline
+Anthropic 2026 \cite{anthropic2026skills} & learning with AI: 50\,\% in a test without AI, \\
+randomised, 52 people & without AI: 67\,\%; largest gap in \textbf{debugging} \\
+\hline
+\end{tabular}}
+\end{center}
+\bi
+	\ite feeling faster is not being faster; measure it
+\ei
+\os{\newpage}
+
+\item[{\rot\bf AI in embedded systems}]~\\[-3ex]
+\bi
+	\ite embedded code depends on details that are rare in the training data: chip variants, register maps, SDK versions, wiring
+	\ite benchmark with 27 language models on the ESP32 \cite{babiuch2026}
+	\bi
+		\ite simple sensor applications: 19 to 23 models delivered working code
+		\ite complex applications (sensor, cloud database, dashboard): only 3 to 5 models
+		\ite most frequent failure: libraries and functions that do not exist, or wrong use of real APIs
+	\ei
+	\ite benchmark EmbedAgent (Raspberry Pi Pico, ESP32, Arduino, 126 tasks) \cite{xu2026embedagent}: the best model solved about 56\,\% of the tasks; porting code from Arduino to ESP-IDF succeeded in fewer than 30\,\% of the cases
+	\ite many errors show up only on the hardware or under real timing; that the compiler accepts the code proves little
+\ei
+\os{\newpage}
+
+\item[{\rot\bf Experience from preparing this lecture}]~\\[-3ex]
+\bi
+	\ite we wrote the examples of this lecture with an AI assistant, then compiled each of them and ran it in the Wokwi simulator
+	\ite the tests found errors in code that compiled without warnings, for example
+	\bi
+		\ite a FreeRTOS demo that could not show the race condition at all, because the first task finished before the second one was created (chapter Operating Systems)
+		\ite an MQTT client that the public test broker sometimes rejected, because a packet was sent in two TCP segments (chapter Networking)
+		\ite a PWM calculation that assumed a 125\,MHz system clock, while the Arduino core runs the RP2040 at 200\,MHz
+		\ite a delay that took 4\,$\mu$s instead of 1\,ms in the simulator; the debugger and a measurement found it (chapter Programming)
+	\ei
+	\ite to find them we needed to know how the scheduler starts tasks, how TCP splits data and how the clocks are configured, plus one long debugging session; tests that check the behaviour caught what the compiler could not
+\ei
+\os{\newpage}
+
+\item[{\rot\bf How the development environment changes}]~\\[-3ex]
+\bi
+	\ite more code is \textbf{read and reviewed} than written by hand
+	\ite specifications, interface descriptions and test cases become the input for the AI, so precise requirements pay off twice
+	\ite automatic checks become more important: compiler warnings, static analysis, unit tests, simulation (Wokwi), continuous integration
+	\ite projects are organised so that tools find the context: clear structure, documented interfaces, README files
+	\ite the engineer stays responsible: safety standards (IEC 61508, ISO 26262) require traceable requirements, reviews and tests, no matter who or what wrote the code
+	\ite new questions: confidentiality (company code in external services), licenses of generated code, reproducibility
+\ei
+\os{\newpage}
+
+\item[{\rot\bf What you still need to know}]~\\[-3ex]
+\bi
+	\ite computer architecture, memory, interrupts and concurrency: without them you cannot tell wrong code from right code
+	\ite reading datasheets and reference manuals, the only reliable source for registers, timing and electrical limits
+	\ite specifying a problem so clearly that a colleague, or an AI, can solve it: requirements, state machines, interfaces
+	\ite reading code critically; you commit only what you understand
+	\ite testing: designing tests, simulating, measuring, and knowing when something is really done
+	\ite debugging with debugger and logic analyzer, step by step; this was the largest gap in the Anthropic study
+	\ite asking what happens if the system fails or is attacked
+	\ite seeing hardware, software and physics as one system
+	\ite explaining and documenting decisions for the team
+\ei
+\os{\newpage}
+
+\item[{\rot\bf Using AI well in this course}]~\\[-3ex]
+\bi
+	\ite try it yourself first; you learn while you struggle with a problem
+	\ite ask why, not just how: in the Anthropic study, learners who asked conceptual questions and fixed their errors themselves learned the most
+	\ite give context: chip, board, SDK version, the relevant datasheet section, the complete error message
+	\ite check every API and register against the documentation
+	\ite never hand in or commit code that you cannot explain
+	\ite test in Wokwi or on the hardware; ``it compiles'' does not mean ``it works''
+	\ite follow the rules of the course and your employer on AI use, and state where AI was used
+\ei
+\os{\newpage}
+
+\item[{\rot\bf Exercises}]~\\[-3ex]
+\bi
+	\ite Let an AI assistant write the debouncing example of chapter Peripherals and Interfaces in C. Review the code, run it in Wokwi with a bouncing button and list all problems you find.
+	\ite Ask an AI for the address of the register \texttt{GPIO\_OUT\_XOR} of the RP2040 and for the meaning of its bits. Check the answer in the datasheet.
+	\ite Solve one exercise of chapter Programming without AI and one with AI. Compare time, result and what you can explain afterwards.
+\ei
+\os{\newpage}
+\end{description}
+
+%==============================================================================
 \section{About this Lecture}
 %==============================================================================
 \begin{description}
