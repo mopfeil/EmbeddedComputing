@@ -1,0 +1,73 @@
+\documentclass[15pt, a4paper, oneside]{report}
+\input{libs}
+
+
+\geometry{
+ a4paper,
+ total={170mm,257mm},
+ left=5mm, right = 5mm,
+ top=20mm, bottom = 20mm
+ }
+\usepackage{tocloft}
+\renewcommand\cftsecfont{\Large}
+\renewcommand\cftsecpagefont{\Large}
+\renewcommand\cftsecafterpnum{\vskip15pt}
+\renewcommand\cftsubsecafterpnum{\vskip5pt}
+% Title formating
+
+
+\usepackage{fancyhdr}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[LE,RO]{Embedded Computing Lab\\Prof. Markus Pfeil }
+\fancyhead[RE,LO]{ ET1 Control }
+\fancyfoot[CE,CO]{\thepage}
+\fancyfoot[LE,RO]{\includegraphics[width=0.15\textwidth]{./rwu}}
+\fancyfoot[RE,LO]{\textbf{Task 4}}
+
+\renewcommand{\headrulewidth}{2pt}
+\renewcommand{\footrulewidth}{2pt}
+
+\lstset{language=Python,%
+    %basicstyle=\color{red},
+    breaklines=false,%
+    morekeywords={matlab2tikz},
+    keywordstyle=\color{blue},%
+    morekeywords=[2]{1}, keywordstyle=[2]{\color{black}},
+    identifierstyle=\color{black},%
+    stringstyle=\color{mylilas},
+    commentstyle=\color{mygreen},%
+    showstringspaces=false,%without this there will be a symbol in the places where there is a space
+    numbers=left,%
+    numberstyle={\tiny \color{black}},% size of the numbers
+    numbersep=9pt, % this defines how far the numbers are from the text
+    emph=[1]{for,end,break},emphstyle=[1]\color{red}, %some words to emphasise
+    %emph=[2]{word1,word2}, emphstyle=[2]{style},    
+}
+
+\urlstyle{same}
+
+\begin{document}
+
+\normalfont
+
+\vspace*{5mm}
+
+\section*{\Large Task 4: Robot Testing and Control}
+
+\vspace{2mm}
+    \Large
+
+    \input{Task_A}
+    
+    \input{Task_B}
+    
+    \input{Task_C}
+    
+    \input{Task_D}
+  
+\vspace{1cm}
+
+
+\end{document}

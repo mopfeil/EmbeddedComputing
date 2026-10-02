@@ -1,0 +1,31 @@
+
+
+\subsection*{\Large Solution}
+
+\subsection*{\Large Button and LED functionality}
+    \begin{itemize}
+        \item  To control the LEDs and Pushbuttons, we can use several library structure for GPIO.\\
+        Preferably use the GPIOzero  Library because of its easy usability and faster reaction at the GPIO I/O pins. 
+        \begin{lstlisting}[language=Python]
+            
+    from gpiozero import LED, Button
+
+    led = LED(7)
+    button = Button(5)
+
+    def PinCleanup():
+        led.close()
+        button.close()
+
+    for i in range(10):
+        if button.is_pressed:
+            led.on()
+        else:
+            led.off()
+
+    # GPIO pins to normal state
+    PinCleanup()
+        
+    \end{lstlisting}
+    \end{itemize}
+\newpage

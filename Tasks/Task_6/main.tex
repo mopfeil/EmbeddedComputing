@@ -1,0 +1,63 @@
+\documentclass[15pt, a4paper, oneside]{report}
+\input{libs}
+
+
+\geometry{
+ a4paper,
+ total={170mm,257mm},
+ left=5mm, right = 5mm,
+ top=20mm, bottom = 20mm
+ }
+\usepackage{tocloft}
+\renewcommand\cftsecfont{\Large}
+\renewcommand\cftsecpagefont{\Large}
+\renewcommand\cftsecafterpnum{\vskip15pt}
+\renewcommand\cftsubsecafterpnum{\vskip5pt}
+% Title formating
+
+
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand\footrule{\begin{minipage}{1\textwidth}
+\hrule width \hsize \kern 1mm 
+\end{minipage}\par}%
+
+\renewcommand\headrule{
+\begin{minipage}{1\textwidth}
+\hrule width \hsize \kern 1mm
+\end{minipage}}%
+
+%%%%%%%%%%%%%%  HEADER SETUP  %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\lhead{\Large Embedded Computing Lab\\Prof. Markus Pfeil }
+\rhead{ \Large ET1 Control }
+
+%%%%%%%%%%%%%% FOOTER SETUP  %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\lfoot{\includegraphics[width=0.18\textwidth]{./rwu}}
+\rfoot{ \Large Task 6 }
+
+
+\urlstyle{same}
+
+\begin{document}
+
+\normalfont
+
+\vspace*{5mm}
+
+\section*{\Large Task 6: Obstacle detection and Robot Control}
+
+\vspace{2mm}
+    \Large
+   
+    \input{prerequisite}
+    
+    \input{preparation}
+    
+    \input{task}
+
+  
+\vspace{1cm}
+
+
+\end{document}

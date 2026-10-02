@@ -1,0 +1,27 @@
+
+
+\subsection*{\Large Solution}
+
+\subsection*{\Large Distance Measurement Using Ultrasonic Sensor}
+    \begin{itemize}
+        \item  To measure the distance on the ET1 device, we use the two-way distance measurement technique with ultrasonic sensor.\\
+        \item This means that we send out a pulsed sonar wave which reflects back on hitting an obstacle.
+        Using the time and speed of sound, the distance of object from Robot can be measured.\\
+        Preferably use the GPIOzero Library in this case.
+        
+\begin{lstlisting}[language=Python]
+
+# Pin for Ultrasonic Sensor
+trigger = 25
+echo = 27
+    
+sensor = DistanceSensor(echo = 27, trigger = 25)
+
+for i in range(20):
+    print(str(round(sensor.distance*100, 2)) + 'cm') # %2d
+    led.on()
+    time.sleep(1)
+
+\end{lstlisting}
+\end{itemize}
+\newpage
