@@ -60,7 +60,7 @@ state machine in C and in Rust and run it on the Pico in Wokwi.
 
 \os{\newpage}
 \begin{description}
-\item[{\rot\bf Requirements for models}]~\\[-3ex]
+\item[{\rot\bf Requirements for models}]~\\[-\lblskip]
 \bi
 	\ite concurrency \pr real-time systems are usually concurrent
 	\ite synchronisation and communication \pr modelling the communication between distributed parts
@@ -70,7 +70,7 @@ state machine in C and in Rust and run it on the Pico in Wokwi.
 	\ite non-functional properties \pr e.g.\ fault tolerance, availability, EMC, usability, extendibility, lifetime, power consumption
 	\ite co-design \pr modelling of hardware and software functions
 \ei
-\item[{\rot\bf but}]~\\[-3ex]
+\item[{\rot\bf but}]~\\[-\lblskip]
 \bi
 	\ite models must be readable
 	\ite models should be hierarchical \pr humans can only keep about 5 to 7 objects in mind at the same time
@@ -109,7 +109,7 @@ state machine in C and in Rust and run it on the Pico in Wokwi.
 \os{\newpage}
 
 \begin{description}
-\item[{\rot\bf Design methods}]~\\[-3ex]
+\item[{\rot\bf Design methods}]~\\[-\lblskip]
 \bi
 	\ite capture and simulate
 	\bi
@@ -132,7 +132,7 @@ state machine in C and in Rust and run it on the Pico in Wokwi.
 \os{\newpage}
 
 \begin{description}
-\item[{\rot\bf Different views of a model}]~\\[-3ex]
+\item[{\rot\bf Different views of a model}]~\\[-\lblskip]
 \bi
 	\ite behavioural view
 	\bi
@@ -149,7 +149,7 @@ state machine in C and in Rust and run it on the Pico in Wokwi.
 		\ite physical properties of the components: size, placement, heat, connections
 	\ei
 \ei
-\item[{\rot\bf Classes of models}]~\\[-3ex]
+\item[{\rot\bf Classes of models}]~\\[-\lblskip]
 \bi
 	\ite no single model covers all requirements of an embedded system
 	\ite each class of models focuses on certain aspects
@@ -302,7 +302,7 @@ is implemented in C with a \texttt{switch} statement and in Rust with
 \texttt{enum} and \texttt{match}. Both versions run on the Pico in Wokwi.}
 
 \begin{description}
-\item[{\rot\bf Example: a coffee machine}]~\\[-3ex]
+\item[{\rot\bf Example: a coffee machine}]~\\[-\lblskip]
 \bi
 	\ite inputs: buttons \textbf{left} and \textbf{right}, signal \textbf{ready} (coffee finished)
 	\ite outputs: add coffee, milk, sugar -- depend only on the state $\Rightarrow$ Moore machine
@@ -316,7 +316,7 @@ is implemented in C with a \texttt{switch} statement and in Rust with
 \end{figure}
 \os{\newpage}
 
-\item[{\rot\bf State transition table}]~\\[-3ex]
+\item[{\rot\bf State transition table}]~\\[-\lblskip]
 \begin{center}
 \resizebox{0.85\textwidth}{!}{%
 \begin{tabular}{|l|l|l|l|c|}
@@ -345,7 +345,7 @@ is implemented in C with a \texttt{switch} statement and in Rust with
 \ei
 \os{\newpage}
 
-\item[{\rot\bf C: states, outputs and inputs}]~\\[-3ex]
+\item[{\rot\bf C: states, outputs and inputs}]~\\[-\lstskip]
 \begin{lstlisting}[language=C]
 // the FSM states
 enum {
@@ -370,7 +370,7 @@ int fsm_state = FSM_STATE_IDLE;
 \ei
 \os{\newpage}
 
-\item[{\rot\bf C: the transition function}]~\\[-3ex]
+\item[{\rot\bf C: the transition function}]~\\[-\lstskip]
 \begin{lstlisting}[language=C]
 int fsm_tic(int fsm_inp) {        // called periodically, every 50 ms
   switch (fsm_state) {
@@ -396,7 +396,7 @@ int fsm_tic(int fsm_inp) {        // called periodically, every 50 ms
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Rust: the same machine with enum and match}]~\\[-3ex]
+\item[{\rot\bf Rust: the same machine with enum and match}]~\\[-\lstskip]
 \begin{lstlisting}[language=Rust]
 pub enum State { Idle, Coffee, CoffeeMilk, CoffeeSugar, CoffeeMilkSugar,
                  MakeCoffee, MakeCoffeeMilk, MakeCoffeeSugar, MakeCoffeeMilkSugar }
@@ -426,7 +426,7 @@ impl State {
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Rust: output function and tests}]~\\[-3ex]
+\item[{\rot\bf Rust: output function and tests}]~\\[-\lstskip]
 \begin{lstlisting}[language=Rust]
 pub fn output(self) -> Output {
     let (coffee, milk, sugar) = match self {
@@ -453,7 +453,7 @@ fn coffee_with_everything() {
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Recipe for a Moore state machine}]~\\[-3ex]
+\item[{\rot\bf Recipe for a Moore state machine}]~\\[-\lblskip]
 \bi
 	\ite analyse the problem before coding: draw the state diagram, write the transition table
 	\ite use enums to encode states, inputs and outputs in a readable form
@@ -465,7 +465,7 @@ fn coffee_with_everything() {
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Tools for state machines}]~\\[-3ex]
+\item[{\rot\bf Tools for state machines}]~\\[-\lblskip]
 \bi
 	\ite drawing, in the browser
 	\bi
@@ -533,7 +533,7 @@ Sequence charts show the communication between components over time.}
 \os{\newpage}
 
 \begin{description}
-\item[{\rot\bf Message Sequence Charts (MSC)}]~\\[-3ex]
+\item[{\rot\bf Message Sequence Charts (MSC)}]~\\[-\lblskip]
 \bi
 	\ite modelling of timing and of the communication between components
 	\ite graphical representation of schedules
@@ -570,7 +570,7 @@ Sequence charts show the communication between components over time.}
 \os{\newpage}
 
 \begin{description}
-\item[{\rot\bf Exercises}]~\\[-3ex]
+\item[{\rot\bf Exercises}]~\\[-\lblskip]
 \bi
 	\ite Extend the coffee machine by a ``cancel'' button that returns to idle from every selection state. Change the table first, then C and Rust. What does the Rust compiler say if you forget a case?
 	\ite Convert the coffee machine into a Mealy machine whose outputs are pulses on the transitions. Compare the number of states.

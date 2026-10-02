@@ -1,7 +1,13 @@
 # Build the lecture script (docu.pdf) and slides (slides.pdf).
-# Requires a TeX Live installation with latexmk and pdflatex.
+# Requires a TeX Live installation with latexmk and lualatex.
+# The RWU font Barlow Semi Condensed is shipped in fonts/ and needs lualatex;
+# "make PDFTEX=1" builds with pdflatex and Latin Modern instead.
 
+ifdef PDFTEX
 LATEXMK = latexmk -pdf -interaction=nonstopmode -halt-on-error
+else
+LATEXMK = latexmk -lualatex -interaction=nonstopmode -halt-on-error
+endif
 
 .PHONY: all script slides publish clean
 

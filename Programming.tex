@@ -18,20 +18,20 @@ Raspberry Pi Pico in Wokwi again.
 \newpage}
 
 \begin{description}
-\item[{\rot\bf The build process}]~\\[-3ex]
+\item[{\rot\bf The build process}]~\\[-\lblskip]
 \begin{figure}[!hbtp]
 \begin{center}
-\resizebox{0.95\textwidth}{!}{%
+\resizebox{0.85\textwidth}{!}{%
 \begin{tikzpicture}[font=\sffamily\small,>=Stealth,
 	b/.style={draw,thick,rounded corners,minimum height=10mm,text width=20mm,align=center}]
 	\node[b,fill=gray!10] (src) at (0,0) {source\\.c .rs .S};
-	\node[b,fill=blue!10] (cc) at (3,0) {compiler /\\assembler};
+	\node[b,fill=rwucyan!10] (cc) at (3,0) {compiler /\\assembler};
 	\node[b,fill=gray!10] (obj) at (6,0) {object files\\.o};
-	\node[b,fill=blue!10] (ld) at (9,0) {linker};
+	\node[b,fill=rwucyan!10] (ld) at (9,0) {linker};
 	\node[b,fill=gray!10] (elf) at (12,0) {ELF file};
 	\node[b,fill=green!10] (img) at (15,0) {.bin / .hex\\/ .uf2};
-	\node[b,fill=orange!15] (lds) at (9,-2) {linker script\\memory map};
-	\node[b,fill=orange!15] (lib) at (6,-2) {libraries,\\start-up code};
+	\node[b,fill=rwuviolet!15] (lds) at (9,-2) {linker script\\memory map};
+	\node[b,fill=rwuviolet!15] (lib) at (6,-2) {libraries,\\start-up code};
 	\draw[->,thick] (src) -- (cc); \draw[->,thick] (cc) -- (obj); \draw[->,thick] (obj) -- (ld);
 	\draw[->,thick] (ld) -- (elf); \draw[->,thick] (elf) -- node[above,font=\sffamily\scriptsize]{objcopy} (img);
 	\draw[->,thick] (lds) -- (ld); \draw[->,thick] (lib) -- (ld);
@@ -46,7 +46,7 @@ Raspberry Pi Pico in Wokwi again.
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Sections and start-up}]~\\[-3ex]
+\item[{\rot\bf Sections and start-up}]~\\[-\lblskip]
 \bi
 	\ite \texttt{.text}: machine code (flash); \texttt{.rodata}: constants (flash)
 	\ite \texttt{.data}: initialised variables -- the initial values are in flash, the variables in RAM
@@ -68,7 +68,7 @@ section        size        addr
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Getting the program onto the chip}]~\\[-3ex]
+\item[{\rot\bf Getting the program onto the chip}]~\\[-\lblskip]
 \bi
 	\ite \textbf{bootloader in ROM} or flash: receives the image over USB or UART
 	\bi
@@ -96,7 +96,7 @@ instruction set (Thumb, ARMv6-M) is small enough to be learned in a few
 hours.}
 
 \begin{description}
-\item[{\rot\bf Registers of the Cortex-M0+}]~\\[-3ex]
+\item[{\rot\bf Registers of the Cortex-M0+}]~\\[-\lblskip]
 \bi
 	\ite 16 registers of 32 bit
 	\bi
@@ -114,7 +114,7 @@ hours.}
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Instructions (selection)}]~\\[-3ex]
+\item[{\rot\bf Instructions (selection)}]~\\[-\lblskip]
 \begin{center}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{|l|l|l|}
@@ -139,7 +139,7 @@ call, return & \texttt{bl function} \quad \texttt{bx lr} & call (return address 
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Calling convention (AAPCS)}]~\\[-3ex]
+\item[{\rot\bf Calling convention (AAPCS)}]~\\[-\lblskip]
 \bi
 	\ite the rules that let C, Rust and assembly functions call each other
 	\ite arguments in \texttt{r0}--\texttt{r3}, further arguments on the stack
@@ -151,7 +151,7 @@ call, return & \texttt{bl function} \quad \texttt{bx lr} & call (return address 
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Our own assembly function}]~\\[-3ex]
+\item[{\rot\bf Our own assembly function}]~\\[-\lstskip]
 \begin{lstlisting}[language={}]
 @ uint32_t asm_sum(const uint16_t *a, int n)    file sum_m0.S
 @ AAPCS: a in r0, n in r1, result in r0. Only r0..r3 are used.
@@ -178,7 +178,7 @@ asm_sum:
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Calling it from C and from Rust}]~\\[-3ex]
+\item[{\rot\bf Calling it from C and from Rust}]~\\[-\lstskip]
 \begin{lstlisting}[language=C]
 extern "C" uint32_t asm_sum(const uint16_t *a, int n);   // C linkage
 
@@ -217,7 +217,7 @@ therefore usually written following coding rules, compiled with all
 warnings enabled and checked with static analysis tools.}
 
 \begin{description}
-\item[{\rot\bf Data types and qualifiers}]~\\[-3ex]
+\item[{\rot\bf Data types and qualifiers}]~\\[-\lblskip]
 \bi
 	\ite \texttt{int} has 16 bit on the AVR and 32 bit on ARM $\Rightarrow$ use the fixed width types of \texttt{<stdint.h>}: \texttt{uint8\_t}, \texttt{int16\_t}, \texttt{uint32\_t}, \ldots
 	\ite \texttt{volatile}: every access really happens -- for hardware registers and variables shared with interrupts
@@ -232,7 +232,7 @@ warnings enabled and checked with static analysis tools.}
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Registers as structures}]~\\[-3ex]
+\item[{\rot\bf Registers as structures}]~\\[-\lstskip]
 \begin{lstlisting}[language=C]
 typedef struct {
     volatile uint32_t cpuid;          /* 0x000 */
@@ -259,7 +259,7 @@ void led_toggle(unsigned pin) { sio_hw->gpio_out_xor = 1u << pin; }
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Bit manipulation}]~\\[-3ex]
+\item[{\rot\bf Bit manipulation}]~\\[-\lstskip]
 \begin{lstlisting}[language=C]
 reg |=  (1u << 5);            // set bit 5
 reg &= ~(1u << 5);            // clear bit 5
@@ -279,7 +279,7 @@ ctrl = set_field(ctrl, 4, 0x3u, 2u);   /* bits 5..4 := 2 */
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Rules for reliable C}]~\\[-3ex]
+\item[{\rot\bf Rules for reliable C}]~\\[-\lblskip]
 \bi
 	\ite compile with all warnings and treat them as errors: \texttt{-Wall -Wextra -Werror}
 	\ite no dynamic memory after start-up (\texttt{malloc}/\texttt{free}): fragmentation and failing allocations at run time
@@ -307,7 +307,7 @@ safety-critical products. This section summarises the concepts we used in
 the previous chapters and shows how to test embedded code on the PC.}
 
 \begin{description}
-\item[{\rot\bf Ownership and borrowing in five rules}]~\\[-3ex]
+\item[{\rot\bf Ownership and borrowing in five rules}]~\\[-\lblskip]
 \bi
 	\ite every value has exactly one \textbf{owner}; when the owner goes out of scope, the value is dropped (memory, peripherals, locks are released)
 	\ite assignment or passing to a function \textbf{moves} the value: the old variable can no longer be used
@@ -322,7 +322,7 @@ led.set_high();                       // error[E0382]: borrow of moved value: `l
 \end{lstlisting}
 \os{\newpage}
 
-\item[{\rot\bf Embedded Rust: no\_std and the layers}]~\\[-3ex]
+\item[{\rot\bf Embedded Rust: no\_std and the layers}]~\\[-\lblskip]
 \bi
 	\ite \texttt{\#![no\_std]}: only the \texttt{core} library (no heap, no files, no threads); \texttt{alloc} can be added with an allocator
 	\ite \texttt{\#![no\_main]} and \texttt{\#[entry]}: the start-up code calls our function; it never returns (\texttt{-> !})
@@ -336,8 +336,8 @@ led.set_high();                       // error[E0382]: borrow of moved value: `l
 	\node[l,fill=green!15] at (0,3.6) {application};
 	\node[l,fill=green!8] at (0,2.7) {drivers (e.g.\ our \texttt{debounce}, sensor crates)};
 	\node[l,fill=yellow!20] at (0,1.8) {\texttt{embedded-hal} traits (\texttt{InputPin}, \texttt{I2c}, \texttt{SpiBus}, \texttt{DelayNs})};
-	\node[l,fill=blue!10] at (0,0.9) {HAL: \texttt{rp2040-hal}, \texttt{esp-hal}, \texttt{stm32-hal}, \ldots};
-	\node[l,fill=blue!5] at (0,0) {PAC: registers, generated from the SVD file};
+	\node[l,fill=rwucyan!10] at (0,0.9) {HAL: \texttt{rp2040-hal}, \texttt{esp-hal}, \texttt{stm32-hal}, \ldots};
+	\node[l,fill=rwucyan!5] at (0,0) {PAC: registers, generated from the SVD file};
 	\node[l,fill=gray!15] at (0,-0.9) {hardware};
 	\node[right,font=\sffamily\scriptsize,align=left] at (4.6,2.25) {portable: the same\\code on every chip};
 	\node[right,font=\sffamily\scriptsize,align=left] at (4.6,0.45) {chip specific};
@@ -347,7 +347,7 @@ led.set_high();                       // error[E0382]: borrow of moved value: `l
 \end{figure}
 \os{\newpage}
 
-\item[{\rot\bf A hardware independent driver}]~\\[-3ex]
+\item[{\rot\bf A hardware independent driver}]~\\[-\lstskip]
 \begin{lstlisting}[language=Rust]
 #![no_std]
 use embedded_hal::digital::InputPin;
@@ -376,7 +376,7 @@ impl Debouncer {
 \end{lstlisting}
 \os{\newpage}
 
-\item[{\rot\bf Testing embedded code on the PC}]~\\[-3ex]
+\item[{\rot\bf Testing embedded code on the PC}]~\\[-\lstskip]
 \begin{lstlisting}[language=Rust]
 #[test]
 fn bouncing_gives_one_edge() {
@@ -403,7 +403,7 @@ test result: ok. 4 passed; 0 failed
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Rust tools and practices}]~\\[-3ex]
+\item[{\rot\bf Rust tools and practices}]~\\[-\lblskip]
 \bi
 	\ite \texttt{rustup target add thumbv6m-none-eabi} / \texttt{riscv32imc-unknown-none-elf}: cross compilation without a separate toolchain
 	\ite \texttt{cargo}: build, dependencies (\texttt{Cargo.toml}, \texttt{Cargo.lock} for reproducible builds), tests, documentation
@@ -429,7 +429,7 @@ interactive prompt. This makes MicroPython excellent for prototypes,
 teaching and devices where the computing time does not matter.}
 
 \begin{description}
-\item[{\rot\bf Python 3 on the PC: working with binary data}]~\\[-3ex]
+\item[{\rot\bf Python 3 on the PC: working with binary data}]~\\[-\lstskip]
 \begin{lstlisting}[language=Python]
 import struct
 
@@ -451,7 +451,7 @@ packet = struct.pack("BB", 0x6B, 0x00)           # build an I2C write
 \ei
 \os{\newpage}
 
-\item[{\rot\bf MicroPython on the Pico}]~\\[-3ex]
+\item[{\rot\bf MicroPython on the Pico}]~\\[-\lstskip]
 \begin{lstlisting}[language=Python]
 from machine import ADC, PWM, Pin
 import time
@@ -486,7 +486,7 @@ a lot of time. This section describes both, with a real example from the
 preparation of this lecture.}
 
 \begin{description}
-\item[{\rot\bf A systematic approach}]~\\[-3ex]
+\item[{\rot\bf A systematic approach}]~\\[-\lblskip]
 \bi
 	\ite \textbf{reproduce}: find a way to make the error appear reliably -- an error that cannot be reproduced cannot be verified as fixed
 	\ite \textbf{observe}: collect facts (output, signals, register values) instead of guessing
@@ -498,7 +498,7 @@ preparation of this lecture.}
 \ei
 \os{\newpage}
 
-\item[{\rot\bf A real case: the flaky button}]~\\[-3ex]
+\item[{\rot\bf A real case: the flaky button}]~\\[-\lblskip]
 \bi
 	\ite symptom: the Rust debouncing example (chapter 6) toggled the LED in some simulation runs and not in others; the C version always worked
 	\ite observation 1: the debouncer library passes all unit tests $\Rightarrow$ the logic is probably correct
@@ -514,7 +514,7 @@ preparation of this lecture.}
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Tools without a debugger}]~\\[-3ex]
+\item[{\rot\bf Tools without a debugger}]~\\[-\lblskip]
 \bi
 	\ite \textbf{output} via UART or USB (\texttt{printf}, \texttt{println!}, logging frameworks)
 	\bi
@@ -528,7 +528,7 @@ preparation of this lecture.}
 \ei
 \os{\newpage}
 
-\item[{\rot\bf GDB: the debugger}]~\\[-3ex]
+\item[{\rot\bf GDB: the debugger}]~\\[-\lblskip]
 \begin{center}
 \resizebox{0.9\textwidth}{!}{%
 \begin{tabular}{|l|l|}
@@ -552,7 +552,7 @@ preparation of this lecture.}
 \ei
 \os{\newpage}
 
-\item[{\rot\bf GDB session with the Wokwi simulator}]~\\[-3ex]
+\item[{\rot\bf GDB session with the Wokwi simulator}]~\\[-\lstskip]
 \begin{lstlisting}[language={}]
 $ wokwi-cli -g 3333 .                       # simulation waits for GDB
 $ arm-none-eabi-gdb target/thumbv6m-none-eabi/release/asm_sum
@@ -647,7 +647,7 @@ $ $GDB ./sensor_avg                                            # aarch64-poky-li
 \nsl{With \texttt{-Og} the variable \texttt{sum} lives in a register, so a watchpoint on it fails; \texttt{display} at a breakpoint works.}
 \os{\newpage}
 
-\item[{\rot\bf On a real Linux board: gdbserver}]~\\[-3ex]
+\item[{\rot\bf On a real Linux board: gdbserver}]~\\[-\lblskip]
 \bi
 	\ite the program runs on the board under \texttt{gdbserver}; GDB runs on the PC with the symbols and the sources
 \ei
@@ -664,7 +664,7 @@ pc$    $GDB ./sensor_avg
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Hardware debugging: JTAG and SWD}]~\\[-3ex]
+\item[{\rot\bf Hardware debugging: JTAG and SWD}]~\\[-\lblskip]
 \bi
 	\ite on real hardware the debugger talks to the debug unit in the chip through a \textbf{debug probe}
 	\ite \textbf{JTAG} (IEEE 1149.1): signals TCK (clock), TMS (mode), TDI (data in), TDO (data out)
@@ -680,7 +680,7 @@ pc$    $GDB ./sensor_avg
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Exercises}]~\\[-3ex]
+\item[{\rot\bf Exercises}]~\\[-\lblskip]
 \bi
 	\ite Look at the sections of one of your programs with \texttt{size} or \texttt{llvm-size}. Add a global array \texttt{int a[100] = \{1\};} -- which section grows? And with \texttt{= \{0\}}?
 	\ite Write \texttt{asm\_max(const int32\_t *a, int n)} in Thumb assembly (signed maximum) and call it from C or Rust. Test with negative numbers.

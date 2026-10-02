@@ -8,6 +8,7 @@ with kind permission of Prof. Dr.-Ing. Franz Brümmer).
 | `pdf/`      | Script and slides, ready to read                         |
 | `*.tex`     | LaTeX sources of script and slides (WS 2026/27)          |
 | `examples/` | Runnable examples for each chapter, in C and Rust        |
+| `fonts/`    | Barlow Semi Condensed, the RWU font (SIL OFL)            |
 | `Lab-2021/` | The earlier lab with the ET1 robot (see below)           |
 | `archive/`  | Older scripts (2020), instruction set notes, print orders |
 
@@ -26,14 +27,18 @@ make publish    builds both and copies them into pdf/
 make clean      removes LaTeX build artifacts
 ```
 
-Requires TeX Live with latexmk and pdflatex.
+Requires TeX Live with latexmk and lualatex. Script and slides use the RWU
+corporate design: colours RWU violet and cyan, the RWU logo and the font
+Barlow Semi Condensed. The font is shipped in `fonts/` (SIL Open Font License,
+see `fonts/OFL.txt`), so nothing has to be installed. `make PDFTEX=1` builds
+with pdflatex and Latin Modern instead, for setups without lualatex.
 
 ## Structure
 
 ```
 docu.tex (script, A4)        slides.tex (slides, A5 landscape)
       \                        /
-       +---- preamble.tex ----+      common packages, listings setup
+       +---- preamble.tex ----+      packages, RWU colours and font, listings
        +---- mathmacros.tex --+      macros (\bi, \ite, \defn, \qbox, ...)
        |                      +--    mathmacros-sl.tex (slide overrides)
        +---- text.tex --------+      list of chapters

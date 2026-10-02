@@ -24,7 +24,7 @@ or on Replit.
 \newpage}
 
 \begin{description}
-\item[{\rot\bf Why connect an embedded system?}]~\\[-3ex]
+\item[{\rot\bf Why connect an embedded system?}]~\\[-\lblskip]
 \bi
 	\ite send measured data to a server or cloud service (monitoring, analysis)
 	\ite remote control and configuration (smartphone app, web interface)
@@ -41,7 +41,7 @@ or on Replit.
 \ei
 \os{\newpage}
 
-\item[{\rot\bf The reference platform: ESP32-C3}]~\\[-3ex]
+\item[{\rot\bf The reference platform: ESP32-C3}]~\\[-\lblskip]
 \bi
 	\ite 32 bit RISC-V core, 160\,MHz, 400\,KB SRAM, 4\,MB flash on typical modules
 	\ite Wi-Fi 802.11 b/g/n (2.4\,GHz) and Bluetooth LE 5 on the chip
@@ -59,7 +59,7 @@ or on Replit.
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Layer models}]~\\[-3ex]
+\item[{\rot\bf Layer models}]~\\[-\lblskip]
 \bi
 	\ite communication is split into layers; each layer uses the services of the layer below and offers a service to the layer above
 	\ite a layer can be replaced without changing the others (Wi-Fi instead of Ethernet, IPv6 instead of IPv4)
@@ -70,7 +70,7 @@ or on Replit.
 \resizebox{0.85\textwidth}{!}{%
 \begin{tikzpicture}[font=\sffamily\small,
 	osi/.style={draw,thick,minimum width=34mm,minimum height=7mm,fill=gray!8},
-	tcp/.style={draw,thick,minimum width=34mm,fill=blue!8,align=center},
+	tcp/.style={draw,thick,minimum width=34mm,fill=rwucyan!8,align=center},
 	ex/.style={anchor=west,font=\sffamily\scriptsize,align=left}]
 	\foreach \n/\name in {7/Application,6/Presentation,5/Session,4/Transport,3/Network,2/Data link,1/Physical}
 		\node[osi] (o\n) at (0,{(\n-1)*0.7}) {\n\ \ \name};
@@ -91,7 +91,7 @@ or on Replit.
 \end{figure}
 \os{\newpage}
 
-\item[{\rot\bf Encapsulation}]~\\[-3ex]
+\item[{\rot\bf Encapsulation}]~\\[-\lblskip]
 \bi
 	\ite on the way down, every layer puts its own \textbf{header} in front of the data it gets from above
 	\ite the receiver removes the headers layer by layer on the way up
@@ -103,8 +103,8 @@ or on Replit.
 \begin{tikzpicture}[font=\sffamily\small,
 	b/.style={draw,thick,minimum height=7mm,anchor=west,inner sep=2pt}]
 	\newcommand{\app}[1]{\node[b,fill=green!15,minimum width=40mm] at (7,#1) {application data};}
-	\newcommand{\tcp}[1]{\node[b,fill=orange!25,minimum width=20mm] at (5,#1) {TCP 20};}
-	\newcommand{\ip}[1]{\node[b,fill=blue!15,minimum width=20mm] at (3,#1) {IP 20};}
+	\newcommand{\tcp}[1]{\node[b,fill=rwuviolet!25,minimum width=20mm] at (5,#1) {TCP 20};}
+	\newcommand{\ip}[1]{\node[b,fill=rwucyan!15,minimum width=20mm] at (3,#1) {IP 20};}
 	\app{3} \tcp{2} \app{2} \ip{1} \tcp{1} \app{1} \ip{0} \tcp{0} \app{0}
 	\node[b,fill=gray!25,minimum width=30mm] at (0,0) {Ethernet 14};
 	\node[b,fill=gray!25,minimum width=14mm] at (11,0) {FCS 4};
@@ -130,7 +130,7 @@ format and look the same to the layers above. This is why an IP stack does
 not care whether it runs over a cable or over radio.}
 
 \begin{description}
-\item[{\rot\bf MAC addresses}]~\\[-3ex]
+\item[{\rot\bf MAC addresses}]~\\[-\lblskip]
 \bi
 	\ite 48 bit, written as six bytes in hexadecimal: \texttt{24:0A:C4:00:01:10}
 	\ite the first three bytes (OUI) identify the manufacturer -- 24:0A:C4 belongs to Espressif
@@ -140,7 +140,7 @@ not care whether it runs over a cable or over radio.}
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Ethernet}]~\\[-3ex]
+\item[{\rot\bf Ethernet}]~\\[-\lblskip]
 \begin{figure}[!hbtp]
 \begin{center}
 \resizebox{0.95\textwidth}{!}{%
@@ -149,7 +149,7 @@ not care whether it runs over a cable or over radio.}
 	\node[f,fill=gray!10,minimum width=22mm] (a) at (0,0) {preamble\\+ SFD};
 	\node[f,fill=yellow!20,minimum width=22mm] (b) at (a.east) {destination\\MAC};
 	\node[f,fill=yellow!20,minimum width=22mm] (c) at (b.east) {source\\MAC};
-	\node[f,fill=orange!20,minimum width=18mm] (d) at (c.east) {Ether-\\Type};
+	\node[f,fill=rwuviolet!20,minimum width=18mm] (d) at (c.east) {Ether-\\Type};
 	\node[f,fill=green!15,minimum width=44mm] (e) at (d.east) {payload\\(e.g.\ IP packet)};
 	\node[f,fill=gray!25,minimum width=14mm] (g) at (e.east) {FCS};
 	\foreach \n/\s in {a/8,b/6,c/6,d/2,e/46 -- 1500,g/4} \node[below,font=\sffamily\scriptsize] at (\n.south) {\s};
@@ -170,7 +170,7 @@ not care whether it runs over a cable or over radio.}
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Wi-Fi (IEEE 802.11)}]~\\[-3ex]
+\item[{\rot\bf Wi-Fi (IEEE 802.11)}]~\\[-\lblskip]
 \bi
 	\ite \textbf{stations} (our ESP32) connect to an \textbf{access point} (AP), identified by its name, the SSID
 	\ite frequency bands 2.4\,GHz (channels 1--13 in Europe, only 3 do not overlap), 5\,GHz and 6\,GHz with more channels
@@ -181,7 +181,7 @@ not care whether it runs over a cable or over radio.}
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Wireless technologies for embedded systems}]~\\[-3ex]
+\item[{\rot\bf Wireless technologies for embedded systems}]~\\[-\lblskip]
 \begin{center}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{|l|c|c|c|l|}
@@ -215,7 +215,7 @@ address, the address of its gateway and of a name server. In most networks
 it gets all three automatically via DHCP.}
 
 \begin{description}
-\item[{\rot\bf IPv4 addresses}]~\\[-3ex]
+\item[{\rot\bf IPv4 addresses}]~\\[-\lblskip]
 \bi
 	\ite 32 bit, written as four decimal bytes: \texttt{10.13.37.2}
 	\ite \textbf{prefix length} (CIDR notation): \texttt{10.13.37.2/24} -- the first 24 bits are the network, the remaining 8 bits the host
@@ -232,7 +232,7 @@ it gets all three automatically via DHCP.}
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Routing: direct or via the gateway}]~\\[-3ex]
+\item[{\rot\bf Routing: direct or via the gateway}]~\\[-\lblskip]
 \bi
 	\ite before sending, the device compares the destination with its own network
 	\bi
@@ -246,7 +246,7 @@ it gets all three automatically via DHCP.}
 \resizebox{0.9\textwidth}{!}{%
 \begin{tikzpicture}[font=\sffamily\small,>=Stealth,
 	n/.style={draw,thick,rounded corners,minimum height=12mm,minimum width=24mm,align=center}]
-	\node[n,fill=blue!10] (esp) at (0,0) {ESP32-C3\\10.13.37.2};
+	\node[n,fill=rwucyan!10] (esp) at (0,0) {ESP32-C3\\10.13.37.2};
 	\node[n,fill=yellow!20] (gw) at (4.5,0) {access point +\\gateway (NAT)\\10.13.37.1};
 	\node[draw,thick,cloud,cloud puffs=11,minimum width=30mm,minimum height=16mm,fill=gray!10] (net) at (8.6,0) {internet};
 	\node[n,fill=green!10] (srv) at (12.4,0) {example.com\\172.66.147.243};
@@ -260,7 +260,7 @@ it gets all three automatically via DHCP.}
 \end{figure}
 \os{\newpage}
 
-\item[{\rot\bf ARP: from IP address to MAC address}]~\\[-3ex]
+\item[{\rot\bf ARP: from IP address to MAC address}]~\\[-\lblskip]
 \bi
 	\ite to send a frame in the local network the device needs the MAC address that belongs to an IP address (destination or gateway)
 	\ite \textbf{ARP request} as broadcast: ``Who has 10.13.37.1? Tell 10.13.37.2''
@@ -270,7 +270,7 @@ it gets all three automatically via DHCP.}
 \ei
 \os{\newpage}
 
-\item[{\rot\bf DHCP: automatic configuration}]~\\[-3ex]
+\item[{\rot\bf DHCP: automatic configuration}]~\\[-\lblskip]
 \bi
 	\ite a new device has no address yet $\Rightarrow$ it sends broadcasts (UDP, ports 68 $\rightarrow$ 67)
 	\ite four messages (``DORA'')
@@ -279,7 +279,7 @@ it gets all three automatically via DHCP.}
 \begin{center}
 \resizebox{0.65\textwidth}{!}{%
 \begin{tikzpicture}[font=\sffamily\small,>=Stealth]
-	\node[draw,thick,fill=blue!10,minimum width=24mm] (c) at (0,0) {client (ESP32)};
+	\node[draw,thick,fill=rwucyan!10,minimum width=24mm] (c) at (0,0) {client (ESP32)};
 	\node[draw,thick,fill=yellow!20,minimum width=24mm] (s) at (7,0) {DHCP server};
 	\draw[thick,gray] (0,-0.4) -- (0,-5);
 	\draw[thick,gray] (7,-0.4) -- (7,-5);
@@ -296,7 +296,7 @@ it gets all three automatically via DHCP.}
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Example: Wi-Fi and DHCP (C, Arduino)}]~\\[-3ex]
+\item[{\rot\bf Example: Wi-Fi and DHCP (C, Arduino)}]~\\[-\lstskip]
 \begin{lstlisting}[language=C]
 #include <WiFi.h>
 
@@ -322,7 +322,7 @@ DNS server  : 10.13.37.1
 \end{lstlisting}
 \os{\newpage}
 
-\item[{\rot\bf Example: Wi-Fi and DHCP (Rust, embassy-net)}]~\\[-3ex]
+\item[{\rot\bf Example: Wi-Fi and DHCP (Rust, embassy-net)}]~\\[-\lstskip]
 \begin{lstlisting}[language=Rust]
 // examples/networking/esp32-rust/src/lib.rs (shortened)
 let station = Config::Station(
@@ -350,7 +350,7 @@ stack.wait_config_up().await;                  // until DHCP is done
 \ei
 \os{\newpage}
 
-\item[{\rot\bf The IPv4 header and ICMP}]~\\[-3ex]
+\item[{\rot\bf The IPv4 header and ICMP}]~\\[-\lblskip]
 \bi
 	\ite important fields of the IPv4 header (20 bytes without options)
 	\bi
@@ -369,7 +369,7 @@ stack.wait_config_up().await;                  // until DHCP is done
 \ei
 \os{\newpage}
 
-\item[{\rot\bf IPv6}]~\\[-3ex]
+\item[{\rot\bf IPv6}]~\\[-\lblskip]
 \bi
 	\ite 128 bit addresses, written in hexadecimal groups: \texttt{2001:db8:0:1::2} (\texttt{::} = a run of zero groups)
 	\ite enough addresses for every device -- no NAT necessary, devices can be reachable directly (a firewall decides what is allowed)
@@ -381,7 +381,7 @@ stack.wait_config_up().await;                  // until DHCP is done
 \ei
 \os{\newpage}
 
-\item[{\rot\bf DNS: names instead of addresses}]~\\[-3ex]
+\item[{\rot\bf DNS: names instead of addresses}]~\\[-\lblskip]
 \bi
 	\ite people and programs use names (\texttt{example.com}); IP needs addresses
 	\ite the device asks its DNS server (address from DHCP) with a small UDP request to port 53
@@ -410,7 +410,7 @@ time, memory and a connection set-up, but the application does not have
 to care about lost packets.}
 
 \begin{description}
-\item[{\rot\bf Ports}]~\\[-3ex]
+\item[{\rot\bf Ports}]~\\[-\lblskip]
 \bi
 	\ite 16 bit number that selects the program (service) on a host
 	\ite well-known ports of servers: 53 DNS, 67/68 DHCP, 80 HTTP, 123 NTP, 443 HTTPS, 1883 MQTT, 8883 MQTT over TLS
@@ -422,7 +422,7 @@ to care about lost packets.}
 \ei
 \os{\newpage}
 
-\item[{\rot\bf UDP: User Datagram Protocol}]~\\[-3ex]
+\item[{\rot\bf UDP: User Datagram Protocol}]~\\[-\lblskip]
 \bi
 	\ite header of only 8 bytes: source port, destination port, length, checksum
 	\ite no connection, no acknowledgement, no repetition, no order
@@ -432,7 +432,7 @@ to care about lost packets.}
 \ei
 \os{\newpage}
 
-\item[{\rot\bf UDP example: time from an NTP server (Rust)}]~\\[-3ex]
+\item[{\rot\bf UDP example: time from an NTP server (Rust)}]~\\[-\lstskip]
 
 \begin{lstlisting}[language=Rust]
 let mut socket = UdpSocket::new(stack, &mut rx_meta, &mut rx_buf, &mut tx_meta, &mut tx_buf);
@@ -458,7 +458,7 @@ loop {
 \end{lstlisting}
 \os{\newpage}
 
-\item[{\rot\bf TCP: Transmission Control Protocol}]~\\[-3ex]
+\item[{\rot\bf TCP: Transmission Control Protocol}]~\\[-\lblskip]
 \bi
 	\ite \textbf{connection-oriented}: set-up before data, orderly shutdown afterwards
 	\ite \textbf{reliable byte stream}
@@ -473,13 +473,13 @@ loop {
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Connection set-up and shutdown}]~\\[-3ex]
+\item[{\rot\bf Connection set-up and shutdown}]~\\[-\lblskip]
 \begin{figure}[!hbtp]
 \begin{center}
 \resizebox{0.5\textwidth}{!}{%
 \begin{tikzpicture}[font=\sffamily\small,>=Stealth,
 	m/.style={->,thick},l/.style={above,font=\sffamily\scriptsize,midway,sloped}]
-	\node[draw,thick,fill=blue!10,minimum width=22mm] at (0,0) {client};
+	\node[draw,thick,fill=rwucyan!10,minimum width=22mm] at (0,0) {client};
 	\node[draw,thick,fill=green!10,minimum width=22mm] at (8,0) {server};
 	\draw[thick,gray] (0,-0.4) -- (0,-10.4);
 	\draw[thick,gray] (8,-0.4) -- (8,-10.4);
@@ -487,8 +487,8 @@ loop {
 	\draw[m] (8,-2.0) -- node[l]{SYN + ACK, seq = $y$, ack = $x+1$} (0,-2.8);
 	\draw[m] (0,-3.2) -- node[l]{ACK, ack = $y+1$} (8,-4.0);
 	\node[font=\sffamily\scriptsize] at (4,-4.6) {connection established: data in both directions};
-	\draw[m,blue] (0,-5.2) -- node[l]{data} (8,-6.0);
-	\draw[m,blue] (8,-6.4) -- node[l]{ACK (+ data)} (0,-7.2);
+	\draw[m,rwucyandark] (0,-5.2) -- node[l]{data} (8,-6.0);
+	\draw[m,rwucyandark] (8,-6.4) -- node[l]{ACK (+ data)} (0,-7.2);
 	\draw[m] (0,-7.8) -- node[l]{FIN} (8,-8.6);
 	\draw[m] (8,-8.8) -- node[l]{ACK, FIN} (0,-9.6);
 	\draw[m] (0,-9.6) -- node[l]{ACK} (8,-10.4);
@@ -504,7 +504,7 @@ loop {
 \ei
 \os{\newpage}
 
-\item[{\rot\bf A byte stream has no message boundaries}]~\\[-3ex]
+\item[{\rot\bf A byte stream has no message boundaries}]~\\[-\lblskip]
 \bi
 	\ite TCP may split one \texttt{send()} into several segments, or merge several \texttt{send()}s into one segment
 	\ite one \texttt{recv()} can therefore return half a message or two messages at once
@@ -518,7 +518,7 @@ loop {
 \ei
 \os{\newpage}
 
-\item[{\rot\bf UDP or TCP?}]~\\[-3ex]
+\item[{\rot\bf UDP or TCP?}]~\\[-\lblskip]
 \begin{center}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{|l|l|l|}
@@ -550,13 +550,13 @@ show the server side, which our simulated ESP32 cannot offer to the outside
 world.}
 
 \begin{description}
-\item[{\rot\bf The socket API}]~\\[-3ex]
+\item[{\rot\bf The socket API}]~\\[-\lblskip]
 \begin{figure}[!hbtp]
 \begin{center}
 \resizebox{0.6\textwidth}{!}{%
 \begin{tikzpicture}[font=\sffamily\small,>=Stealth,
 	s/.style={draw,thick,rounded corners,minimum width=26mm,minimum height=7mm,fill=green!10},
-	c/.style={draw,thick,rounded corners,minimum width=26mm,minimum height=7mm,fill=blue!10}]
+	c/.style={draw,thick,rounded corners,minimum width=26mm,minimum height=7mm,fill=rwucyan!10}]
 	\node[above] at (0,0.5) {\textbf{server}};
 	\node[s] (s1) at (0,0) {socket()};
 	\node[s] (s2) at (0,-1) {bind(port)};
@@ -584,7 +584,7 @@ world.}
 \ei
 \os{\newpage}
 
-\item[{\rot\bf TCP echo server (C, BSD sockets)}]~\\[-3ex]
+\item[{\rot\bf TCP echo server (C, BSD sockets)}]~\\[-\lblskip]
 \bi
 	\ite \texttt{htons()}/\texttt{htonl()}: the network uses big endian, x86 and ARM (usually) little endian
 \ei
@@ -613,7 +613,7 @@ for (;;) {
 \end{lstlisting}
 \os{\newpage}
 
-\item[{\rot\bf TCP echo server (Rust standard library)}]~\\[-3ex]
+\item[{\rot\bf TCP echo server (Rust standard library)}]~\\[-\lstskip]
 \begin{lstlisting}[language=Rust]
 fn handle(mut stream: TcpStream) -> std::io::Result<()> {
     let mut buf = [0u8; 256];
@@ -641,7 +641,7 @@ fn main() -> std::io::Result<()> {
 \ei
 \os{\newpage}
 
-\item[{\rot\bf The same on the microcontroller}]~\\[-3ex]
+\item[{\rot\bf The same on the microcontroller}]~\\[-\lblskip]
 \bi
 	\ite C (Arduino): \texttt{WiFiClient} wraps a lwIP socket -- \texttt{connect()}, \texttt{print()}, \texttt{read()}, \texttt{stop()}
 	\ite Rust (embassy-net): \texttt{TcpSocket} with buffers provided by the caller -- no heap needed
@@ -675,7 +675,7 @@ forwards messages by topic. A sensor does not need to know who reads its
 values.}
 
 \begin{description}
-\item[{\rot\bf HTTP: request and response}]~\\[-3ex]
+\item[{\rot\bf HTTP: request and response}]~\\[-\lblskip]
 \bi
 	\ite text protocol: request line, header lines, empty line, optional body
 	\ite methods: GET (read), POST (create / send data), PUT (replace), DELETE
@@ -698,7 +698,7 @@ Transfer-Encoding: chunked         <- body comes in pieces with length prefix
 \end{lstlisting}
 \os{\newpage}
 
-\item[{\rot\bf HTTP by hand (Rust, raw TCP)}]~\\[-3ex]
+\item[{\rot\bf HTTP by hand (Rust, raw TCP)}]~\\[-\lstskip]
 \begin{lstlisting}[language=Rust]
 // DNS: name -> IPv4 address (UDP request to the DNS server from DHCP)
 let addr = stack.dns_query(HOST, DnsQueryType::A).await.unwrap()[0];
@@ -725,7 +725,7 @@ loop {
 \ei
 \os{\newpage}
 
-\item[{\rot\bf MQTT: publish and subscribe}]~\\[-3ex]
+\item[{\rot\bf MQTT: publish and subscribe}]~\\[-\lblskip]
 \begin{figure}[!hbtp]
 \begin{center}
 \resizebox{0.85\textwidth}{!}{%
@@ -733,8 +733,8 @@ loop {
 	d/.style={draw,thick,rounded corners,minimum width=28mm,minimum height=10mm,align=center},
 	l/.style={midway,font=\sffamily\scriptsize,fill=white,inner sep=1pt}]
 	\node[d,fill=yellow!25,minimum height=16mm] (b) at (6,0) {\textbf{broker}\\test.mosquitto.org};
-	\node[d,fill=blue!10] (s) at (0,1.6) {ESP32\\(potentiometer)};
-	\node[d,fill=blue!10] (l) at (0,-1.6) {ESP32\\(LED)};
+	\node[d,fill=rwucyan!10] (s) at (0,1.6) {ESP32\\(potentiometer)};
+	\node[d,fill=rwucyan!10] (l) at (0,-1.6) {ESP32\\(LED)};
 	\node[d,fill=green!10] (a) at (12,1.6) {dashboard};
 	\node[d,fill=green!10] (p) at (12,-1.6) {smartphone app};
 	\draw[->,thick] (s.east) -- node[l]{publish .../pot} (b.north west);
@@ -752,7 +752,7 @@ loop {
 \ei
 \os{\newpage}
 
-\item[{\rot\bf MQTT features}]~\\[-3ex]
+\item[{\rot\bf MQTT features}]~\\[-\lblskip]
 \bi
 	\ite \textbf{quality of service} per message
 	\bi
@@ -767,7 +767,7 @@ loop {
 \ei
 \os{\newpage}
 
-\item[{\rot\bf The MQTT CONNECT packet byte by byte}]~\\[-3ex]
+\item[{\rot\bf The MQTT CONNECT packet byte by byte}]~\\[-\lblskip]
 \bi
 	\ite recorded from our Rust example (\texttt{src/mqtt.rs} builds it by hand)
 \ei
@@ -793,7 +793,7 @@ loop {
 \ei
 \os{\newpage}
 
-\item[{\rot\bf MQTT example: sensor value and LED (C, PubSubClient)}]~\\[-3ex]
+\item[{\rot\bf MQTT example: sensor value and LED (C, PubSubClient)}]~\\[-\lstskip]
 \begin{lstlisting}[language=C]
 WiFiClient tcp;
 PubSubClient mqtt(tcp);
@@ -821,7 +821,7 @@ void loop() {
 \end{lstlisting}
 \os{\newpage}
 
-\item[{\rot\bf MQTT example: sensor value and LED (Rust, async)}]~\\[-3ex]
+\item[{\rot\bf MQTT example: sensor value and LED (Rust, async)}]~\\[-\lstskip]
 \begin{lstlisting}[language=Rust]
 socket.connect((broker, 1883)).await.unwrap(); // MQTT without TLS
 mqtt::connect(&mut socket, DEVICE).await.unwrap();
@@ -847,7 +847,7 @@ loop {
 \end{lstlisting}
 \os{\newpage}
 
-\item[{\rot\bf HTTP or MQTT?}]~\\[-3ex]
+\item[{\rot\bf HTTP or MQTT?}]~\\[-\lblskip]
 \begin{center}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{|l|l|l|}
@@ -877,7 +877,7 @@ what a connected product needs, and shows how to look at the traffic with
 Wireshark.}
 
 \begin{description}
-\item[{\rot\bf Securing connected devices}]~\\[-3ex]
+\item[{\rot\bf Securing connected devices}]~\\[-\lblskip]
 \bi
 	\ite \textbf{TLS} (transport layer security) between TCP and the application
 	\bi
@@ -894,7 +894,7 @@ Wireshark.}
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Looking at the traffic: Wireshark}]~\\[-3ex]
+\item[{\rot\bf Looking at the traffic: Wireshark}]~\\[-\lblskip]
 \bi
 	\ite Wokwi can record the network traffic of the simulated device as a \texttt{.pcap} file -- open it in Wireshark
 	\ite the same tool is used for real networks (capture on the PC, or with a mirror port on a switch)
@@ -909,7 +909,7 @@ Wireshark.}
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Exercises}]~\\[-3ex]
+\item[{\rot\bf Exercises}]~\\[-\lblskip]
 \bi
 	\ite Run \texttt{wifi\_dhcp}. Which part of the IP address is the network part? How many devices fit into this network?
 	\ite Record \texttt{http\_get} as pcap. Find DHCP (four messages), the DNS query, the three-way handshake, the request and the FIN segments. How many bytes of headers were sent for the request?

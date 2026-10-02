@@ -3,26 +3,57 @@
 % Each root file loads its document class, then \input{preamble},
 % then hyperref with its own options, then its page geometry.
 %************************************************************************
-\usepackage[utf8]{inputenc}
-\usepackage[T1]{fontenc}
-\usepackage{lmodern}
+\usepackage{iftex}
+\ifPDFTeX
+  % fallback without the RWU font: make PDFTEX=1 (or plain pdflatex)
+  \usepackage[utf8]{inputenc}
+  \usepackage[T1]{fontenc}
+  \usepackage{lmodern}
+\else
+  % RWU corporate font Barlow Semi Condensed, shipped in fonts/ (SIL OFL)
+  \usepackage{fontspec}
+  \defaultfontfeatures{Ligatures=TeX}
+  \newcommand{\rwufontsetup}[1]{#1{BarlowSemiCondensed}[
+      Path=fonts/, Extension=.otf,
+      UprightFont=*-Regular, ItalicFont=*-Italic,
+      BoldFont=*-SemiBold, BoldItalicFont=*-SemiBoldItalic]}
+  \rwufontsetup\setmainfont
+  \rwufontsetup\setsansfont
+  \setmonofont{Latin Modern Mono}
+\fi
+\usepackage{xcolor}
 \usepackage{color,epsfig,graphicx,amsmath,amsfonts,latexsym,longtable,epic,eepic,fancybox,moreverb,url,version,ifthen,alltt}
 \usepackage{shadow}
+
+% RWU corporate colours (as in the RWU LaTeX style, rwudefs.sty)
+\definecolor{rwuviolet}{RGB}{102,56,182}
+\definecolor{rwuvioletlight}{RGB}{155,125,212}
+\definecolor{rwucyan}{RGB}{0,169,206}
+\definecolor{rwucyanlight}{RGB}{5,195,222}
+\definecolor{rwucyan40}{RGB}{153,221,253}
+\colorlet{rwucyandark}{rwucyan!75!black}   % cyan for text on white
+\colorlet{rwugray}{black!55}
+% pulls the first bullet up under a topic label: \item[{\rot\bf Topic}]~\\[-\lblskip]
+% (em-based, so it does not depend on the x-height of the font; was -3ex with Latin Modern)
+\newcommand{\lblskip}{1.1em}
+% same before a framed listing, which needs room for its top rule
+\newcommand{\lstskip}{0.5em}
+\newcommand{\rwulogo}[1][height=1.3cm]{\includegraphics[#1]{rwu_logo_hor_lila-cyan_cmyk}}
 \usepackage{chngcntr}
 \usepackage{verbatim}
 \usepackage{tikz}                % own drawings (block diagrams, signals)
-\usetikzlibrary{arrows.meta,positioning,calc,decorations.pathreplacing,shapes.symbols}
+\usetikzlibrary{arrows.meta,positioning,calc,decorations.pathreplacing,shapes.symbols,shapes.geometric}
 \usepackage{tikz-timing}         % timing diagrams (UART, I2C, SPI, ...)
 
 \usepackage{listings}
-\definecolor{codegreen}{rgb}{0,0.6,0}
+\colorlet{codegreen}{black!55}
 \definecolor{codegray}{rgb}{0.5,0.5,0.5}
-\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\colorlet{codepurple}{rwucyandark}
 \definecolor{backcolour}{rgb}{0.95,0.95,0.92}
 \lstdefinestyle{mystyle}{
     backgroundcolor=\color{backcolour},
     commentstyle=\color{codegreen},
-    keywordstyle=\color{magenta},
+    keywordstyle=\color{rwuviolet}\bfseries,
     numberstyle=\tiny\color{codegray},
     stringstyle=\color{codepurple},
     basicstyle=\ttfamily\footnotesize,
@@ -39,9 +70,9 @@
 }
 \lstset{style=mystyle}
 
-\definecolor{mygreen}{rgb}{0,0.6,0}
+\colorlet{mygreen}{black!55}
 \definecolor{mygray}{rgb}{0.5,0.5,0.5}
-\definecolor{mymauve}{rgb}{0.58,0,0.82}
+\colorlet{mymauve}{rwucyandark}
 
 %Customize a bit the look
 \lstset{ %
@@ -56,13 +87,13 @@ escapeinside={\%*}{*)}, % if you want to add LaTeX within your code
 extendedchars=true, % lets you use non-ASCII characters; for 8-bits encodings only, does not work with UTF-8
 frame=single, % adds a frame around the code
 keepspaces=true, % keeps spaces in text, useful for keeping indentation of code (possibly needs columns=flexible)
-keywordstyle=\color{blue}, % keyword style
+keywordstyle=\color{rwuviolet}\bfseries, % keyword style
 % language=Octave, % the language of the code
 morekeywords={*,...}, % if you want to add more keywords to the set
 numbers=left, % where to put the line-numbers; possible values are (none, left, right)
 numbersep=5pt, % how far the line-numbers are from the code
 numberstyle=\tiny\color{mygray}, % the style that is used for the line-numbers
-rulecolor=\color{black}, % if not set, the frame-color may be changed on line-breaks within not-black text (e.g. comments (green here))
+rulecolor=\color{rwucyan40}, % if not set, the frame-color may be changed on line-breaks within not-black text (e.g. comments (green here))
 showspaces=false, % show spaces everywhere adding particular underscores; it overrides 'showstringspaces'
 showstringspaces=false, % underline spaces within strings only
 showtabs=false, % show tabs within strings adding particular underscores
@@ -105,7 +136,7 @@ tabsize=2,
 breaklines=true,
 showtabs=false,
 captionpos=b,
-columns=flexible       % natural character width - avoids wrapped lines
+columns=fullflexible   % natural widths, also for spaces (comments are set smaller)
 }
 
 %define Rust language (listings has no built-in Rust)

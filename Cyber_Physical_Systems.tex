@@ -34,16 +34,16 @@ Python.
 \ei
 \os{\newpage}
 
-\item[{\rot\bf The feedback loop}]~\\[-3ex]
+\item[{\rot\bf The feedback loop}]~\\[-\lblskip]
 \begin{figure}[!hbtp]
 \begin{center}
 \resizebox{0.85\textwidth}{!}{%
 \begin{tikzpicture}[font=\sffamily\small,>=Stealth,
 	b/.style={draw,thick,rounded corners,minimum width=30mm,minimum height=12mm,align=center}]
 	\node[b,fill=green!15] (proc) at (0,0) {physical process\\(e.g.\ room, motor)};
-	\node[b,fill=orange!15] (sens) at (-4.5,2.2) {sensors\\+ ADC};
-	\node[b,fill=blue!10] (comp) at (0,4.4) {computation\\(controller, state machine)};
-	\node[b,fill=orange!15] (act) at (4.5,2.2) {actuators\\+ PWM, DAC};
+	\node[b,fill=rwuviolet!15] (sens) at (-4.5,2.2) {sensors\\+ ADC};
+	\node[b,fill=rwucyan!10] (comp) at (0,4.4) {computation\\(controller, state machine)};
+	\node[b,fill=rwuviolet!15] (act) at (4.5,2.2) {actuators\\+ PWM, DAC};
 	\node[b,fill=gray!10] (net) at (6.5,5.6) {network\\other systems};
 	\draw[->,thick] (proc) -| node[pos=0.75,left,font=\sffamily\scriptsize]{measured values} (sens);
 	\draw[->,thick] (sens) |- (comp);
@@ -63,7 +63,7 @@ Python.
 \ei
 \os{\newpage}
 
-\item[{\rot\bf From model to product}]~\\[-3ex]
+\item[{\rot\bf From model to product}]~\\[-\lblskip]
 \bi
 	\ite the system is developed and tested in steps, replacing models by real parts one after the other
 \ei
@@ -72,10 +72,10 @@ Python.
 \resizebox{0.8\textwidth}{!}{%
 \begin{tikzpicture}[font=\sffamily\small,>=Stealth,
 	b/.style={draw,thick,rounded corners,minimum height=16mm,text width=30mm,align=center}]
-	\node[b,fill=blue!8] (mil) at (0,0) {\textbf{MiL}\\model in the loop\\controller model + plant model};
-	\node[b,fill=blue!15] (sil) at (4,0) {\textbf{SiL}\\software in the loop\\real code on the PC + plant model};
-	\node[b,fill=orange!15] (pil) at (8,0) {\textbf{PiL}\\processor in the loop\\code on the target processor};
-	\node[b,fill=orange!25] (hil) at (12,0) {\textbf{HiL}\\hardware in the loop\\real ECU + simulated plant in real time};
+	\node[b,fill=rwucyan!8] (mil) at (0,0) {\textbf{MiL}\\model in the loop\\controller model + plant model};
+	\node[b,fill=rwucyan!15] (sil) at (4,0) {\textbf{SiL}\\software in the loop\\real code on the PC + plant model};
+	\node[b,fill=rwuviolet!15] (pil) at (8,0) {\textbf{PiL}\\processor in the loop\\code on the target processor};
+	\node[b,fill=rwuviolet!25] (hil) at (12,0) {\textbf{HiL}\\hardware in the loop\\real ECU + simulated plant in real time};
 	\foreach \a/\b in {mil/sil,sil/pil,pil/hil} \draw[->,thick] (\a) -- (\b);
 \end{tikzpicture}}
 \caption{Test levels from the model to the real hardware}
@@ -88,7 +88,7 @@ Python.
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Simulation of physical systems}]~\\[-3ex]
+\item[{\rot\bf Simulation of physical systems}]~\\[-\lblskip]
 \bi
 	\ite physical systems are described by \textbf{differential equations}, often with algebraic constraints (differential-algebraic equations, DAE)
 	\ite models with lumped parameters (masses, springs, resistors) -- ordinary differential equations
@@ -102,7 +102,7 @@ Python.
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Block oriented modelling}]~\\[-3ex]
+\item[{\rot\bf Block oriented modelling}]~\\[-\lblskip]
 \bi
 	\ite the system is a diagram of blocks with inputs and outputs: gain, sum, integrator, transfer function
 	\ite every connection has a fixed direction (causality): the modeller decides what is computed from what
@@ -144,7 +144,7 @@ implementation with a graphical editor (OMEdit) and an extensive standard
 library for electrical, mechanical, thermal, fluid and control components.}
 
 \begin{description}
-\item[{\rot\bf Features of Modelica / OpenModelica}]~\\[-3ex]
+\item[{\rot\bf Features of Modelica / OpenModelica}]~\\[-\lblskip]
 \bi
 	\ite \textbf{equation based} (acausal): equations instead of assignments -- the tool decides the order of computation
 	\ite \textbf{object oriented}: classes, instances, inheritance, packages; parameters separate from the structure (a resistor model, used with different values)
@@ -156,7 +156,7 @@ library for electrical, mechanical, thermal, fluid and control components.}
 \ei
 \os{\newpage}
 
-\item[{\rot\bf OpenModelica: graphical modelling}]~\\[-3ex]
+\item[{\rot\bf OpenModelica: graphical modelling}]~\\[-\lblskip]
 \begin{figure}[!hbtp]%
      \begin{center}
 	  \epsfig{file=figures/Fig_3_3_OpenModelica,width=0.8\textwidth}\\
@@ -165,7 +165,7 @@ library for electrical, mechanical, thermal, fluid and control components.}
 \end{figure}
 \os{\newpage}
 
-\item[{\rot\bf First elements of Modelica}]~\\[-3ex]
+\item[{\rot\bf First elements of Modelica}]~\\[-\lblskip]
 \bi
 	\ite data types: \texttt{Real} (64 bit floating point), \texttt{Integer}, \texttt{Boolean}, \texttt{String}, enumerations
 	\ite \texttt{parameter}: constant during a simulation, can be changed between simulations
@@ -199,7 +199,7 @@ end HDE;
 \end{figure}
 \os{\newpage}
 
-\item[{\rot\bf Differential-algebraic equations: the pendulum}]~\\[-3ex]
+\item[{\rot\bf Differential-algebraic equations: the pendulum}]~\\[-\lblskip]
 \bi
 	\ite a model can contain algebraic equations (without derivatives) besides the differential equations
 	\ite example: a planar pendulum, a mass $m$ on a rod of length $L$; the rod force $F$ is unknown
@@ -223,7 +223,7 @@ x^2 + y^2 &=& L^2
 \ei
 \os{\newpage}
 
-\item[{\rot\bf The pendulum in Modelica}]~\\[-3ex]
+\item[{\rot\bf The pendulum in Modelica}]~\\[-\lstskip]
 \begin{lstlisting}[language={}]
 model Pendulum "Planar pendulum"
   parameter Real m = 1, g = 9.81, L = 0.5;
@@ -254,7 +254,7 @@ end Pendulum;
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Classes and instances}]~\\[-3ex]
+\item[{\rot\bf Classes and instances}]~\\[-\lblskip]
 \bi
 	\ite every object has a class that defines its data and its behaviour
 	\ite a class has variables (constants, parameters, computed values), equations, and can contain instances of other classes
@@ -280,7 +280,7 @@ end Triangle2;
 \end{lstlisting}
 \os{\newpage}
 
-\item[{\rot\bf An electrical example}]~\\[-3ex]
+\item[{\rot\bf An electrical example}]~\\[-\lblskip]
 \begin{minipage}{0.35\textwidth}
 \begin{center}
 \epsfig{file=figures/Fig_3_8_RLC,width=0.9\textwidth}
@@ -318,7 +318,7 @@ end RLC1;
 \ei
 \os{\newpage}
 
-\item[{\rot\bf The same equations in Python}]~\\[-3ex]
+\item[{\rot\bf The same equations in Python}]~\\[-\lstskip]
 \begin{lstlisting}[language=Python]
 from scipy.integrate import solve_ivp
 
@@ -339,7 +339,7 @@ print("final i_L =", sol.y[1][-1])   # 0.240 A
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Exercises}]~\\[-3ex]
+\item[{\rot\bf Exercises}]~\\[-\lblskip]
 \bi
 	\ite Simulate \texttt{HDE}, \texttt{Pendulum} and \texttt{RLC1} in OpenModelica and compare with the plots of the Python script.
 	\ite Change $R$ in the RLC circuit to $10\,\Omega$ and $1000\,\Omega$. When does the circuit stop oscillating? Compare with the condition $R = \frac{1}{2}\sqrt{L/C}$.

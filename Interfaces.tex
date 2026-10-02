@@ -25,7 +25,7 @@ other microcontroller; only register names and addresses change.
 \newpage}
 
 \begin{description}
-\item[{\rot\bf The reference platform: RP2040 / Raspberry Pi Pico}]~\\[-3ex]
+\item[{\rot\bf The reference platform: RP2040 / Raspberry Pi Pico}]~\\[-\lblskip]
 \bi
 	\ite two ARM Cortex-M0+ cores, 125\,MHz (up to 200\,MHz), 264\,KB SRAM, program in external QSPI flash (2\,MB on the Pico)
 	\ite 30 GPIO pins (26 usable on the Pico), 3.3\,V logic, \textbf{not} 5\,V tolerant
@@ -40,7 +40,7 @@ other microcontroller; only register names and addresses change.
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Memory-mapped I/O}]~\\[-3ex]
+\item[{\rot\bf Memory-mapped I/O}]~\\[-\lblskip]
 \bi
 	\ite every peripheral is a block of \textbf{registers} in the address space
 	\ite the CPU accesses them with normal load/store instructions
@@ -62,13 +62,13 @@ other microcontroller; only register names and addresses change.
 \begin{tikzpicture}[font=\sffamily\small,
 	box/.style={draw,thick,minimum height=9mm,minimum width=22mm,align=center},
 	>=Stealth]
-	\node[box,fill=blue!10] (cpu) at (0,0) {CPU\\Cortex-M0+};
+	\node[box,fill=rwucyan!10] (cpu) at (0,0) {CPU\\Cortex-M0+};
 	\node[box,fill=gray!10,minimum width=24mm] (mem) at (0,-2.2) {Flash / SRAM};
 	\draw[very thick] (2,1.2) -- (2,-3.2) node[below]{bus};
 	\draw[<->,thick] (cpu) -- (2,0);
 	\draw[<->,thick] (mem) -- (2,-2.2);
 	\foreach \name/\y/\addr in {GPIO/1/0x4001\,4000, UART0/0/0x4003\,4000, I2C0/-1/0x4004\,4000, ADC/-2/0x4004\,c000, PWM/-3/0x4005\,0000}{
-		\node[box,fill=orange!15,anchor=west] (p\name) at (3,\y) {\name};
+		\node[box,fill=rwuviolet!15,anchor=west] (p\name) at (3,\y) {\name};
 		\draw[<->,thick] (2,\y) -- (p\name);
 		\node[anchor=west,font=\sffamily\scriptsize] at ($(p\name.east)+(0.1,0)$) {\addr};
 	}
@@ -79,7 +79,7 @@ other microcontroller; only register names and addresses change.
 \end{figure}
 \os{\newpage}
 
-\item[{\rot\bf Before a peripheral can be used}]~\\[-3ex]
+\item[{\rot\bf Before a peripheral can be used}]~\\[-\lblskip]
 \bi
 	\ite release it from \textbf{reset} (most blocks start in reset to save power)
 	\ite make sure it gets a \textbf{clock} (e.g.\ \texttt{clk\_peri} for UART and SPI)
@@ -94,7 +94,7 @@ other microcontroller; only register names and addresses change.
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Polling, interrupts and DMA}]~\\[-3ex]
+\item[{\rot\bf Polling, interrupts and DMA}]~\\[-\lblskip]
 \bi
 	\ite \textbf{polling}: the program checks a status flag in a loop
 	\bi
@@ -113,7 +113,7 @@ other microcontroller; only register names and addresses change.
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Our simulated circuit (Wokwi)}]~\\[-3ex]
+\item[{\rot\bf Our simulated circuit (Wokwi)}]~\\[-\lblskip]
 \bi
 	\ite one circuit for all examples of this chapter: \texttt{examples/interfaces/diagram.json}
 \ei
@@ -151,15 +151,15 @@ a pad with electrical options such as pull resistors and drive strength,
 and registers to control everything.}
 
 \begin{description}
-\item[{\rot\bf Structure of a GPIO pin}]~\\[-3ex]
+\item[{\rot\bf Structure of a GPIO pin}]~\\[-\lblskip]
 \begin{figure}[!hbtp]
 \begin{center}
 \resizebox{0.9\textwidth}{!}{%
 \begin{tikzpicture}[font=\sffamily\small,
 	box/.style={draw,thick,minimum height=8mm,align=center},
 	>=Stealth]
-	\node[box,minimum width=20mm,fill=blue!10] (sio) at (0,1.5) {SIO\\(software)};
-	\node[box,minimum width=20mm,fill=orange!15] (uart) at (0,0) {UART, SPI,\\I2C, PWM};
+	\node[box,minimum width=20mm,fill=rwucyan!10] (sio) at (0,1.5) {SIO\\(software)};
+	\node[box,minimum width=20mm,fill=rwuviolet!15] (uart) at (0,0) {UART, SPI,\\I2C, PWM};
 	\node[box,minimum width=20mm,fill=gray!10] (pio) at (0,-1.5) {PIO, USB, \ldots};
 	\node[box,minimum width=16mm,minimum height=42mm,fill=yellow!20] (mux) at (3.5,0) {FUNCSEL\\multiplexer\\(IO\_BANK0)};
 	\foreach \n in {sio,uart,pio} \draw[<->,thick] (\n.east) -- (\n.east -| mux.west);
@@ -177,7 +177,7 @@ and registers to control everything.}
 \ei
 \os{\newpage}
 
-\item[{\rot\bf SIO registers for GPIO (base address 0xd000\,0000)}]~\\[-3ex]
+\item[{\rot\bf SIO registers for GPIO (base address 0xd000\,0000)}]~\\[-\lblskip]
 \begin{center}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{|l|l|l|}
@@ -203,7 +203,7 @@ and registers to control everything.}
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Blinking with raw register accesses (C)}]~\\[-3ex]
+\item[{\rot\bf Blinking with raw register accesses (C)}]~\\[-\lstskip]
 \begin{lstlisting}[language=C]
 #define IO_BANK0_ADDR   0x40014000u
 #define SIO_ADDR        0xd0000000u
@@ -228,7 +228,7 @@ void loop() {
 \end{lstlisting}
 \os{\newpage}
 
-\item[{\rot\bf The same with the Pico SDK (C)}]~\\[-3ex]
+\item[{\rot\bf The same with the Pico SDK (C)}]~\\[-\lstskip]
 \begin{lstlisting}[language=C]
 #include "hardware/gpio.h"
 
@@ -252,7 +252,7 @@ void loop() {
 \ei
 \os{\newpage}
 
-\item[{\rot\bf The same in Rust (rp2040-hal)}]~\\[-3ex]
+\item[{\rot\bf The same in Rust (rp2040-hal)}]~\\[-\lstskip]
 \begin{lstlisting}[language=Rust]
 #[entry]
 fn main() -> ! {
@@ -275,7 +275,7 @@ fn main() -> ! {
 \end{lstlisting}
 \os{\newpage}
 
-\item[{\rot\bf What Rust adds: ownership and type states}]~\\[-3ex]
+\item[{\rot\bf What Rust adds: ownership and type states}]~\\[-\lblskip]
 \bi
 	\ite \texttt{Peripherals::take()} returns the peripherals only on the first call
 	\bi
@@ -293,7 +293,7 @@ fn main() -> ! {
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Output stages}]~\\[-3ex]
+\item[{\rot\bf Output stages}]~\\[-\lblskip]
 \bi
 	\ite \textbf{push-pull}: one transistor connects the pin to the supply, the other to GND
 	\bi
@@ -344,7 +344,7 @@ fn main() -> ! {
 \end{figure}
 \os{\newpage}
 
-\item[{\rot\bf Inputs}]~\\[-3ex]
+\item[{\rot\bf Inputs}]~\\[-\lblskip]
 \bi
 	\ite an unconnected (``floating'') input reads random values: it picks up noise
 	\bi
@@ -361,7 +361,7 @@ fn main() -> ! {
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Contact bounce}]~\\[-3ex]
+\item[{\rot\bf Contact bounce}]~\\[-\lblskip]
 \bi
 	\ite mechanical contacts do not close cleanly: they bounce for some 100\,$\mu$s up to about 20\,ms
 	\ite the software sees many edges for one press -- Wokwi simulates this as well
@@ -385,7 +385,7 @@ fn main() -> ! {
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Debouncing in software (Rust)}]~\\[-3ex]
+\item[{\rot\bf Debouncing in software (Rust)}]~\\[-\lstskip]
 \begin{lstlisting}[language=Rust]
 let mut led = pins.gpio15.into_push_pull_output();
 // Button connects the pin to GND -> use the internal pull-up, pressed = low.
@@ -431,7 +431,7 @@ from the program's point of view, so every variable they share must be
 protected.}
 
 \begin{description}
-\item[{\rot\bf How an interrupt is handled on a Cortex-M}]~\\[-3ex]
+\item[{\rot\bf How an interrupt is handled on a Cortex-M}]~\\[-\lblskip]
 \bi
 	\ite the peripheral sets an interrupt flag (e.g.\ ``falling edge on GP14'')
 	\ite if enabled, the request goes to the \textbf{NVIC} (nested vectored interrupt controller)
@@ -448,7 +448,7 @@ protected.}
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Rules for interrupt service routines}]~\\[-3ex]
+\item[{\rot\bf Rules for interrupt service routines}]~\\[-\lblskip]
 \bi
 	\ite keep ISRs \textbf{short}: set a flag, store a value, wake up a task
 	\ite no blocking calls (delays, waiting for a UART, \texttt{printf}) inside an ISR
@@ -462,7 +462,7 @@ protected.}
 \ei
 \os{\newpage}
 
-\item[{\rot\bf GPIO interrupt (C, Arduino API)}]~\\[-3ex]
+\item[{\rot\bf GPIO interrupt (C, Arduino API)}]~\\[-\lblskip]
 \bi
 	\ite try it: in Wokwi one press gave more than 30 interrupts -- the bouncing is visible again
 \ei
@@ -492,7 +492,7 @@ void loop() {
 \end{lstlisting}
 \os{\newpage}
 
-\item[{\rot\bf GPIO interrupt (Rust)}]~\\[-3ex]
+\item[{\rot\bf GPIO interrupt (Rust)}]~\\[-\lstskip]
 \begin{lstlisting}[language=Rust]
 // Hand-over main() -> ISR; the Mutex opens only in a critical section
 static SHARED: Mutex<RefCell<Option<(LedPin, ButtonPin)>>> = Mutex::new(RefCell::new(None));
@@ -520,7 +520,7 @@ fn IO_IRQ_BANK0() {
 \end{lstlisting}
 \os{\newpage}
 
-\item[{\rot\bf Ownership across the interrupt boundary}]~\\[-3ex]
+\item[{\rot\bf Ownership across the interrupt boundary}]~\\[-\lblskip]
 \bi
 	\ite the pins are \textbf{moved} into the ISR: after the hand-over, \texttt{main()} cannot touch them any more
 	\ite a data race between main program and ISR is therefore impossible -- the compiler rejects such code
@@ -542,7 +542,7 @@ the time of that edge (input capture). A special timer, the watchdog,
 resets the system if the software stops working.}
 
 \begin{description}
-\item[{\rot\bf Building blocks of a timer}]~\\[-3ex]
+\item[{\rot\bf Building blocks of a timer}]~\\[-\lblskip]
 \bi
 	\ite \textbf{prescaler / divider}: reduces the input clock, e.g.\ 125\,MHz / 125 = 1\,MHz
 	\ite \textbf{counter}: counts up (or down) with every divided clock
@@ -562,7 +562,7 @@ resets the system if the software stops working.}
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Pulse width modulation (PWM)}]~\\[-3ex]
+\item[{\rot\bf Pulse width modulation (PWM)}]~\\[-\lblskip]
 \bi
 	\ite a digital output switched periodically with a variable \textbf{duty cycle}
 	\ite after averaging (LED + eye, motor + inertia, RC low-pass) the result behaves like an analog value
@@ -575,9 +575,9 @@ resets the system if the software stops working.}
 	% counter sawtooth
 	\draw[->] (0,0) -- (10.5,0) node[right]{t};
 	\draw[->] (0,0) -- (0,2.4) node[above]{counter};
-	\foreach \x in {0,3.3,6.6} \draw[thick,blue] (\x,0) -- (\x+3.3,2) -- (\x+3.3,0);
+	\foreach \x in {0,3.3,6.6} \draw[thick,rwucyandark] (\x,0) -- (\x+3.3,2) -- (\x+3.3,0);
 	\draw[dashed] (0,2) node[left]{TOP} -- (10,2);
-	\draw[dashed,red] (0,1.2) node[left]{CC} -- (10,1.2);
+	\draw[dashed,rwuviolet] (0,1.2) node[left]{CC} -- (10,1.2);
 	% output
 	\draw[->] (0,-3) -- (10.5,-3) node[right]{t};
 	\node[left] at (0,-2.3) {output};
@@ -596,7 +596,7 @@ resets the system if the software stops working.}
 \ei
 \os{\newpage}
 
-\item[{\rot\bf PWM on the RP2040}]~\\[-3ex]
+\item[{\rot\bf PWM on the RP2040}]~\\[-\lblskip]
 \bi
 	\ite 8 slices, each with a 16 bit counter, a fractional divider (8.4 bit) and two outputs A and B
 	\ite fixed mapping: GPIO $n$ $\rightarrow$ slice $(n/2) \bmod 8$, channel A for even, B for odd $n$
@@ -609,7 +609,7 @@ resets the system if the software stops working.}
 \ei
 \os{\newpage}
 
-\item[{\rot\bf PWM example: fading LED (C)}]~\\[-3ex]
+\item[{\rot\bf PWM example: fading LED (C)}]~\\[-\lstskip]
 \begin{lstlisting}[language=C]
 // f_PWM = f_sys / (DIV * (TOP + 1)); with DIV = f_sys / 1 MHz -> 1 kHz
 #include "hardware/clocks.h"
@@ -638,7 +638,7 @@ void loop() {
 \end{lstlisting}
 \os{\newpage}
 
-\item[{\rot\bf PWM example: fading LED (Rust)}]~\\[-3ex]
+\item[{\rot\bf PWM example: fading LED (Rust)}]~\\[-\lstskip]
 \begin{lstlisting}[language=Rust]
 const TOP: u16 = 999;
 
@@ -665,7 +665,7 @@ loop {
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Watchdog}]~\\[-3ex]
+\item[{\rot\bf Watchdog}]~\\[-\lblskip]
 \bi
 	\ite a counter that resets the whole chip when it expires
 	\ite the software must restart (``feed'', ``kick'') it regularly
@@ -680,7 +680,7 @@ loop {
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Watchdog example (Rust)}]~\\[-3ex]
+\item[{\rot\bf Watchdog example (Rust)}]~\\[-\lstskip]
 \begin{lstlisting}[language=Rust]
 // Read the reset reason before the HAL takes the WATCHDOG peripheral.
 let by_watchdog = pac.WATCHDOG.reason().read().timer().bit_is_set();
@@ -722,7 +722,7 @@ per second). The datasheet value for the resolution is an upper bound;
 noise and non-linearity reduce the effective number of bits.}
 
 \begin{description}
-\item[{\rot\bf Principle and key figures}]~\\[-3ex]
+\item[{\rot\bf Principle and key figures}]~\\[-\lblskip]
 \bi
 	\ite \textbf{successive approximation} (SAR): the converter compares the input with the output of an internal D/A converter and determines one bit per step, starting with the MSB -- $n$ steps for $n$ bits
 	\ite \textbf{resolution}: $n$ bit $\Rightarrow$ $2^n$ steps; one step (LSB) $= V_{ref} / 2^n$
@@ -741,7 +741,7 @@ noise and non-linearity reduce the effective number of bits.}
 \ei
 \os{\newpage}
 
-\item[{\rot\bf ADC example: potentiometer and chip temperature (C)}]~\\[-3ex]
+\item[{\rot\bf ADC example: potentiometer and chip temperature (C)}]~\\[-\lstskip]
 \begin{lstlisting}[language=C]
 #include "hardware/adc.h"
 
@@ -787,7 +787,7 @@ in how the receiver knows when to sample a bit: an agreed baud rate
 (UART) or a separate clock line (I$^2$C, SPI).}
 
 \begin{description}
-\item[{\rot\bf Overview}]~\\[-3ex]
+\item[{\rot\bf Overview}]~\\[-\lblskip]
 \begin{center}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{|l|c|c|c|}
@@ -808,7 +808,7 @@ typical use & console, GPS, modems & sensors, EEPROM, RTC & displays, flash, SD 
 \ei
 \os{\newpage}
 
-\item[{\rot\bf UART: asynchronous serial transmission}]~\\[-3ex]
+\item[{\rot\bf UART: asynchronous serial transmission}]~\\[-\lblskip]
 \bi
 	\ite idle line is high; a frame starts with a \textbf{start bit} (low)
 	\ite then 5--9 data bits, \textbf{LSB first}, optional parity bit, 1 or 2 \textbf{stop bits} (high)
@@ -836,7 +836,7 @@ typical use & console, GPS, modems & sensors, EEPROM, RTC & displays, flash, SD 
 \end{figure}
 \os{\newpage}
 
-\item[{\rot\bf UART: errors and signal levels}]~\\[-3ex]
+\item[{\rot\bf UART: errors and signal levels}]~\\[-\lblskip]
 \bi
 	\ite error detection in the receiver
 	\bi
@@ -855,7 +855,7 @@ typical use & console, GPS, modems & sensors, EEPROM, RTC & displays, flash, SD 
 \ei
 \os{\newpage}
 
-\item[{\rot\bf UART example: echo in upper case}]~\\[-3ex]
+\item[{\rot\bf UART example: echo in upper case}]~\\[-\lstskip]
 \begin{lstlisting}[language=C]
 #include <ctype.h>
 #include "hardware/uart.h"
@@ -889,7 +889,7 @@ loop {
 \end{lstlisting}
 \os{\newpage}
 
-\item[{\rot\bf I$^2$C: a two-wire bus}]~\\[-3ex]
+\item[{\rot\bf I$^2$C: a two-wire bus}]~\\[-\lblskip]
 \bi
 	\ite two open-drain lines with pull-up resistors: SDA (data) and SCL (clock)
 	\ite the controller generates the clock and starts every transfer
@@ -906,10 +906,10 @@ loop {
 	box/.style={draw,thick,minimum height=10mm,minimum width=22mm,align=center}]
 	\draw[thick] (0,0) -- (11,0) node[right]{SCL};
 	\draw[thick] (0,0.6) -- (11,0.6) node[right]{SDA};
-	\node[box,fill=blue!10] (c) at (1.2,-1.6) {controller\\RP2040};
-	\node[box,fill=orange!15] (p1) at (4.6,-1.6) {MPU6050\\0x68};
-	\node[box,fill=orange!15] (p2) at (7.4,-1.6) {OLED display\\0x3C};
-	\node[box,fill=orange!15] (p3) at (10.2,-1.6) {EEPROM\\0x50};
+	\node[box,fill=rwucyan!10] (c) at (1.2,-1.6) {controller\\RP2040};
+	\node[box,fill=rwuviolet!15] (p1) at (4.6,-1.6) {MPU6050\\0x68};
+	\node[box,fill=rwuviolet!15] (p2) at (7.4,-1.6) {OLED display\\0x3C};
+	\node[box,fill=rwuviolet!15] (p3) at (10.2,-1.6) {EEPROM\\0x50};
 	\foreach \n in {c,p1,p2,p3} {
 		\draw ($(\n.north)+(-0.3,0)$) -- ++(0,1.1) node[circle,fill,inner sep=1pt]{};
 		\draw ($(\n.north)+(0.3,0)$) -- ++(0,2.1-0.4) node[circle,fill,inner sep=1pt]{};
@@ -925,7 +925,7 @@ loop {
 \end{figure}
 \os{\newpage}
 
-\item[{\rot\bf I$^2$C: protocol}]~\\[-3ex]
+\item[{\rot\bf I$^2$C: protocol}]~\\[-\lblskip]
 \bi
 	\ite SDA may only change while SCL is low -- with two exceptions
 	\bi
@@ -958,7 +958,7 @@ loop {
 \end{figure}
 \os{\newpage}
 
-\item[{\rot\bf Reading a sensor register over I$^2$C}]~\\[-3ex]
+\item[{\rot\bf Reading a sensor register over I$^2$C}]~\\[-\lblskip]
 \bi
 	\ite sensors are organised as a set of registers with an 8 bit register address
 	\ite reading a register is a combined transfer
@@ -979,7 +979,7 @@ void readRegs(uint8_t reg, uint8_t *buf, size_t len) {
 \end{lstlisting}
 \os{\newpage}
 
-\item[{\rot\bf I$^2$C example: MPU6050 acceleration sensor (Rust)}]~\\[-3ex]
+\item[{\rot\bf I$^2$C example: MPU6050 acceleration sensor (Rust)}]~\\[-\lstskip]
 \begin{lstlisting}[language=Rust]
 // I2C lines are open drain: the pins need pull-up resistors.
 let sda = pins.gpio4.reconfigure::<gpio::FunctionI2C, gpio::PullUp>();
@@ -1010,7 +1010,7 @@ loop {
 \ei
 \os{\newpage}
 
-\item[{\rot\bf SPI: Serial Peripheral Interface}]~\\[-3ex]
+\item[{\rot\bf SPI: Serial Peripheral Interface}]~\\[-\lblskip]
 \bi
 	\ite synchronous, full duplex: with every clock one bit goes out on COPI and one comes in on CIPO
 	\ite internally two shift registers that exchange their contents
@@ -1020,12 +1020,12 @@ loop {
 \ei
 \begin{figure}[!hbtp]
 \begin{center}
-\resizebox{0.7\textwidth}{!}{%
+\resizebox{0.6\textwidth}{!}{%
 \begin{tikzpicture}[font=\sffamily\small,>=Stealth,
 	box/.style={draw,thick,minimum width=22mm,minimum height=12mm,align=center}]
-	\node[box,fill=blue!10,minimum height=26mm] (c) at (0,0) {controller};
-	\node[box,fill=orange!15] (p1) at (4.5,-2.6) {peripheral 1};
-	\node[box,fill=orange!15] (p2) at (8,-2.6) {peripheral 2};
+	\node[box,fill=rwucyan!10,minimum height=26mm] (c) at (0,0) {controller};
+	\node[box,fill=rwuviolet!15] (p1) at (4.5,-2.6) {peripheral 1};
+	\node[box,fill=rwuviolet!15] (p2) at (8,-2.6) {peripheral 2};
 	% shared lines
 	\foreach \y/\n in {1.0/SCK,0.6/COPI,0.2/CIPO} {
 		\draw[thick] (1.1,\y) -- (9.6,\y) node[right,font=\sffamily\scriptsize]{\n};
@@ -1045,7 +1045,7 @@ loop {
 \end{figure}
 \os{\newpage}
 
-\item[{\rot\bf SPI modes}]~\\[-3ex]
+\item[{\rot\bf SPI modes}]~\\[-\lblskip]
 \bi
 	\ite two settings define the timing; controller and peripheral must agree
 	\bi
@@ -1067,7 +1067,7 @@ loop {
 \end{center}
 \begin{figure}[!hbtp]
 \begin{center}
-\resizebox{0.75\textwidth}{!}{%
+\resizebox{0.66\textwidth}{!}{%
 \begin{tikztimingtable}[timing/slope=0.1, xscale=1.3, yscale=1.4, font=\sffamily\small]
 	CS   & 1H 18L 1H \\
 	SCK  & 1L 8{L H} 2L 1L \\
@@ -1082,7 +1082,7 @@ loop {
 \end{figure}
 \os{\newpage}
 
-\item[{\rot\bf SPI example: 74HC595 shift register}]~\\[-3ex]
+\item[{\rot\bf SPI example: 74HC595 shift register}]~\\[-\lblskip]
 \bi
 	\ite the 74HC595 is a simple SPI-like device: 8 bit shift register (DS = data, SHCP = clock) plus an output latch (STCP)
 	\ite a rising edge on STCP copies the shifted byte to the outputs Q0--Q7 -- classic way to get more output pins
@@ -1112,7 +1112,7 @@ void show(uint8_t pattern) {
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Interfaces beyond the board}]~\\[-3ex]
+\item[{\rot\bf Interfaces beyond the board}]~\\[-\lblskip]
 \bi
 	\ite \textbf{USB}: differential pair, host-controlled, up to 12\,Mbit/s on the RP2040 (full speed)
 	\bi
@@ -1129,7 +1129,7 @@ void show(uint8_t pattern) {
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Looking at the signals: the logic analyzer}]~\\[-3ex]
+\item[{\rot\bf Looking at the signals: the logic analyzer}]~\\[-\lblskip]
 \bi
 	\ite the Wokwi logic analyzer records up to 8 digital signals during the simulation
 	\ite stop the simulation $\rightarrow$ the recording is downloaded as a VCD file (value change dump)
@@ -1141,7 +1141,7 @@ void show(uint8_t pattern) {
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Exercises}]~\\[-3ex]
+\item[{\rot\bf Exercises}]~\\[-\lblskip]
 \bi
 	\ite GPIO: change \texttt{gpio\_blink\_registers} so that the LED is switched with GPIO\_OUT\_SET and GPIO\_OUT\_CLR. Then try to call \texttt{set\_high()} on an input pin in Rust and read the compiler message.
 	\ite Interrupts: count the interrupts of one button press with bouncing enabled and disabled (attribute \texttt{"bounce": "0"} in \texttt{diagram.json}). Debounce in the ISR using the timer: ignore edges within 20\,ms of the last accepted one.

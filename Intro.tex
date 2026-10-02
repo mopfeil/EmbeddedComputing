@@ -30,7 +30,7 @@ Wokwi or on Replit, so they can be tried without any hardware.
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Embedded systems are everywhere}]~\\[-3ex]
+\item[{\rot\bf Embedded systems are everywhere}]~\\[-\lblskip]
 \bi
 	\ite tens of billions of microcontrollers are produced every year -- many times more than PC and server processors
 	\ite a modern car contains 70 to over 100 control units (engine, brakes, airbag, lights, seats, infotainment)
@@ -41,10 +41,27 @@ Wokwi or on Replit, so they can be tried without any hardware.
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Structure of an embedded system}]~\\[-3ex]
+\item[{\rot\bf Structure of an embedded system}]~\\[-\lblskip]
 \begin{figure}[!hbtp]
      \begin{center}
-	  \epsfig{file=figures/Fig_1_10_Blockdiagram_Embedded_System,width=0.75\textwidth}\\
+	  \resizebox{0.75\textwidth}{!}{%
+	  \begin{tikzpicture}[font=\sffamily\bfseries,>=Stealth,
+	      unit/.style={draw=rwucyan,thick,fill=rwucyan!25,minimum width=11mm,minimum height=42mm,align=center}]
+	    % the device or process around the computer (U shape)
+	    \fill[rwuviolet!12] (0,0) rectangle (12,6);
+	    \fill[white] (1,1.3) rectangle (11,6);
+	    \draw[rwuviolet,thick] (0,6) -- (0,0) -- (12,0) -- (12,6) -- (11,6) -- (11,1.3) -- (1,1.3) -- (1,6) -- cycle;
+	    \node[text=rwuviolet] at (6,0.65) {Device, Process};
+	    \node[unit] (s) at (2.6,3.65) {\rotatebox{90}{\parbox{38mm}{\centering Sensors,\\ human interface}}};
+	    \node[unit,minimum width=15mm] (c) at (6,3.65) {\rotatebox{90}{\parbox{38mm}{\centering Control algorithm\\ (Microcontroller,\\ FPGA)}}};
+	    \node[unit] (a) at (9.4,3.65) {\rotatebox{90}{\parbox{38mm}{\centering Actors,\\ servo units}}};
+	    \foreach \y in {2.4,3.65,4.9} {
+	      \draw[->,thick] (1,\y) -- (s.west |- 0,\y);
+	      \draw[->,thick] (s.east |- 0,\y) -- (c.west |- 0,\y);
+	      \draw[->,thick] (c.east |- 0,\y) -- (a.west |- 0,\y);
+	      \draw[->,thick] (a.east |- 0,\y) -- (11,\y);
+	    }
+	  \end{tikzpicture}}\\
 	  \caption{Block diagram of an embedded system}
      \end{center}
 \end{figure}
@@ -52,7 +69,23 @@ Wokwi or on Replit, so they can be tried without any hardware.
 
 \begin{figure}[!hbtp]
      \begin{center}
-	  \epsfig{file=figures/Fig_1_9_Blockdiagram_Embedded_Computing,width=0.7\textwidth}\\
+	  \resizebox{0.6\textwidth}{!}{%
+	  \begin{tikzpicture}[font=\sffamily\bfseries,>=Stealth,
+	      outer/.style={draw=rwuviolet,thick,fill=rwuviolet!12,minimum width=80mm,minimum height=22mm,anchor=north},
+	      inner/.style={draw=rwuviolet,fill=rwuvioletlight!45,minimum width=62mm,minimum height=8mm},
+	      chip/.style={ellipse,draw=rwucyan,thick,fill=rwucyan!25,minimum width=36mm,minimum height=14mm}]
+	    \node[outer] (ec) at (0,0) {};
+	    \node[text=rwuviolet,font=\sffamily\bfseries\Large] at (0,-0.55) {Embedded Computing};
+	    \node[inner] at (0,-1.5) {Modelling};
+	    \node[outer] (es) at (0,-3.2) {};
+	    \node[text=rwuviolet,font=\sffamily\bfseries\Large] at (0,-3.75) {Embedded System};
+	    \node[inner] at (0,-4.7) {Tools, Cross-Development, OS};
+	    \node[chip] (mc) at (-3,-7.2) {Microcontroller};
+	    \node[chip] (fp) at (3,-7.2) {FPGA};
+	    \draw[->,thick] (ec.south) -- (es.north);
+	    \draw[->,thick] (-3,-5.4) -- (mc.north);
+	    \draw[->,thick] (3,-5.4) -- (fp.north);
+	  \end{tikzpicture}}\\
 	  \caption{Embedded computing and the embedded system around it}
      \end{center}
 \end{figure}
@@ -63,7 +96,7 @@ Wokwi or on Replit, so they can be tried without any hardware.
 \section{Historical Background}
 %==============================================================================
 \begin{description}
-\item[{\rot\bf From room-sized computers to the microcontroller}]~\\[-3ex]
+\item[{\rot\bf From room-sized computers to the microcontroller}]~\\[-\lblskip]
 \begin{figure}[!hbtp]
 \begin{center}
 \resizebox{\textwidth}{!}{%
@@ -102,7 +135,7 @@ Wokwi or on Replit, so they can be tried without any hardware.
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Computer generations}]~\\[-3ex]
+\item[{\rot\bf Computer generations}]~\\[-\lblskip]
 \begin{center}
 \resizebox{0.95\textwidth}{!}{%
 \begin{tabular}{|c|c|c|c|}
@@ -128,7 +161,7 @@ today & & systems on chip, many cores & smartphones, IoT, AI accelerators \\
 \section{Characteristics of Embedded Systems}
 %==============================================================================
 \begin{description}
-\item[{\rot\bf Dependability}]~\\[-3ex]
+\item[{\rot\bf Dependability}]~\\[-\lblskip]
 \bi
 	\ite \textbf{reliability}: probability that the system works correctly for a given time, provided it worked at the start
 	\bi
@@ -144,7 +177,7 @@ today & & systems on chip, many cores & smartphones, IoT, AI accelerators \\
 Dependability must be considered from the very beginning -- it cannot be added afterwards.}
 \os{\newpage}
 
-\item[{\rot\bf Efficiency}]~\\[-3ex]
+\item[{\rot\bf Efficiency}]~\\[-\lblskip]
 \bi
 	\ite \textbf{energy}: battery operation for months or years, sleep modes, energy harvesting
 	\ite \textbf{code size and memory}: kilobytes instead of gigabytes; no hard disk
@@ -154,7 +187,7 @@ Dependability must be considered from the very beginning -- it cannot be added a
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Further characteristics}]~\\[-3ex]
+\item[{\rot\bf Further characteristics}]~\\[-\lblskip]
 \bi
 	\ite \textbf{reactive}: continuous interaction with the environment, at its pace (chapter Modelling)
 	\ite \textbf{real time}: deadlines are part of the specification (chapter Operating Systems)
@@ -186,7 +219,7 @@ things in detail, with or without AI.
 \newpage}
 
 \begin{description}
-\item[{\rot\bf From code completion to agents}]~\\[-3ex]
+\item[{\rot\bf From code completion to agents}]~\\[-\lblskip]
 \bi
 	\ite \textbf{code completion} (e.g.\ GitHub Copilot, 2021): the tool proposes the next lines while you type
 	\ite \textbf{chat assistants} (since 2022): questions in natural language, explanations, code snippets to copy
@@ -196,7 +229,7 @@ things in detail, with or without AI.
 \ei
 \os{\newpage}
 
-\item[{\rot\bf How a language model writes code}]~\\[-3ex]
+\item[{\rot\bf How a language model writes code}]~\\[-\lblskip]
 \bi
 	\ite a large language model continues a text with the most probable next words, learned from huge amounts of public code and documentation
 	\ite good at frequent patterns: boilerplate, explanations of code, translation between C and Rust, test cases, summaries of documentation
@@ -210,7 +243,7 @@ things in detail, with or without AI.
 \ei
 \os{\newpage}
 
-\item[{\rot\bf What studies show}]~\\[-3ex]
+\item[{\rot\bf What studies show}]~\\[-\lblskip]
 \begin{center}
 \resizebox{0.95\textwidth}{!}{%
 \begin{tabular}{|l|l|}
@@ -238,7 +271,7 @@ randomised, 52 people & without AI: 67\,\%; largest gap in \textbf{debugging} \\
 \ei
 \os{\newpage}
 
-\item[{\rot\bf AI in embedded systems}]~\\[-3ex]
+\item[{\rot\bf AI in embedded systems}]~\\[-\lblskip]
 \bi
 	\ite embedded code depends on details that are rare in the training data: chip variants, register maps, SDK versions, wiring
 	\ite benchmark with 27 language models on the ESP32 \cite{babiuch2026}
@@ -252,7 +285,7 @@ randomised, 52 people & without AI: 67\,\%; largest gap in \textbf{debugging} \\
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Experience from preparing this lecture}]~\\[-3ex]
+\item[{\rot\bf Experience from preparing this lecture}]~\\[-\lblskip]
 \bi
 	\ite we wrote the examples of this lecture with an AI assistant, then compiled each of them and ran it in the Wokwi simulator
 	\ite the tests found errors in code that compiled without warnings, for example
@@ -266,7 +299,7 @@ randomised, 52 people & without AI: 67\,\%; largest gap in \textbf{debugging} \\
 \ei
 \os{\newpage}
 
-\item[{\rot\bf How the development environment changes}]~\\[-3ex]
+\item[{\rot\bf How the development environment changes}]~\\[-\lblskip]
 \bi
 	\ite more code is \textbf{read and reviewed} than written by hand
 	\ite specifications, interface descriptions and test cases become the input for the AI, so precise requirements pay off twice
@@ -277,7 +310,7 @@ randomised, 52 people & without AI: 67\,\%; largest gap in \textbf{debugging} \\
 \ei
 \os{\newpage}
 
-\item[{\rot\bf What you still need to know}]~\\[-3ex]
+\item[{\rot\bf What you still need to know}]~\\[-\lblskip]
 \bi
 	\ite computer architecture, memory, interrupts and concurrency: without them you cannot tell wrong code from right code
 	\ite reading datasheets and reference manuals, the only reliable source for registers, timing and electrical limits
@@ -291,7 +324,7 @@ randomised, 52 people & without AI: 67\,\%; largest gap in \textbf{debugging} \\
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Using AI well in this course}]~\\[-3ex]
+\item[{\rot\bf Using AI well in this course}]~\\[-\lblskip]
 \bi
 	\ite try it yourself first; you learn while you struggle with a problem
 	\ite ask why, not just how: in the Anthropic study, learners who asked conceptual questions and fixed their errors themselves learned the most
@@ -303,7 +336,7 @@ randomised, 52 people & without AI: 67\,\%; largest gap in \textbf{debugging} \\
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Exercises}]~\\[-3ex]
+\item[{\rot\bf Exercises}]~\\[-\lblskip]
 \bi
 	\ite Let an AI assistant write the debouncing example of chapter Peripherals and Interfaces in C. Review the code, run it in Wokwi with a bouncing button and list all problems you find.
 	\ite Ask an AI for the address of the register \texttt{GPIO\_OUT\_XOR} of the RP2040 and for the meaning of its bits. Check the answer in the datasheet.
@@ -316,7 +349,7 @@ randomised, 52 people & without AI: 67\,\%; largest gap in \textbf{debugging} \\
 \section{About this Lecture}
 %==============================================================================
 \begin{description}
-\item[{\rot\bf Contents}]~\\[-3ex]
+\item[{\rot\bf Contents}]~\\[-\lblskip]
 \begin{center}
 \resizebox{0.95\textwidth}{!}{%
 \begin{tabular}{|c|l|l|}
@@ -338,7 +371,7 @@ randomised, 52 people & without AI: 67\,\%; largest gap in \textbf{debugging} \\
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Tools}]~\\[-3ex]
+\item[{\rot\bf Tools}]~\\[-\lblskip]
 \bi
 	\ite \textbf{Wokwi} (\url{https://wokwi.com}): simulator for Raspberry Pi Pico, ESP32, Arduino and STM32 in the browser -- with LEDs, buttons, sensors, displays, logic analyzer and Wi-Fi
 	\bi
@@ -352,7 +385,7 @@ randomised, 52 people & without AI: 67\,\%; largest gap in \textbf{debugging} \\
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Exercises}]~\\[-3ex]
+\item[{\rot\bf Exercises}]~\\[-\lblskip]
 \bi
 	\ite List ten embedded systems in your home. For each: which sensors, which actuators, which communication?
 	\ite Which of the characteristics (dependability, efficiency, real time, cost) is most important for an airbag control unit, a smart light bulb and a heart pacemaker?

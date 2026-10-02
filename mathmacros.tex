@@ -13,7 +13,7 @@
 
 \usepackage{listings}
 \lstloadlanguages{C}
-\lstset{language=C,commentstyle=\scriptsize, extendedchars=true} 
+\lstset{language=C,commentstyle=\color{rwugray}\scriptsize, extendedchars=true} 
 
 %---------------------------------------------------------------------- 
 % Makro f"ur Floatingpoint-Zahlen 
@@ -244,15 +244,15 @@
 \newtheorem{mydefn}{Definition}[chapter]
 \newcommand{\defn}[2]{\vspace*{4mm}
 %% \refstepcounter{definition}
-\noindent 
-$\displaystyle \left\|
-                \mbox{
-                \begin{minipage}[c]{1.1\qboxwidth} \vspace*{0.4mm}
+\noindent
+{\fboxrule 0.4mm \fboxsep 2mm
+ \fcolorbox{rwucyan}{rwucyan40!35}{%
+   \begin{minipage}[c]{\dimexpr\textwidth-4mm-0.8mm\relax}
         \begin{mydefn}
                 \rm #2
                 \label{def:#1}
         \end{mydefn}
-                \end{minipage} }  \right. $\medskip}
+   \end{minipage}}}\medskip}
 %---------------------------------------------------------------------- 
 % Makro für Deflist
 %---------------------------------------------------------------------- 
@@ -342,13 +342,13 @@ $\displaystyle \left\|
 %%%%%%%%% eingerahmter Text %%%%%%
 \newcommand{\qbox}[2][0.9]{
    \begin{center}
-        \fcolorbox{black}{\qboxcolor}{\parbox{#1\qboxwidth}{#2}}
+        \fcolorbox{rwucyan}{\qboxcolor}{\parbox{#1\qboxwidth}{#2}}
    \end{center}}
 
 %%%%%%%%% eingerahmter Text, ganze Breite %%%%%%
 \newcommand{\tbox}[1]{
    \begin{center}
-        \fcolorbox{black}{\tboxcolor}{\parbox{\textwidth}{#1}}
+        \fcolorbox{rwucyan}{\tboxcolor}{\parbox{\textwidth}{#1}}
    \end{center}}
 
 

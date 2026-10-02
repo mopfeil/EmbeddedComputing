@@ -19,7 +19,7 @@ simulated in Wokwi.
 \newpage}
 
 \begin{description}
-\item[{\rot\bf Classes of processors}]~\\[-3ex]
+\item[{\rot\bf Classes of processors}]~\\[-\lblskip]
 \bi
 	\ite \textbf{microcontroller} (MCU): CPU, flash, RAM and peripherals on one chip
 	\bi
@@ -36,7 +36,7 @@ simulated in Wokwi.
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Processors of this lecture (all simulated in Wokwi)}]~\\[-3ex]
+\item[{\rot\bf Processors of this lecture (all simulated in Wokwi)}]~\\[-\lblskip]
 \begin{center}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{|l|c|c|c|c|}
@@ -57,18 +57,18 @@ special & EEPROM, 5\,V & PIO, USB & Wi-Fi, Bluetooth LE & CAN, USB \\
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Von Neumann and Harvard architecture}]~\\[-3ex]
+\item[{\rot\bf Von Neumann and Harvard architecture}]~\\[-\lblskip]
 \begin{figure}[!hbtp]
 \begin{center}
 \resizebox{0.8\textwidth}{!}{%
 \begin{tikzpicture}[font=\sffamily\small,>=Stealth,
 	b/.style={draw,thick,minimum width=22mm,minimum height=10mm,align=center}]
 	\node[above] at (1.5,1.6) {\textbf{von Neumann}};
-	\node[b,fill=blue!10] (c1) at (0,0) {CPU};
+	\node[b,fill=rwucyan!10] (c1) at (0,0) {CPU};
 	\node[b,fill=gray!10] (m1) at (3,0) {memory\\code + data};
 	\draw[<->,very thick] (c1) -- node[above,font=\sffamily\scriptsize]{one bus} (m1);
 	\node[above] at (8.5,1.6) {\textbf{Harvard}};
-	\node[b,fill=blue!10] (c2) at (8.5,0) {CPU};
+	\node[b,fill=rwucyan!10] (c2) at (8.5,0) {CPU};
 	\node[b,fill=gray!10] (m2) at (6,0) {code\\memory};
 	\node[b,fill=gray!10] (m3) at (11,0) {data\\memory};
 	\draw[<->,very thick] (c2) -- node[above,font=\sffamily\scriptsize]{instr.} (m2);
@@ -86,7 +86,7 @@ special & EEPROM, 5\,V & PIO, USB & Wi-Fi, Bluetooth LE & CAN, USB \\
 \ei
 \os{\newpage}
 
-\item[{\rot\bf RISC and CISC}]~\\[-3ex]
+\item[{\rot\bf RISC and CISC}]~\\[-\lblskip]
 \bi
 	\ite \textbf{CISC} (complex instruction set computer, e.g.\ x86): many instructions, memory operands in arithmetic instructions, variable length
 	\ite \textbf{RISC} (reduced instruction set computer): all microcontroller architectures of this lecture
@@ -104,7 +104,7 @@ special & EEPROM, 5\,V & PIO, USB & Wi-Fi, Bluetooth LE & CAN, USB \\
 \ei
 \os{\newpage}
 
-\item[{\rot\bf The same C function on four processors}]~\\[-3ex]
+\item[{\rot\bf The same C function on four processors}]~\\[-\lstskip]
 \begin{lstlisting}[language=C]
 uint32_t sum(const uint16_t *a, int n) {
     uint32_t s = 0;
@@ -132,7 +132,7 @@ RISC-V RV32IMC & 7 & 28 bytes & mix of 16 and 32 bit instructions \\
 \ei
 \os{\newpage}
 
-\item[{\rot\bf The loop in assembly: AVR and Cortex-M0+}]~\\[-3ex]
+\item[{\rot\bf The loop in assembly: AVR and Cortex-M0+}]~\\[-\lstskip]
 \begin{lstlisting}[language={}]
 ; AVR: s in r22..r25 (4 x 8 bit), pointer in Z (r31:r30), i in r19:r18
 .L3:  ld   r26,Z+            ; low byte of a[i], Z++
@@ -159,7 +159,7 @@ RISC-V RV32IMC & 7 & 28 bytes & mix of 16 and 32 bit instructions \\
 \end{lstlisting}
 \os{\newpage}
 
-\item[{\rot\bf The loop in assembly: RISC-V}]~\\[-3ex]
+\item[{\rot\bf The loop in assembly: RISC-V}]~\\[-\lstskip]
 \begin{lstlisting}[language={}]
 # RISC-V: a in a4 (copied from a0), n in a1, i in a5, s in a0 (= return value)
 .L2:  blt   a5,a1,.L3        # i < n ? compare and branch in one instruction
@@ -192,7 +192,7 @@ between microcontrollers are mostly in the peripherals, the memory, the
 power consumption and the software support.}
 
 \begin{description}
-\item[{\rot\bf 8 bit AVR (ATmega328P)}]~\\[-3ex]
+\item[{\rot\bf 8 bit AVR (ATmega328P)}]~\\[-\lblskip]
 \bi
 	\ite 32 registers of 8 bit, most instructions in one clock cycle, 16\,MHz on the Arduino Uno
 	\ite pure Harvard architecture: 32\,KB flash for code, 2\,KB SRAM for data, 1\,KB EEPROM
@@ -202,7 +202,7 @@ power consumption and the software support.}
 \ei
 \os{\newpage}
 
-\item[{\rot\bf ARM Cortex-M}]~\\[-3ex]
+\item[{\rot\bf ARM Cortex-M}]~\\[-\lblskip]
 \bi
 	\ite Arm designs the cores and licenses them; the chip manufacturers (ST, NXP, Raspberry Pi, Nordic, \ldots) add memory and peripherals
 	\ite the same core, the same tools and the same interrupt controller across thousands of chips
@@ -227,7 +227,7 @@ Cortex-M55 / M85 & ARMv8.1-M & + Helium vector extension for signal processing a
 \ei
 \os{\newpage}
 
-\item[{\rot\bf RISC-V}]~\\[-3ex]
+\item[{\rot\bf RISC-V}]~\\[-\lblskip]
 \bi
 	\ite open instruction set architecture (since 2010, UC Berkeley; today RISC-V International) -- no license fees
 	\ite modular: a small base set plus standard extensions
@@ -242,7 +242,7 @@ Cortex-M55 / M85 & ARMv8.1-M & + Helium vector extension for signal processing a
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Other architectures}]~\\[-3ex]
+\item[{\rot\bf Other architectures}]~\\[-\lblskip]
 \bi
 	\ite \textbf{Xtensa} (Cadence): configurable cores in the ESP32 and ESP32-S3; Espressif's newer chips use RISC-V
 	\ite \textbf{PIC}, \textbf{8051}: 8 bit, still common in cost-sensitive mass products
@@ -262,26 +262,26 @@ work determines how fast a program really runs, how exactly its timing can
 be predicted and how long a battery lasts.}
 
 \begin{description}
-\item[{\rot\bf Block diagram of a microcontroller}]~\\[-3ex]
+\item[{\rot\bf Block diagram of a microcontroller}]~\\[-\lblskip]
 \begin{figure}[!hbtp]
 \begin{center}
 \resizebox{0.85\textwidth}{!}{%
 \begin{tikzpicture}[font=\sffamily\small,>=Stealth,
 	b/.style={draw,thick,minimum width=22mm,minimum height=9mm,align=center}]
-	\node[b,fill=blue!15] (cpu) at (0,2) {CPU core\\+ NVIC};
-	\node[b,fill=blue!5] (dbg) at (0,0.5) {debug\\(SWD/JTAG)};
+	\node[b,fill=rwucyan!15] (cpu) at (0,2) {CPU core\\+ NVIC};
+	\node[b,fill=rwucyan!5] (dbg) at (0,0.5) {debug\\(SWD/JTAG)};
 	\node[b,fill=gray!15] (fl) at (3,3.2) {flash\\(+ cache)};
 	\node[b,fill=gray!15] (ram) at (6,3.2) {SRAM};
 	\node[b,fill=gray!15] (dma) at (9,3.2) {DMA};
 	\draw[very thick] (2,2) -- (10.5,2) node[right]{bus matrix};
 	\draw[<->,thick] (cpu) -- (2,2);
 	\foreach \n/\x in {fl/3,ram/6,dma/9} \draw[<->,thick] (\n) -- (\x,2);
-	\node[b,fill=orange!15] (br) at (6,0.6) {bridge};
+	\node[b,fill=rwuviolet!15] (br) at (6,0.6) {bridge};
 	\draw[<->,thick] (br) -- (6,2);
 	\draw[very thick] (2.5,-0.5) -- (10.5,-0.5) node[right]{peripheral bus};
 	\draw[<->,thick] (br) -- (6,-0.5);
 	\foreach \n/\x in {GPIO/3,UART/4.7,SPI/6.4,ADC/8.1,timer/9.8} {
-		\node[draw,thick,fill=orange!25,minimum width=14mm,minimum height=7mm] (p\n) at (\x,-1.6) {\n};
+		\node[draw,thick,fill=rwuviolet!25,minimum width=14mm,minimum height=7mm] (p\n) at (\x,-1.6) {\n};
 		\draw[<->,thick] (p\n) -- (\x,-0.5);
 	}
 	\node[b,fill=green!10] (clk) at (0,-1.6) {clocks, reset,\\power};
@@ -294,7 +294,7 @@ be predicted and how long a battery lasts.}
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Memories}]~\\[-3ex]
+\item[{\rot\bf Memories}]~\\[-\lblskip]
 \bi
 	\ite \textbf{flash}: non-volatile program memory; erased in blocks, limited number of write cycles (typically 10\,000--100\,000)
 	\bi
@@ -308,7 +308,7 @@ be predicted and how long a battery lasts.}
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Memory map of the RP2040}]~\\[-3ex]
+\item[{\rot\bf Memory map of the RP2040}]~\\[-\lblskip]
 \begin{center}
 \resizebox{0.9\textwidth}{!}{%
 \begin{tabular}{|l|l|}
@@ -331,7 +331,7 @@ be predicted and how long a battery lasts.}
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Interrupts and exceptions}]~\\[-3ex]
+\item[{\rot\bf Interrupts and exceptions}]~\\[-\lblskip]
 \bi
 	\ite the \textbf{vector table} at the start of the program contains the initial stack pointer and the addresses of all handlers (reset, faults, interrupts)
 	\ite Cortex-M: the hardware saves 8 registers on the stack before the handler starts, so a handler is an ordinary C or Rust function
@@ -342,7 +342,7 @@ be predicted and how long a battery lasts.}
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Clock and power}]~\\[-3ex]
+\item[{\rot\bf Clock and power}]~\\[-\lblskip]
 \bi
 	\ite clock sources: internal RC oscillator (fast start, inaccurate), external crystal (accurate), PLL to multiply the frequency
 	\ite dynamic power $P \approx C \cdot U^2 \cdot f$: lower voltage and frequency save energy
@@ -356,7 +356,7 @@ be predicted and how long a battery lasts.}
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Arithmetic: integer, fixed point, floating point}]~\\[-3ex]
+\item[{\rot\bf Arithmetic: integer, fixed point, floating point}]~\\[-\lblskip]
 \bi
 	\ite without FPU (AVR, Cortex-M0+, ESP32-C3), floating point is done in software: tens to hundreds of cycles per operation
 	\ite \textbf{fixed point}: integers with an implied scale, e.g.\ Q15 = value $\times 2^{15}$ in 16 bit
@@ -380,7 +380,7 @@ Linux. The last part of this chapter summarises their features and gives a
 checklist for choosing a processor.}
 
 \begin{description}
-\item[{\rot\bf Application processors}]~\\[-3ex]
+\item[{\rot\bf Application processors}]~\\[-\lblskip]
 \bi
 	\ite ARM Cortex-A (and RISC-V application cores) with
 	\bi
@@ -394,7 +394,7 @@ checklist for choosing a processor.}
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Choosing a processor: checklist}]~\\[-3ex]
+\item[{\rot\bf Choosing a processor: checklist}]~\\[-\lblskip]
 \bi
 	\ite \textbf{function}: required peripherals (number of UARTs, ADC resolution, CAN, USB, Ethernet, radio)
 	\ite \textbf{performance}: computing power, FPU or DSP needed? Real-time requirements?
@@ -407,7 +407,7 @@ checklist for choosing a processor.}
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Exercises}]~\\[-3ex]
+\item[{\rot\bf Exercises}]~\\[-\lblskip]
 \bi
 	\ite Compile \texttt{sum.c} on \url{https://godbolt.org} for the Cortex-M0+ with \texttt{-O0}, \texttt{-Os} and \texttt{-O2}. Compare the number of instructions in the loop.
 	\ite Change the type of \texttt{s} to \texttt{uint16\_t}. Which processor profits most, and why?

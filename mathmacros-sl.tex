@@ -10,40 +10,40 @@
 %%% Spezielle Defs f"ur Folien
 
 \renewcommand{\nsl}[1]{}
-\renewcommand{\nl}{\\ \bigskip {\color{green} \rule{40mm}{0.5mm}}\\ \bigskip}
+\renewcommand{\nl}{\\ \bigskip {\color{rwucyan} \rule{40mm}{0.5mm}}\\ \bigskip}
 %\renewcommand{\ind}[1]{\color{red}\bfseries #1}
-\renewcommand{\bff}{\bfseries\color{red}  } % auf Folien bold und rot
+\renewcommand{\bff}{\bfseries\color{rwuviolet}  } % auf Folien bold und violett
 \renewcommand{\os}[1]{#1}                     % Text der nur auf Folien erscheint
 
 \renewcommand{\np}{\newpage}
 
 
 %%%%%%%%%%%%%%%%%%%% Farbdefinitionen %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\newcommand{\red}{\color{red} }
+\newcommand{\red}{\color{rwuviolet} }
 \definecolor{hellgelb}{cmyk}{0.05,0,0.4,0}
 \definecolor{dunkelgelb}{cmyk}{0.05,0.1,1,0.1}
 \definecolor{schwgelb}{cmyk}{0,0,1,0.1}
-\definecolor{headcol}{rgb}{0,0.3,0.75}
+\colorlet{headcol}{rwuviolet}
 \definecolor{blau}{rgb}{0,0,1}
 \definecolor{rot}{rgb}{1,0,0}
-\definecolor{hellblau}{rgb}{0.85,0.85,1}
-\definecolor{hellgruen}{rgb}{0.9,1,0.9}
-\definecolor{gruen}{rgb}{0.4,0.8,0.5}
-\renewcommand{\qboxcolor}{yellow}
-\newcommand{\pagecol}{hellgelb}
-\newcommand{\qboxframecolor}{schwgelb}
+\colorlet{hellblau}{rwuvioletlight!15}
+\colorlet{hellgruen}{rwucyan40!30}
+\colorlet{gruen}{rwucyandark}
+\renewcommand{\qboxcolor}{rwucyan40!35}
+\newcommand{\pagecol}{white}
+\newcommand{\qboxframecolor}{rwucyan}
 \setlength{\qboxwidth}{0.98\textwidth}
-\setlength{\fboxrule}{0.7mm}
+\setlength{\fboxrule}{0.4mm}
 %\renewcommand{\bf}{\bfseries\color{magenta}  }
-\renewcommand{\bf}{{\color{red}\bfseries }}
-\renewcommand{\un}{{\color{red}\bfseries }}
+\renewcommand{\bf}{{\color{rwuviolet}\bfseries }}
+\renewcommand{\un}{{\color{rwuviolet}\bfseries }}
 \renewcommand{\em}{\bfseries\color{gruen} }
 
 %%%%%%%%% eingerahmter Text %%%%%%
 \renewcommand{\tboxcolor}{hellgruen}
 
 %%%%%%% Makro f"ur umrandete Definitionen %%%%%
-\renewcommand{\defn}[2]{\noindent\fcolorbox{dunkelgelb}{yellow}{\parbox{\qboxwidth
+\renewcommand{\defn}[2]{\noindent\fcolorbox{rwucyan}{rwucyan40!35}{\parbox{\qboxwidth
 }{              \vspace*{-3mm}
                 \begin{mydefn}
                         #2      
@@ -56,7 +56,7 @@
 %---------------------------------------------------------------------- 
 % Makro f"ur umrandetes Corollar
 %---------------------------------------------------------------------- 
-\renewcommand{\coro}[2]{\textcolor{blue}{\begin{corollar}
+\renewcommand{\coro}[2]{\textcolor{rwuviolet}{\begin{corollar}
                         #2
                         \label{cor:#1}
                       \end{corollar}}}
@@ -64,7 +64,7 @@
 %---------------------------------------------------------------------- 
 % Makro f"ur Lemma
 %---------------------------------------------------------------------- 
-\renewcommand{\lemma}[2]{\textcolor{blue}{\begin{mylemma}
+\renewcommand{\lemma}[2]{\textcolor{rwuviolet}{\begin{mylemma}
                         #2
                         \label{lem:#1}
                       \end{mylemma}}}
@@ -72,7 +72,7 @@
 %---------------------------------------------------------------------- 
 % Makro f"ur Satz
 %---------------------------------------------------------------------- 
-\renewcommand{\satz}[2]{\noindent\fcolorbox{blau}{hellblau}{\parbox{\qboxwidth
+\renewcommand{\satz}[2]{\noindent\fcolorbox{rwuviolet}{hellblau}{\parbox{\qboxwidth
 }{              \vspace*{-3mm}
                         \begin{mysatz}
                         #2
@@ -109,16 +109,16 @@
 % Itemize
 %---------------------------------------------------------------------- 
 %%%%% item mit grünem Punkt
-\renewcommand{\ite}{\item[\textcolor{headcol}{$\bullet$~}]}
-\renewcommand{\itee}{\item[\textcolor{headcol}{$\circ$~}]}
+\renewcommand{\ite}{\item[\textcolor{rwucyan}{$\bullet$~}]}
+\renewcommand{\itee}{\item[\textcolor{rwucyan}{$\circ$~}]}
 \renewcommand{\bi}{\begin{itemize}}
 \renewcommand{\ei}{\end{itemize}}
 \renewcommand{\itd}[1]{\item[\textcolor{headcol}{\bfseries #1~}]}
 \renewcommand{\bd}{\begin{description}}
 \renewcommand{\ed}{\end{description}}
 %%%%% item mit grünem Punkt nur für Folien (im Skript unsichtbar)
-\renewcommand{\itef}{\item[\textcolor{headcol}{$\bullet$~}]}
-\renewcommand{\iteef}{\item[\textcolor{headcol}{$\circ$~}]}
+\renewcommand{\itef}{\item[\textcolor{rwucyan}{$\bullet$~}]}
+\renewcommand{\iteef}{\item[\textcolor{rwucyan}{$\circ$~}]}
 \renewcommand{\bif}{\begin{itemize}}
 \renewcommand{\eif}{\end{itemize}}
 \renewcommand{\itdf}[1][]{\item[\textcolor{headcol}{#1~}]}
@@ -209,4 +209,4 @@
 %%% End: 
 
 %%%%%%%%%%%%%%%%%%%% Code listings on slides %%%%%%%%%%%%%%%%%%%%%%%%
-\lstset{basicstyle=\footnotesize\ttfamily, numberstyle=\tiny}
+\lstset{basicstyle=\fontsize{12}{13.4}\selectfont\ttfamily, numberstyle=\tiny}

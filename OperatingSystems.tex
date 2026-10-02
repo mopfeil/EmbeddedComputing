@@ -26,7 +26,7 @@ compare other systems, up to embedded Linux on larger processors.
 \newpage}
 
 \begin{description}
-\item[{\rot\bf Program structures without an operating system}]~\\[-3ex]
+\item[{\rot\bf Program structures without an operating system}]~\\[-\lblskip]
 \bi
 	\ite \textbf{super loop}: \texttt{for(;;) \{ read(); control(); show(); \}}
 	\bi
@@ -43,7 +43,7 @@ compare other systems, up to embedded Linux on larger processors.
 \ei
 \os{\newpage}
 
-\item[{\rot\bf What an RTOS adds}]~\\[-3ex]
+\item[{\rot\bf What an RTOS adds}]~\\[-\lblskip]
 \bi
 	\ite \textbf{tasks} (threads): independent functions, each with its own stack and priority
 	\ite \textbf{scheduler}: decides which ready task runs; preempts a task when a more important one becomes ready
@@ -54,7 +54,7 @@ compare other systems, up to embedded Linux on larger processors.
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Real time}]~\\[-3ex]
+\item[{\rot\bf Real time}]~\\[-\lblskip]
 \bi
 	\ite real time means \textbf{predictable}, not ``fast'': the result must be there before its \textbf{deadline}
 	\bi
@@ -86,7 +86,7 @@ such as a time, a message or a lock, is blocked and uses no processor time
 at all.}
 
 \begin{description}
-\item[{\rot\bf Task states}]~\\[-3ex]
+\item[{\rot\bf Task states}]~\\[-\lblskip]
 \begin{figure}[!hbtp]
 \begin{center}
 \resizebox{0.65\textwidth}{!}{%
@@ -95,7 +95,7 @@ at all.}
 	l/.style={font=\sffamily\scriptsize,midway,fill=white,inner sep=1pt,align=center}]
 	\node[st,fill=green!15] (run) at (0,0) {Running};
 	\node[st,fill=yellow!20] (rdy) at (-4,-2.5) {Ready};
-	\node[st,fill=orange!20] (blk) at (4,-2.5) {Blocked};
+	\node[st,fill=rwuviolet!20] (blk) at (4,-2.5) {Blocked};
 	\node[st,fill=gray!15] (sus) at (0,-5) {Suspended};
 	\draw[->,thick] (rdy.north) to[bend left=15] node[l]{scheduler\\selects} (run.west);
 	\draw[->,thick] (run.south west) to[bend left=10] node[l]{preempted} (rdy.north east);
@@ -112,7 +112,7 @@ at all.}
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Preemptive priority scheduling}]~\\[-3ex]
+\item[{\rot\bf Preemptive priority scheduling}]~\\[-\lblskip]
 \bi
 	\ite every task has a fixed priority (FreeRTOS: higher number = more important)
 	\ite the scheduler always runs the ready task with the highest priority
@@ -127,14 +127,14 @@ at all.}
 \begin{tikzpicture}[font=\sffamily\small,>=Stealth]
 	\foreach \y/\n in {2/high,1/medium,0/low} \node[left] at (0,\y+0.3) {\n};
 	\draw[->] (0,-0.2) -- (12.4,-0.2) node[right]{t};
-	\fill[blue!30]   (0,0) rectangle (2,0.6);
-	\fill[orange!40] (2,1) rectangle (4,1.6);
-	\fill[red!40]    (3,2) rectangle (4.5,2.6);
+	\fill[rwucyan!45]   (0,0) rectangle (2,0.6);
+	\fill[rwuvioletlight!60] (2,1) rectangle (4,1.6);
+	\fill[rwuviolet!70]    (3,2) rectangle (4.5,2.6);
 	\fill[white]     (3,1) rectangle (4,1.6);
-	\fill[orange!40] (4.5,1) rectangle (6,1.6);
-	\fill[blue!30]   (6,0) rectangle (9,0.6);
-	\fill[red!40]    (9,2) rectangle (10,2.6);
-	\fill[blue!30]   (10,0) rectangle (12,0.6);
+	\fill[rwuvioletlight!60] (4.5,1) rectangle (6,1.6);
+	\fill[rwucyan!45]   (6,0) rectangle (9,0.6);
+	\fill[rwuviolet!70]    (9,2) rectangle (10,2.6);
+	\fill[rwucyan!45]   (10,0) rectangle (12,0.6);
 	\draw[->,thick] (2,-0.6) node[below,font=\sffamily\scriptsize]{M ready} -- (2,-0.25);
 	\draw[->,thick] (3.2,-1.1) node[below,font=\sffamily\scriptsize]{H ready} -- (3,-0.25);
 	\draw[->,thick] (9,-0.6) node[below,font=\sffamily\scriptsize]{H ready} -- (9,-0.25);
@@ -144,7 +144,7 @@ at all.}
 \end{figure}
 \os{\newpage}
 
-\item[{\rot\bf Choosing priorities}]~\\[-3ex]
+\item[{\rot\bf Choosing priorities}]~\\[-\lblskip]
 \bi
 	\ite priority follows urgency (deadline), not ``importance'' of the function
 	\ite \textbf{rate monotonic} assignment for periodic tasks: shorter period $\Rightarrow$ higher priority
@@ -157,7 +157,7 @@ at all.}
 \ei
 \os{\newpage}
 
-\item[{\rot\bf FreeRTOS: creating tasks}]~\\[-3ex]
+\item[{\rot\bf FreeRTOS: creating tasks}]~\\[-\lstskip]
 \begin{lstlisting}[language=C]
 void blinkTask(void *param) {
   pinMode(LED, OUTPUT);
@@ -185,7 +185,7 @@ void setup() {
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Embassy: tasks as async functions (Rust)}]~\\[-3ex]
+\item[{\rot\bf Embassy: tasks as async functions (Rust)}]~\\[-\lstskip]
 \begin{lstlisting}[language=Rust]
 /// A task is an async function. It runs until it awaits something and
 /// then gives the CPU to the next ready task.
@@ -214,7 +214,7 @@ async fn main(spawner: Spawner) -> ! {
 \ei
 \os{\newpage}
 
-\item[{\rot\bf How Embassy differs from FreeRTOS}]~\\[-3ex]
+\item[{\rot\bf How Embassy differs from FreeRTOS}]~\\[-\lblskip]
 \bi
 	\ite the compiler turns every \texttt{async fn} into a state machine; \texttt{.await} = ``save the state, return to the executor''
 	\ite \textbf{no stack per task}: the state machine contains only the variables that live across an \texttt{.await}, and its size is known at compile time $\Rightarrow$ all memory is static, no stack overflows of tasks
@@ -238,7 +238,7 @@ conditions, deadlocks and priority inversion. All three can be shown in
 a few lines of code, and our examples do exactly that.}
 
 \begin{description}
-\item[{\rot\bf Queues: passing data between tasks}]~\\[-3ex]
+\item[{\rot\bf Queues: passing data between tasks}]~\\[-\lblskip]
 \bi
 	\ite a FIFO buffer with a fixed number of elements; the data is \textbf{copied} into the queue
 	\ite sending to a full queue and receiving from an empty queue \textbf{block} the task (with an optional timeout)
@@ -269,7 +269,7 @@ void consumerTask(void *param) {                 // average of 10 values
 \end{lstlisting}
 \os{\newpage}
 
-\item[{\rot\bf Queues in Embassy: channels}]~\\[-3ex]
+\item[{\rot\bf Queues in Embassy: channels}]~\\[-\lstskip]
 \begin{lstlisting}[language=Rust]
 /// Queue for 8 values. A full queue makes send() wait (back pressure),
 /// an empty queue makes receive() wait.
@@ -296,7 +296,7 @@ loop {
 \end{lstlisting}
 \os{\newpage}
 
-\item[{\rot\bf From interrupt to task}]~\\[-3ex]
+\item[{\rot\bf From interrupt to task}]~\\[-\lblskip]
 \bi
 	\ite \textbf{deferred interrupt handling}: the ISR only acknowledges the hardware and signals a task; the task does the real work
 	\bi
@@ -312,7 +312,7 @@ loop {
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Interrupt to task: C and Rust}]~\\[-3ex]
+\item[{\rot\bf Interrupt to task: C and Rust}]~\\[-\lstskip]
 \begin{lstlisting}[language=C]
 void IRAM_ATTR onButton() {          // ISR: as short as possible
   BaseType_t woken = pdFALSE;
@@ -340,7 +340,7 @@ loop {
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Race conditions}]~\\[-3ex]
+\item[{\rot\bf Race conditions}]~\\[-\lblskip]
 \bi
 	\ite two tasks change the same variable with read -- modify -- write
 	\ite a task switch between read and write $\Rightarrow$ the other task's update is overwritten (``lost update'')
@@ -364,7 +364,7 @@ with    mutex: counter = 2000 (expected 2000)
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Mutual exclusion}]~\\[-3ex]
+\item[{\rot\bf Mutual exclusion}]~\\[-\lblskip]
 \bi
 	\ite the code between read and write is a \textbf{critical section}: only one task at a time may execute it
 	\ite ways to protect it
@@ -389,7 +389,7 @@ for _ in 0..1000 {
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Deadlock}]~\\[-3ex]
+\item[{\rot\bf Deadlock}]~\\[-\lblskip]
 \bi
 	\ite two tasks wait for each other forever: A holds lock 1 and waits for lock 2, B holds lock 2 and waits for lock 1
 	\ite possible only if all four conditions hold: mutual exclusion, hold and wait, no preemption of locks, circular wait
@@ -403,7 +403,7 @@ for _ in 0..1000 {
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Priority inversion}]~\\[-3ex]
+\item[{\rot\bf Priority inversion}]~\\[-\lblskip]
 \bi
 	\ite a low priority task L holds a lock that the high priority task H needs $\Rightarrow$ H must wait for L (unavoidable, but short)
 	\ite a medium priority task M, which does not need the lock, preempts L $\Rightarrow$ H effectively waits for M: the priorities are inverted
@@ -420,23 +420,23 @@ for _ in 0..1000 {
 	\begin{scope}
 	\node[above right] at (0,3.3) {\textbf{binary semaphore}};
 	\foreach \y/\n in {2/H,1/M,0/L} \node[left] at (0,\y+0.25) {\n};
-	\fill[blue!30] (0,0) rectangle (0.5,0.5);
-	\fill[red!40] (0.5,2) rectangle (0.55,2.5); \draw[dashed] (0.55,2.25) -- (6,2.25);
-	\fill[blue!30] (0.55,0) rectangle (1,0.5);
-	\fill[orange!40] (1,1) rectangle (6,1.5);
-	\fill[blue!30] (6,0) rectangle (6.1,0.5);
-	\fill[red!40] (6.1,2) rectangle (6.5,2.5);
+	\fill[rwucyan!45] (0,0) rectangle (0.5,0.5);
+	\fill[rwuviolet!70] (0.5,2) rectangle (0.55,2.5); \draw[dashed] (0.55,2.25) -- (6,2.25);
+	\fill[rwucyan!45] (0.55,0) rectangle (1,0.5);
+	\fill[rwuvioletlight!60] (1,1) rectangle (6,1.5);
+	\fill[rwucyan!45] (6,0) rectangle (6.1,0.5);
+	\fill[rwuviolet!70] (6.1,2) rectangle (6.5,2.5);
 	\draw[<->] (0.55,2.75) -- node[above,font=\sffamily\scriptsize]{H waits 550 ms} (6.1,2.75);
 	\draw[->] (0,-0.1) -- (7,-0.1);
 	\end{scope}
 	\begin{scope}[xshift=90mm]
 	\node[above right] at (0,3.3) {\textbf{mutex (inheritance)}};
 	\foreach \y/\n in {2/H,1/M,0/L} \node[left] at (0,\y+0.25) {\n};
-	\fill[blue!30] (0,0) rectangle (0.5,0.5);
-	\fill[red!40] (0.5,2) rectangle (0.55,2.5); \draw[dashed] (0.55,2.25) -- (3.05,2.25);
-	\fill[red!20] (0.55,0) rectangle (3,0.5) node[midway,font=\sffamily\scriptsize]{L with H's priority};
-	\fill[red!40] (3.05,2) rectangle (3.5,2.5);
-	\fill[orange!40] (3.5,1) rectangle (8.5,1.5);
+	\fill[rwucyan!45] (0,0) rectangle (0.5,0.5);
+	\fill[rwuviolet!70] (0.5,2) rectangle (0.55,2.5); \draw[dashed] (0.55,2.25) -- (3.05,2.25);
+	\fill[rwuviolet!20] (0.55,0) rectangle (3,0.5) node[midway,font=\sffamily\scriptsize]{L with H's priority};
+	\fill[rwuviolet!70] (3.05,2) rectangle (3.5,2.5);
+	\fill[rwuvioletlight!60] (3.5,1) rectangle (8.5,1.5);
 	\draw[<->] (0.55,2.75) -- node[above,font=\sffamily\scriptsize]{H waits 251 ms} (3.05,2.75);
 	\draw[->] (0,-0.1) -- (9,-0.1);
 	\end{scope}
@@ -446,7 +446,7 @@ for _ in 0..1000 {
 \end{figure}
 \os{\newpage}
 
-\item[{\rot\bf Memory in an RTOS}]~\\[-3ex]
+\item[{\rot\bf Memory in an RTOS}]~\\[-\lblskip]
 \bi
 	\ite every task needs its own stack -- too small is the most common RTOS error
 	\bi
@@ -476,7 +476,7 @@ hardware is large enough and complex functions such as graphical user
 interfaces, many network protocols or containers are needed.}
 
 \begin{description}
-\item[{\rot\bf Real-time systems for microcontrollers}]~\\[-3ex]
+\item[{\rot\bf Real-time systems for microcontrollers}]~\\[-\lblskip]
 \begin{center}
 \resizebox{0.95\textwidth}{!}{%
 \begin{tabular}{|l|l|l|}
@@ -498,7 +498,7 @@ commercial & VxWorks, QNX, embOS, SafeRTOS: certified, with support & commercial
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Embedded Linux}]~\\[-3ex]
+\item[{\rot\bf Embedded Linux}]~\\[-\lblskip]
 \bi
 	\ite needs an application processor with \textbf{MMU} and typically $\ge$ 64\,MB RAM (Raspberry Pi, i.MX, STM32MP, AM62x)
 	\ite advantages: complete network stack, file systems, USB, graphics, thousands of existing programs, high level languages, containers
@@ -508,7 +508,7 @@ commercial & VxWorks, QNX, embOS, SafeRTOS: certified, with support & commercial
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Booting embedded Linux}]~\\[-3ex]
+\item[{\rot\bf Booting embedded Linux}]~\\[-\lblskip]
 \begin{figure}[!hbtp]
 \begin{center}
 \resizebox{0.95\textwidth}{!}{%
@@ -516,7 +516,7 @@ commercial & VxWorks, QNX, embOS, SafeRTOS: certified, with support & commercial
 	b/.style={draw,thick,rounded corners,minimum height=12mm,text width=22mm,align=center}]
 	\node[b,fill=gray!15] (rom) at (0,0) {boot ROM\\in the SoC};
 	\node[b,fill=yellow!20] (bl) at (3.2,0) {bootloader\\(U-Boot)};
-	\node[b,fill=blue!10] (k) at (6.4,0) {kernel +\\device tree};
+	\node[b,fill=rwucyan!10] (k) at (6.4,0) {kernel +\\device tree};
 	\node[b,fill=green!10] (i) at (9.6,0) {init\\(systemd / BusyBox)};
 	\node[b,fill=green!20] (a) at (12.8,0) {applications};
 	\foreach \x/\y in {rom/bl,bl/k,k/i,i/a} \draw[->,thick] (\x) -- (\y);
@@ -534,7 +534,7 @@ commercial & VxWorks, QNX, embOS, SafeRTOS: certified, with support & commercial
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Building embedded Linux: cross development}]~\\[-3ex]
+\item[{\rot\bf Building embedded Linux: cross development}]~\\[-\lblskip]
 \bi
 	\ite the target is too small (or too slow) to compile its own software $\Rightarrow$ \textbf{cross compiler} on the PC
 	\bi
@@ -551,7 +551,7 @@ commercial & VxWorks, QNX, embOS, SafeRTOS: certified, with support & commercial
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Embedded Linux without hardware}]~\\[-3ex]
+\item[{\rot\bf Embedded Linux without hardware}]~\\[-\lblskip]
 \bi
 	\ite Wokwi simulates microcontrollers, not Linux boards -- for embedded Linux we use \textbf{QEMU}, an emulator for complete computers (ARM, RISC-V, x86)
 	\ite QEMU runs on any Linux PC or in a cloud environment such as GitHub Codespaces (free quota: 120 core-hours per month)
@@ -576,7 +576,7 @@ commercial & VxWorks, QNX, embOS, SafeRTOS: certified, with support & commercial
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Exercise: an embedded Linux in the browser}]~\\[-3ex]
+\item[{\rot\bf Exercise: an embedded Linux in the browser}]~\\[-\lblskip]
 \bi
 	\ite open \url{https://bellard.org/jslinux/} and start ``Buildroot Linux'' (riscv64, console) -- an emulated RISC-V computer in the browser, its software built with Buildroot
 	\ite explore the system
@@ -687,7 +687,7 @@ average = 8 (expected 200)            # the bug: see chapter Programming
 \end{lstlisting}
 \os{\newpage}
 
-\item[{\rot\bf Building a complete image}]~\\[-3ex]
+\item[{\rot\bf Building a complete image}]~\\[-\lblskip]
 \bi
 	\ite \texttt{bitbake core-image-minimal} builds the cross toolchain, the kernel and every package from source
 	\ite requirements from the Yocto documentation: at least 32\,GB RAM and 140\,GB disk; hours of CPU time
@@ -700,7 +700,7 @@ average = 8 (expected 200)            # the bug: see chapter Programming
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Choosing the right approach}]~\\[-3ex]
+\item[{\rot\bf Choosing the right approach}]~\\[-\lblskip]
 \begin{center}
 \resizebox{0.95\textwidth}{!}{%
 \begin{tabular}{|l|l|l|}
@@ -717,7 +717,7 @@ embedded Linux & GUI, many protocols, complex software & boot time, memory, real
 \end{center}
 \os{\newpage}
 
-\item[{\rot\bf Exercises}]~\\[-3ex]
+\item[{\rot\bf Exercises}]~\\[-\lblskip]
 \bi
 	\ite \texttt{tasks}: replace \texttt{xTaskDelayUntil} by \texttt{vTaskDelay} and add a 50\,ms busy loop to the heartbeat. What happens to the period?
 	\ite \texttt{queue}: make the consumer slower than the producer. What happens when the queue is full? Change \texttt{portMAX\_DELAY} to 0 and count lost samples.
