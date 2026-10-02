@@ -578,6 +578,46 @@ r1             0x6                 6              <- n
 \ei
 \os{\newpage}
 
+\item[{\rot\bf Debugging a Linux program without hardware}]~\\
+\bi
+	\ite on embedded Linux the debugger works on a process, not on the whole chip
+	\ite QEMU user mode runs the ARM program on the PC and offers a GDB server (\texttt{-g}); the debugger of the Yocto SDK connects to it (chapter Operating Systems, \texttt{examples/linux})
+\ei
+\begin{lstlisting}[language={}]
+$ qemu-aarch64 -L $SDKTARGETSYSROOT -g 1234 ./sensor_avg &      # waits for GDB
+$ $GDB ./sensor_avg                                            # aarch64-poky-linux-gdb
+(gdb) set sysroot /path/to/sdk/sysroots/cortexa57-poky-linux
+(gdb) target remote :1234
+(gdb) break sensor_avg.c:18
+(gdb) continue
+(gdb) display sum
+(gdb) continue
+1: sum = 200 '\310'           <- after the first value
+(gdb) continue
+1: sum = 154 '\232'           <- 200 + 210 = 410 does not fit into uint8_t: 410 - 256
+(gdb) continue
+1: sum = 88 'X'
+\end{lstlisting}
+\nsl{With \texttt{-Og} the variable \texttt{sum} lives in a register, so a watchpoint on it fails; \texttt{display} at a breakpoint works.}
+\os{\newpage}
+
+\item[{\rot\bf On a real Linux board: gdbserver}]~\\[-3ex]
+\bi
+	\ite the program runs on the board under \texttt{gdbserver}; GDB runs on the PC with the symbols and the sources
+\ei
+\begin{lstlisting}[language={}]
+board$ gdbserver :1234 ./sensor_avg
+pc$    $GDB ./sensor_avg
+(gdb)  target remote 192.168.7.2:1234
+\end{lstlisting}
+\bi
+	\ite the board needs \texttt{gdbserver} in the image (Yocto: \texttt{IMAGE\_INSTALL:append = " gdbserver"}; the prebuilt \texttt{core-image-sato-sdk} contains it)
+	\ite the binary on the board may be stripped; GDB on the PC uses the unstripped copy and the SDK sysroot for the libraries
+	\ite crashes after the fact: enable core dumps on the board, analyse them on the PC with \texttt{\$GDB ./program core}
+	\ite kernel problems: messages with \texttt{dmesg}, kernel debugging via QEMU's GDB stub (\texttt{-s -S}) or JTAG
+\ei
+\os{\newpage}
+
 \item[{\rot\bf Hardware debugging: JTAG and SWD}]~\\[-3ex]
 \bi
 	\ite on real hardware the debugger talks to the debug unit in the chip through a \textbf{debug probe}
@@ -602,5 +642,6 @@ r1             0x6                 6              <- n
 	\ite Add a test to the \texttt{debounce} crate: a press that is shorter than the threshold must not produce an edge. Run \texttt{cargo test} on Replit.
 	\ite Port \texttt{adc\_pwm.py} to C and to Rust (chapter 6 contains all parts). Compare code size and effort.
 	\ite In C: why is \texttt{(uint8\_t)200 + (uint8\_t)100 > 255} true? Check it on the PC.
+	\ite Linux: debug \texttt{examples/linux/sensor\_avg.c} with QEMU user mode and the GDB of the Yocto SDK. Fix the bug and check the result on the emulated board.
 \ei
 \end{description}

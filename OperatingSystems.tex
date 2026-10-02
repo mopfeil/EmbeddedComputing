@@ -538,7 +538,7 @@ commercial & VxWorks, QNX, embOS, SafeRTOS: certified, with support & commercial
 \bi
 	\ite the target is too small (or too slow) to compile its own software $\Rightarrow$ \textbf{cross compiler} on the PC
 	\bi
-		\ite named by the target triple: \texttt{aarch64-linux-gnu-gcc}, \texttt{arm-linux-gnueabihf-gcc}
+		\ite named by the target triple, e.g.\ \texttt{aarch64-linux-gnu-gcc}
 		\ite Rust: \texttt{rustup target add aarch64-unknown-linux-gnu} -- the same way we built for the RP2040 and the ESP32-C3
 	\ei
 	\ite build systems create the complete image (toolchain, bootloader, kernel, root file system) from source
@@ -548,6 +548,133 @@ commercial & VxWorks, QNX, embOS, SafeRTOS: certified, with support & commercial
 	\ei
 	\ite alternative for prototypes: a ready-made distribution (Raspberry Pi OS, Debian) and native compilation
 	\ite the output format is the same as on microcontrollers: \textbf{ELF} files with sections for code (\texttt{.text}), data (\texttt{.data}, \texttt{.bss}) and debug information
+\ei
+\os{\newpage}
+
+\item[{\rot\bf Embedded Linux without hardware}]~\\[-3ex]
+\bi
+	\ite Wokwi simulates microcontrollers, not Linux boards -- for embedded Linux we use \textbf{QEMU}, an emulator for complete computers (ARM, RISC-V, x86)
+	\ite QEMU runs on any Linux PC or in a cloud environment such as GitHub Codespaces (free quota: 120 core-hours per month)
+	\ite the Yocto Project publishes ready-made images and SDKs for its emulated boards (\texttt{qemuarm64}, \texttt{qemuriscv64}, \texttt{qemux86-64})
+\ei
+\begin{center}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{level} & \textbf{environment} & \textbf{effort} \\
+\hline
+1: explore a small Linux system & JSLinux in the browser (Buildroot, RISC-V) & none \\
+2: boot a Yocto image & QEMU + prebuilt image, PC or 2-core Codespace & 30\,MB download, 1--2 minutes \\
+3: look inside Yocto & \texttt{bitbake-setup} + BitBake without building & 0.5\,GB, about 5 minutes \\
+4: cross-compile and debug & Yocto SDK + QEMU + GDB & 1\,GB download, 5\,GB disk \\
+5: build an image & full Yocto build on a large machine & hours, 100\,GB and more \\
+\hline
+\end{tabular}}
+\end{center}
+\bi
+	\ite levels 1 to 4 were tested for this lecture; the files are in \texttt{examples/linux}
+\ei
+\os{\newpage}
+
+\item[{\rot\bf Exercise: an embedded Linux in the browser}]~\\[-3ex]
+\bi
+	\ite open \url{https://bellard.org/jslinux/} and start ``Buildroot Linux'' (riscv64, console) -- an emulated RISC-V computer in the browser, its software built with Buildroot
+	\ite explore the system
+\ei
+\begin{lstlisting}[language={}]
+uname -a                 # kernel version and architecture
+cat /proc/cpuinfo        # the emulated CPU (RISC-V, ISA extensions)
+cat /proc/meminfo        # memory
+ls -l /bin | head -n 15  # most commands are links to one program: BusyBox
+ps                       # which processes run after the boot?
+df -h                    # file systems and their size
+dmesg | head -n 40       # the kernel messages of the boot
+\end{lstlisting}
+\bi
+	\ite questions: how many processes run? Which program is process 1? How large is the complete system compared with a desktop Linux?
+\ei
+\os{\newpage}
+
+\item[{\rot\bf Exercise: booting a Yocto image in QEMU}]~\\
+\begin{lstlisting}[language={}]
+$ ./boot-yocto-qemu.sh       # examples/linux: download image, start QEMU
+...
+[    2.970384] Run /sbin/init as init process
+qemuarm64 login: root
+root@qemuarm64:~# uname -a
+Linux qemuarm64 6.18.39-yocto-standard #1 SMP PREEMPT ... aarch64 GNU/Linux
+root@qemuarm64:~# cat /proc/device-tree/model
+linux,dummy-virt
+root@qemuarm64:~# free
+              total        used        free      shared  buff/cache   available
+Mem:         231752       15992      201864          76       13896      209372
+root@qemuarm64:~# df -h /
+Filesystem                Size      Used Available Use% Mounted on
+/dev/root                20.2M     13.5M      5.1M  73% /
+root@qemuarm64:~# readlink /bin/sh /sbin/init
+/bin/busybox.nosuid
+/sbin/init.sysvinit
+\end{lstlisting}
+\bi
+	\ite \texttt{core-image-minimal}: 13.5\,MB files, 16\,MB RAM in use; quit QEMU with Ctrl-A, X
+	\ite the device tree in \texttt{/proc/device-tree} describes the emulated board
+\ei
+\os{\newpage}
+
+\item[{\rot\bf Exercise: looking inside Yocto without building}]~\\
+\begin{lstlisting}[language={}]
+$ python3 -m venv venv && . venv/bin/activate && pip install bitbake-setup
+$ bitbake-setup init --non-interactive poky-wrynose poky distro/poky machine/qemuarm64
+$ . bitbake-builds/poky-wrynose/build/init-build-env
+$ bitbake-layers show-layers                 # core, yocto, yoctobsp
+$ bitbake -e core-image-minimal | grep -E '^(IMAGE_INSTALL|MACHINE|TUNE_FEATURES|DISTRO_VERSION)='
+DISTRO_VERSION="6.0.4"
+IMAGE_INSTALL="packagegroup-core-boot "
+MACHINE="qemuarm64"
+TUNE_FEATURES="aarch64 crc cortexa57"
+$ bitbake-layers show-recipes busybox        # busybox 1.37.0 in layer meta
+$ bitbake -g core-image-minimal               # dependency graph, no build
+$ wc -l pn-buildlist
+273 pn-buildlist                              # recipes needed for this small image
+\end{lstlisting}
+\bi
+	\ite only parses the recipes: about 5 minutes on 2 cores, 0.5\,GB disk
+	\ite BitBake needs user namespaces: in a Codespace the provided dev container allows them; on Ubuntu 24.04 an AppArmor setting must be changed (see README)
+\ei
+\os{\newpage}
+
+\item[{\rot\bf Exercise: cross-compiling with the Yocto SDK}]~\\
+\begin{lstlisting}[language={}]
+$ sh poky-glibc-...-cortexa57-qemuarm64-toolchain-6.0.3.sh -d ~/sdk
+$ . ~/sdk/environment-setup-cortexa57-poky-linux     # sets CC, GDB, sysroot, ...
+$ $CC -g -Og -o sensor_avg sensor_avg.c
+$ file sensor_avg
+sensor_avg: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV)
+$ qemu-aarch64 -L $SDKTARGETSYSROOT ./sensor_avg    # ARM program on the PC
+average = 8 (expected 200)
+\end{lstlisting}
+\bi
+	\ite the SDK contains the cross compiler, GDB and a copy of the target's libraries -- exactly matching the image
+	\ite \textbf{QEMU user mode} (\texttt{qemu-aarch64}) runs a single ARM program on the PC; \textbf{system mode} (\texttt{qemu-system-aarch64}) emulates the whole board
+	\ite on the emulated board, image \texttt{core-image-full-cmdline} with SSH:
+\ei
+\begin{lstlisting}[language={}]
+$ scp -P 2222 sensor_avg root@localhost:/tmp/
+$ ssh -p 2222 root@localhost /tmp/sensor_avg
+average = 8 (expected 200)            # the bug: see chapter Programming
+\end{lstlisting}
+\os{\newpage}
+
+\item[{\rot\bf Building a complete image}]~\\[-3ex]
+\bi
+	\ite \texttt{bitbake core-image-minimal} builds the cross toolchain, the kernel and every package from source
+	\ite requirements from the Yocto documentation: at least 32\,GB RAM and 140\,GB disk; hours of CPU time
+	\ite the \textbf{shared state cache} reuses prebuilt results (configuration fragment \texttt{core/yocto/sstate-mirror-cdn})
+	\bi
+		\ite our test with the current branch: 273 of 2\,287 tasks came from the mirror (11\,\%) -- most still had to be built
+	\ei
+	\ite feasible in a large Codespace (16 cores, 64\,GB RAM, 128\,GB disk; uses the free quota in about 7 hours) or on a lab machine -- a project, not a weekly exercise
+	\ite for comparison: Buildroot builds a small image with fewer features much faster -- it has no shared state and no package management, but also far less to build
 \ei
 \os{\newpage}
 
@@ -576,5 +703,7 @@ embedded Linux & GUI, many protocols, complex software & boot time, memory, real
 	\ite \texttt{priority\_inversion}: predict both waiting times before running the example, then compare with the measurement. Why is it 550\,ms and not 750\,ms? (Hint: how does \texttt{busy()} measure time?)
 	\ite Embassy: add a long computation without \texttt{.await} to one task of \texttt{tasks.rs} and observe the LED. Then split the computation with \texttt{embassy\_futures::yield\_now().await}.
 	\ite Deadlock: write a FreeRTOS example with two tasks and two mutexes that deadlocks, then fix it with a fixed locking order.
+	\ite Embedded Linux: boot \texttt{core-image-minimal} and \texttt{core-image-full-cmdline} in QEMU and compare the number of processes, the RAM and disk usage and the boot time. Which packages make the difference? (Hint: the image manifests on downloads.yoctoproject.org)
+	\ite Yocto: find out with \texttt{bitbake -e} which kernel version and which init system \texttt{core-image-minimal} uses, and how you would add the package \texttt{gdbserver} to the image.
 \ei
 \end{description}

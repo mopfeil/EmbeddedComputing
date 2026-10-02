@@ -1,0 +1,11 @@
+{
+  // GitHub Codespaces / VS Code dev container for the embedded Linux exercises
+  // (chapter Operating Systems and Programming). Opens a Ubuntu container
+  // with QEMU, GDB and the host tools that BitBake needs.
+  "name": "Embedded Computing - Linux exercises",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+  // BitBake needs user namespaces for its sandbox
+  "privileged": true,
+  "postCreateCommand": "sudo apt-get update && sudo apt-get install -y qemu-system-arm qemu-user qemu-utils gdb-multiarch curl zstd chrpath diffstat lz4 python3-venv file",
+  "hostRequirements": { "cpus": 2 }
+}
