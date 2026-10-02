@@ -563,7 +563,7 @@ commercial & VxWorks, QNX, embOS, SafeRTOS: certified, with support & commercial
 \hline
 \textbf{level} & \textbf{environment} & \textbf{effort} \\
 \hline
-1: explore a small Linux system & JSLinux in the browser (Buildroot, RISC-V) & none \\
+1: explore, compile, debug & JSLinux in the browser (Buildroot RISC-V, Alpine x86) & none \\
 2: boot a Yocto image & QEMU + prebuilt image, PC or 2-core Codespace & 30\,MB download, 1--2 minutes \\
 3: look inside Yocto & \texttt{bitbake-setup} + BitBake without building & 0.5\,GB, about 5 minutes \\
 4: cross-compile and debug & Yocto SDK + QEMU + GDB & 1\,GB download, 5\,GB disk \\
@@ -592,6 +592,28 @@ dmesg | head -n 40       # the kernel messages of the boot
 \end{lstlisting}
 \bi
 	\ite questions: how many processes run? Which program is process 1? How large is the complete system compared with a desktop Linux?
+\ei
+\os{\newpage}
+
+\item[{\rot\bf Exercise: programming on the target, in the browser}]~\\
+\bi
+	\ite the Buildroot system in JSLinux contains GCC 7.3, \texttt{make}, \texttt{objdump} and \texttt{strace} -- we compile directly on the (emulated) RISC-V target
+	\ite type \texttt{cat > procinfo.c}, paste the program from \texttt{examples/jslinux}, end with Ctrl-D
+\ei
+\begin{lstlisting}[language={}]
+# gcc -g -O1 -o procinfo procinfo.c
+# ./procinfo
+uptime: 0 s                      <- wrong: the system has been running for a while
+load:   0.13
+sum:    126541
+# strace ./procinfo 2>&1 | grep proc
+openat(AT_FDCWD, "/proc/uptme", O_RDONLY) = -1 ENOENT (No such file or directory)
+openat(AT_FDCWD, "/proc/loadavg", O_RDONLY) = 3
+# objdump -d procinfo | less     # search for <sum16>: RISC-V code of chapter Processors
+\end{lstlisting}
+\bi
+	\ite \texttt{strace} shows every system call: here the typo in the file name, which the program hides
+	\ite in \texttt{objdump} find \texttt{lhu} (load halfword unsigned) and the conditional branch of the loop
 \ei
 \os{\newpage}
 

@@ -578,6 +578,52 @@ r1             0x6                 6              <- n
 \ei
 \os{\newpage}
 
+\item[{\rot\bf Debugging in the browser: a wrong result}]~\\
+\bi
+	\ite JSLinux ``Alpine Linux'' (x86\_64) at \url{https://bellard.org/jslinux/} contains GCC and GDB -- nothing to install
+	\ite program \texttt{examples/jslinux/average.c}: prints \texttt{average = 8 (expected 200)}
+\ei
+\begin{lstlisting}[language={}]
+$ gcc -g -O0 -o average average.c && gdb -q ./average
+(gdb) set can-use-hw-watchpoints 0       # software watchpoint, safe in an emulator
+(gdb) break average
+(gdb) run
+(gdb) next                               # sum = 0 is now set
+(gdb) watch sum                          # stop whenever sum changes
+(gdb) continue
+Old value = 0 '\000'
+New value = 200 '\310'
+(gdb) continue
+Old value = 200 '\310'
+New value = 154 '\232'                   # 200 + 210 = 410 > 255: uint8_t overflows
+\end{lstlisting}
+\os{\newpage}
+
+\item[{\rot\bf Debugging in the browser: a crash}]~\\
+\bi
+	\ite program \texttt{examples/jslinux/config.c}: prints two settings, then crashes
+\ei
+\begin{lstlisting}[language={}]
+$ gcc -g -O0 -o config config.c && gdb -q ./config
+(gdb) run
+rate      = 100
+threshold = 42
+Program received signal SIGSEGV, Segmentation fault.
+0x... in main () at config.c:23
+23	    printf("limit     = %d\n", find("limit")->value);
+(gdb) backtrace
+#0  0x... in main () at config.c:23
+(gdb) print find("limit")                # GDB can call functions of the program
+$1 = (struct setting *) 0x0
+(gdb) print *find("rate")
+$2 = {key = 0x... "rate", value = 100}
+\end{lstlisting}
+\bi
+	\ite \texttt{find()} returns \texttt{NULL} for an unknown key, and \texttt{main()} uses the result without checking it -- the classic null pointer dereference
+	\ite fix it, and think about how Rust's \texttt{Option} would have prevented it
+\ei
+\os{\newpage}
+
 \item[{\rot\bf Debugging a Linux program without hardware}]~\\
 \bi
 	\ite on embedded Linux the debugger works on a process, not on the whole chip
