@@ -1,0 +1,16 @@
+# Wokwi for VS Code and wokwi-cli. Build first (see README.md):
+#   arduino-cli compile -b esp32:esp32:esp32c3 --output-dir build .
+#   wokwi-cli chip compile chips/plant.chip.c -o chips/plant.chip.wasm
+#   wokwi-cli chip compile chips/fan.chip.c -o chips/fan.chip.wasm
+[wokwi]
+version = 1
+firmware = 'build/chamber.ino.merged.bin'
+elf = 'build/chamber.ino.elf'
+
+[[chip]]
+name = 'plant'
+binary = 'chips/plant.chip.wasm'
+
+[[chip]]
+name = 'fan'
+binary = 'chips/fan.chip.wasm'

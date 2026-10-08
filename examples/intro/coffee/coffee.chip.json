@@ -1,0 +1,6 @@
+{
+  "name": "Coffee machine",
+  "author": "Embedded Computing lecture",
+  "pins": ["HEAT", "PUMP", "TEMP", "GND"],
+  "display": { "width": 24, "height": 24 }
+}

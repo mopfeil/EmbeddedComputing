@@ -2,7 +2,8 @@
 % Chapter: Operating Systems
 % Reference platform: ESP32-C3, simulated in Wokwi.
 % Examples: examples/os/esp32-c (FreeRTOS via the Arduino core, browser),
-% examples/os/esp32-rust (Embassy on esp-hal, Wokwi for VS Code).
+% examples/os/esp32-rust (Embassy on esp-hal, Wokwi for VS Code),
+% examples/os/chamber (case study: FreeRTOS + custom chips as environment).
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -460,6 +461,251 @@ for _ in 0..1000 {
 	\ei
 	\ite FreeRTOS offers several heap implementations: from ``allocate only, never free'' (heap\_1) to a general allocator that merges free blocks (heap\_4)
 	\ite Embassy: everything static; the size of every task's state is checked by the compiler
+\ei
+\os{\newpage}
+\end{description}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Case Study: a Controller and its Simulated Environment}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\nsl{An embedded program never runs on its own. It reads sensors, drives
+actuators, and the physical process it controls answers by changing what the
+sensors measure. Whether the program is correct can therefore only be
+decided together with its environment: a temperature controller is right if
+the temperature is right, and a fault handler is right if the device reaches
+a safe state when the fault really happens. This section puts the pieces of
+this and the previous chapters together in one Wokwi project. An ESP32-C3
+with FreeRTOS controls a small climate chamber. The chamber and its fan do
+not exist as hardware: they are two \emph{custom chips}, small C programs
+that the simulator runs next to the processor and that model the physics.
+A logic analyzer records the signals between program and environment, and a
+test scenario switches faults on and off. The example is in
+\texttt{examples/os/chamber}, in C with FreeRTOS and in Rust with Embassy.}
+
+\begin{description}
+\item[{\rot\bf The embedded paradigm in the simulator}]~\\[-\lblskip]
+\bi
+	\ite recall the definition: an embedded system is part of a larger technical system and interacts with it through \textbf{sensors} and \textbf{actuators}
+	\ite the program closes a \textbf{loop}: it changes the process, the process changes the measurements, the measurements change the program's next decision
+	\ite a test that only feeds fixed values into the program misses this loop -- and misses most errors that matter
+	\ite in the simulator we can model the environment as well:
+	\bi
+		\ite \textbf{custom chips} in Wokwi: own parts written in C, with pins, I2C/SPI/UART, timers and controls on the part
+		\ite the same firmware binary that would be flashed runs against the model -- like a hardware-in-the-loop test bench, where the hardware is virtual as well
+	\ei
+\ei
+\os{\newpage}
+
+\item[{\rot\bf The setup: program, interfaces, environment}]~\\[-\lblskip]
+\begin{figure}[!hbtp]
+\begin{center}
+\resizebox{0.98\textwidth}{!}{%
+\begin{tikzpicture}[font=\sffamily\small,>=Stealth,
+	task/.style={draw=rwuviolet,fill=rwuviolet!12,rounded corners,minimum width=34mm,minimum height=10mm,align=center},
+	model/.style={draw=rwucyan!80!black,thick,fill=rwucyan!20,rounded corners,minimum width=50mm,minimum height=17mm,align=center},
+	part/.style={draw,fill=gray!12,rounded corners,minimum height=8mm,align=center},
+	lbl/.style={font=\sffamily\scriptsize},
+	bus/.style={thick,rwuviolet},
+	sig/.style={->,thick}]
+	% the program
+	\draw[rwuviolet,thick,rounded corners,fill=rwuviolet!4] (0,0) rectangle (6.6,-7.6);
+	\node[text=rwuviolet,font=\sffamily\bfseries] at (3.3,-0.4) {ESP32-C3 + FreeRTOS};
+	\node[task] (sen) at (2.6,-1.4) {sensor (prio 3)\\every 100\,ms};
+	\node[task] (ctl) at (2.6,-3.1) {control (prio 4)\\PI, safe state};
+	\node[task] (fan) at (2.6,-4.8) {fan (prio 2)\\rpm, stall check};
+	\node[task] (dsp) at (2.6,-6.5) {display (prio 1)\\LCD, CSV log};
+	\draw[->] (sen) -- node[lbl,right]{queue} (ctl);
+	\draw[->] (fan) -- node[lbl,right]{event group} (ctl);
+	\draw[->] (ctl.west) -- (0.45,-3.1) |- node[lbl,pos=0.25,rotate=90,above]{mailbox} (dsp.west);
+	\node[part,minimum width=9mm,fill=rwuviolet!12,draw=rwuviolet] (isr) at (5.9,-4.8) {ISR};
+	\draw[->] (isr) -- node[lbl,above,pos=0.8]{count} (fan);
+	% one I2C bus for sensor and display
+	\draw[bus] (sen.east) -- (4.8,-1.4) -- (4.8,-6.5) -- (dsp.east);
+	\node[lbl,rotate=90,text=rwuviolet] at (4.6,-5.65) {I2C + mutex};
+	% the environment
+	\draw[rwucyan!80!black,thick,rounded corners,fill=rwucyan!4] (10.6,0) rectangle (17.0,-7.6);
+	\node[text=rwucyan!70!black,font=\sffamily\bfseries] at (13.8,-0.4) {environment model};
+	\node[model] (plant) at (13.8,-2.2) {\textbf{plant} (custom chip)\\$\tau\,\dot T = K_h\,d - (1{+}k_a a)(T{-}T_a)$\\TMP102 register at 0x48};
+	\node[model] (fanm) at (13.8,-5.4) {\textbf{fan} (custom chip)\\rotor time constant 0.5\,s\\2 tach pulses per revolution};
+	\draw[sig,rwucyan!70!black] (fanm) -- node[lbl,right]{AIR (analog)} (plant);
+	\node[lbl,text=rwucyan!70!black] at (13.8,-7.2) {chip printf: true temperature $\rightarrow$ log};
+	% the interfaces
+	\draw[sig,<->] (4.8,-1.4) -- node[lbl,above,pos=0.68]{I2C, GPIO8/9} (10.6,-1.4);
+	\draw[sig] (ctl.east |- 0,-2.95) -- node[lbl,above,pos=0.7]{PWM heater, GPIO6} (10.6,-2.95);
+	\draw[sig] (ctl.east |- 0,-3.25) -- (9.6,-3.25) |- (10.6,-5.0);
+	\node[lbl,below] at (8.6,-3.25) {PWM fan, GPIO7};
+	\draw[sig] (10.6,-5.8) -- (9.2,-5.8) |- (isr.east);
+	\node[lbl,above] at (8.2,-4.8) {TACH, GPIO5};
+	% other parts
+	\node[part,minimum width=20mm] (lcd) at (8.6,-6.5) {LCD 0x27};
+	\draw[bus] (4.8,-6.5) -- (lcd.west);
+	\node[part,minimum width=26mm] (led) at (1.6,-8.6) {alarm LED, GPIO10};
+	\draw[->] (1.6,-7.6) -- (led);
+	\node[part,fill=yellow!25,minimum width=40mm] (la) at (7.4,-8.6) {logic analyzer (6 channels)};
+	\draw[dashed,thick,orange!80!black] (la.north -| 7.4,0) -- (7.4,-1.15);
+	\foreach \y in {-1.4,-2.95,-3.25,-4.8,-6.5} \fill[orange!80!black] (7.4,\y) circle (1.5pt);
+	\node[part,fill=red!12,minimum width=40mm] (sc) at (13.8,-8.6) {test scenario: faults on/off};
+	\draw[->,thick,red!70!black] (sc) -- (13.8,-7.6);
+\end{tikzpicture}}
+\caption{Climate chamber: the FreeRTOS program on the left knows the environment on the right only through its interfaces}
+\end{center}
+\end{figure}
+\os{\newpage}
+
+\item[{\rot\bf Custom chips: modelling the environment}]~\\[-\lblskip]
+\bi
+	\ite a chip = \texttt{name.chip.json} (pins, controls, display) + \texttt{name.chip.c}, compiled to WebAssembly -- in the browser automatically, locally with \texttt{wokwi-cli chip compile}
+	\ite the chip API: edges (\texttt{pin\_watch}), time steps (\texttt{timer\_start}), analog pins (\texttt{pin\_adc\_read}, \texttt{pin\_dac\_write}), bus devices (\texttt{i2c\_init}), controls on the part (\texttt{attr\_read})
+\ei
+\begin{lstlisting}[language=C]
+static void on_step(void *user_data) {            // every 10 ms of simulated time
+  chip_t *c = user_data;
+  float duty = c->high_ns / (STEP_US * 1000.0f);  // heater PWM, measured from the edges
+  float air = pin_adc_read(c->air) / 3.3f;        // from the fan chip
+  float ambient = attr_read_float(c->ambient_attr);   // slider on the part
+  c->temp += dt / TAU_S * (K_HEAT * duty - (1 + K_AIR * air) * (c->temp - ambient));
+}
+static bool on_connect(void *user_data, uint32_t address, bool read) {   // I2C
+  chip_t *c = user_data;
+  if (attr_read(c->fault_attr)) return false;     // injected fault: NACK
+  c->latched = c->pointer == 0 ? temp_register(c) : 0x60A0;   // as in the TMP102
+  return true;
+}
+\end{lstlisting}
+\os{\newpage}
+
+\item[{\rot\bf The program: four tasks}]~\\[-\lblskip]
+\begin{center}
+\resizebox{0.95\textwidth}{!}{%
+\begin{tabular}{|l|c|l|l|}
+\hline
+\textbf{task} & \textbf{prio} & \textbf{job} & \textbf{communication} \\
+\hline
+control & 4 & PI controller, safe state on faults & waits on queue (timeout 500\,ms) \\
+sensor & 3 & reads TMP102 every 100\,ms & I2C under mutex, sends to queue \\
+fan & 2 & rpm from tach pulses every 500\,ms, stall check & ISR counter, event group \\
+display & 1 & LCD and CSV log every 500\,ms & mailbox (\texttt{xQueueOverwrite}), I2C under mutex \\
+\hline
+\end{tabular}}
+\end{center}
+\begin{lstlisting}[language=C]
+if (xQueueReceive(measurements, &m, pdMS_TO_TICKS(500)) == pdTRUE) {
+  temp = m.temp;
+  xEventGroupClearBits(faults, SENSOR_LOST);
+} else {
+  xEventGroupSetBits(faults, SENSOR_LOST);   // no value for 500 ms
+}
+EventBits_t f = xEventGroupGetBits(faults);
+if (f) {                                     // safe state: heater off, full air
+  heat = 0;  fan = 1.0;  integral = 0;
+} else { /* PI controller */ }
+\end{lstlisting}
+\os{\newpage}
+
+\item[{\rot\bf The same program in Rust (Embassy)}]~\\[-\lstskip]
+\begin{lstlisting}[language=Rust]
+static MEASUREMENTS: Channel<CriticalSectionRawMutex, f32, 4> = Channel::new();
+type I2cBus = Mutex<NoopRawMutex, I2c<'static, Blocking>>;   // shared by sensor and LCD
+
+loop {   // control loop in main: it owns the PWM channels and the alarm LED
+    match with_timeout(Duration::from_millis(500), MEASUREMENTS.receive()).await {
+        Ok(t) => { temp = t; set_fault(SENSOR_LOST, false); }
+        Err(_) => set_fault(SENSOR_LOST, true),          // no value for 500 ms
+    }
+    let faults = FAULTS.lock(|f| f.get());   // critical section around a Cell
+    let (heat, fan) = if faults != 0 { (0.0, 1.0) } else { /* PI controller */ };
+    heater.set_duty_hw((heat * 1023.0) as u32);
+    ...
+}
+\end{lstlisting}
+\bi
+	\ite one executor, no priorities; the tach pulses are counted by a task that waits for the next edge (\texttt{wait\_for\_rising\_edge})
+	\ite own LCD driver (40 lines): an update takes 29\,ms instead of 95\,ms -- and now it overlaps a sensor read: the trace shows the read \textbf{waiting 7.5\,ms for the mutex}
+	\ite found in the simulator: the async I2C driver stopped the whole executor at the first transfer -- the blocking driver works (one transfer $\le$ 0.5\,ms)
+\ei
+\os{\newpage}
+
+\item[{\rot\bf Looking at the interfaces: the logic analyzer}]~\\[-\lblskip]
+\begin{figure}[!hbtp]
+\begin{center}
+\includegraphics[width=0.84\textwidth]{figures/chamber_logic.pdf}
+\caption{Recorded with \texttt{wokwi-cli --vcd-file}, decoded with \texttt{test/figures.py} (PulseView works as well)}
+\end{center}
+\end{figure}
+\os{\newpage}
+
+\item[{\rot\bf What the trace tells us}]~\\[-\lblskip]
+\bi
+	\ite the sensor read comes every 100.0\,ms -- \texttt{xTaskDelayUntil} gives a fixed period, independent of the run time of the task
+	\ite one read takes 0.5\,ms at 100\,kHz: \texttt{S 90 00 S 91 28 00 P} = 0x280 $\cdot$ 0.0625 = 40.0\,$^\circ$C
+	\ite the LCD occupies the shared bus for 95\,ms every 500\,ms -- without the mutex a sensor read inside this time would mix its bytes with the LCD's
+	\ite the LCD update starts 2.8\,ms after a sensor read: if it took 3\,ms longer, the sensor task would block on the mutex (priority inheritance keeps the delay short)
+	\ite heater PWM 53\,\%, fan 40\,\%, tach 40\,Hz $\Rightarrow$ 1200\,rpm: what the program sets is what the environment receives
+\ei
+\os{\newpage}
+
+\item[{\rot\bf Fault injection with a test scenario}]~\\[-\lstskip]
+\begin{lstlisting}[language={}]
+steps:
+  - wait-serial: 't_ms,temp,heat,fan,rpm,faults'
+  - delay: 20000ms
+  - set-control: { part-id: fan,   control: stall, value: 1 }   # rotor blocked
+  - delay: 10000ms
+  - set-control: { part-id: fan,   control: stall, value: 0 }
+  - delay: 8000ms
+  - set-control: { part-id: plant, control: fault, value: 1 }   # sensor silent
+  ...
+\end{lstlisting}
+\bi
+	\ite \texttt{wokwi-cli --scenario test/faults.yaml .} runs it without a browser -- also in continuous integration
+	\ite the plant chip prints the \textbf{true} temperature, the program logs what it \textbf{measures} -- in the simulator we can compare both
+\ei
+\os{\newpage}
+
+\item[{\rot\bf Result: the program reaches the safe state}]~\\[-\lblskip]
+\begin{figure}[!hbtp]
+\begin{center}
+\includegraphics[width=0.9\textwidth]{figures/chamber_faults.pdf}
+\caption{Blocked fan: alarm after 2.0\,s (rotor slows down, then two slow 500\,ms windows), heater off. Silent sensor: alarm after 0.5\,s (queue timeout), heater off -- the program shows the last value, the chamber cools down. Both faults clear by themselves.}
+\end{center}
+\end{figure}
+\os{\newpage}
+
+\item[{\rot\bf The same fault without a return value check}]~\\[-\lblskip]
+\begin{lstlisting}[language=C]
+Wire.endTransmission(false);                  // results ignored ...
+Wire.requestFrom(TMP102, (uint8_t)2);
+int16_t raw = (int16_t)(Wire.read() << 8 | Wire.read());   // no data: -1, -1
+\end{lstlisting}
+\begin{figure}[!hbtp]
+\begin{center}
+\includegraphics[width=0.88\textwidth]{figures/chamber_nocheck.pdf}
+\caption{The program reads 0xFFFF = $-0.06\,^\circ$C, drives the heater at 100\,\% and overheats the chamber -- while its own log shows a cold chamber}
+\end{center}
+\end{figure}
+\os{\newpage}
+
+\item[{\rot\bf Why simulate the environment?}]~\\[-\lblskip]
+\bi
+	\ite the program is only correct \textbf{together with} its environment: the second variant compiles, runs and logs plausible values -- the error is visible only in the plant
+	\ite faults on demand: blocked fan, broken sensor wire, extreme ambient temperature -- dangerous or expensive on real hardware, one slider in the simulator
+	\ite reproducible: the same scenario gives the same trace, so it can run in every build (regression test)
+	\ite ground truth: the model knows the real state, a real test bench needs extra instruments
+	\ite early: program and test exist before the hardware does
+	\ite but: a model is only as good as its assumptions -- here no noise, no electrical faults, no sensor delay, ideal heater
+	\bi
+		\ite validate the model against measurements of the real system, then use it
+		\ite in industry the same idea in steps: model, software, processor and hardware in the loop (MiL, SiL, PiL, HiL)
+	\ei
+\ei
+\os{\newpage}
+
+\item[{\rot\bf Exercises: climate chamber}]~\\[-\lblskip]
+\bi
+	\ite set the ambient temperature slider to 0\,$^\circ$C. Why does the chamber stay below 40\,$^\circ$C? Compute the highest reachable temperature from the model equation. What should the program report in this case?
+	\ite add a third fault to the plant chip (the heater element breaks: no heating at any duty cycle) and extend the program so that it detects it. What is a sensible time limit?
+	\ite print the time the sensor task waits for the I2C mutex. Make the LCD output longer until the sensor read is delayed and find the delay in the logic analyzer.
+	\ite make the I2C sensor fail only for single reads (every tenth read NACKs). Does the program raise an alarm? Should it?
 \ei
 \os{\newpage}
 \end{description}

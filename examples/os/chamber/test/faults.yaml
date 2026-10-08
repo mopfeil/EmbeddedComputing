@@ -1,0 +1,26 @@
+# Fault injection: wokwi-cli --scenario test/faults.yaml --timeout 60000 .
+name: Climate chamber with faults
+version: 1
+steps:
+  - wait-serial: 't_ms,temp,heat,fan,rpm,faults'
+  - delay: 20000ms
+  - set-control:            # t = 20 s: the fan rotor gets blocked
+      part-id: fan
+      control: stall
+      value: 1
+  - delay: 10000ms
+  - set-control:            # t = 30 s: the fan turns again
+      part-id: fan
+      control: stall
+      value: 0
+  - delay: 8000ms
+  - set-control:            # t = 38 s: the sensor no longer answers
+      part-id: plant
+      control: fault
+      value: 1
+  - delay: 6000ms
+  - set-control:            # t = 44 s: sensor back
+      part-id: plant
+      control: fault
+      value: 0
+  - delay: 10000ms

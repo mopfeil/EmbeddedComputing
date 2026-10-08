@@ -67,6 +67,29 @@ Wokwi or on Replit, so they can be tried without any hardware.
 \end{figure}
 \os{\newpage}
 
+\item[{\rot\bf A first example: a coffee machine in the simulator}]~\\[-\lstskip]
+\begin{lstlisting}[language=C]
+void loop() {
+  float t = readTemperature();                      // sensor: 10 mV per degC on A0
+  if (t < 91.0) digitalWrite(PIN_HEATER, HIGH);     // actuator: two-point control
+  if (t > 94.0) digitalWrite(PIN_HEATER, LOW);
+  bool ready = t >= 90.0 && !brewing;
+  digitalWrite(PIN_READY, ready);                   // user interface
+  if (digitalRead(PIN_BUTTON) == LOW && ready) {    // "make coffee"
+    brewing = true;  brewStart = millis();  digitalWrite(PIN_PUMP, HIGH);
+  }
+  if (brewing && millis() - brewStart >= 20000) {   // 20 s = one cup
+    brewing = false;  digitalWrite(PIN_PUMP, LOW);
+  }
+}
+\end{lstlisting}
+\bi
+	\ite the \textbf{device} is simulated as well: a Wokwi \textbf{custom chip} with a physical model of the boiler, $m c\,\dot T = P_{heater} - k\,(T - T_{room}) - \dot m_{pump}\,c\,(T - T_{room})$
+	\ite the program knows the machine only through pins -- like the real one
+	\ite Arduino Uno, runs in the browser: \texttt{examples/intro/coffee} (Rust: \texttt{coffee-rust})
+\ei
+\os{\newpage}
+
 \begin{figure}[!hbtp]
      \begin{center}
 	  \resizebox{0.6\textwidth}{!}{%
@@ -216,6 +239,13 @@ often almost right, and the last errors are found by people who understand
 the hardware, read the datasheet, write tests and know how to debug. We
 found the same while preparing this lecture. So it still teaches these
 things in detail, with or without AI.
+\newline
+The job market reacts as well. Employers now expect graduates to work with
+AI tools as a matter of course, and they pay more for these skills. At the
+same time there are fewer of the simple entry-level tasks that used to train
+beginners, so new engineers have to judge, test and debug earlier in their
+career. The second half of this section collects current figures and the
+skills that job advertisements ask for.
 \newpage}
 
 \begin{description}
@@ -310,6 +340,58 @@ randomised, 52 people & without AI: 67\,\%; largest gap in \textbf{debugging} \\
 \ei
 \os{\newpage}
 
+\item[{\rot\bf AI and the job market}]~\\[-\lblskip]
+\begin{center}
+\resizebox{0.95\textwidth}{!}{%
+\begin{tabular}{|l|l|}
+\hline
+\textbf{source} & \textbf{finding} \\
+\hline
+WEF Future of Jobs 2025 \cite{wef2025} & AI and big data are the fastest-growing skills, \\
+1\,000 employers, 55 economies & followed by networks and cybersecurity; 39\,\% of core skills change by 2030 \\
+\hline
+PwC AI Jobs Barometer 2026 \cite{pwc2026} & jobs with AI skills pay on average 62\,\% more; \\
+over 1 billion job ads & US entry jobs exposed to AI ask 7 times more often for senior skills \\
+\hline
+Stanford, ``Canaries'' 2026 \cite{brynjolfsson2026} & age 22--25 in AI-exposed jobs: employment 19\,\% below less-exposed peers; \\
+US payroll data & fewer hires, no gap for experienced staff; no general job loss \\
+\hline
+Bitkom 2026 \cite{bitkom2026} & 79\,000 open IT positions in Germany (2023: 149\,000); \\
+602 companies & 63\,\% expect AI skills in \textbf{all} IT jobs; 55\,\% expect classical entry tasks to disappear \\
+\hline
+\end{tabular}}
+\end{center}
+\bi
+	\ite AI shifts the work more than it removes it: jobs where AI assists people grow, jobs where it replaces routine tasks hire fewer beginners
+\ei
+\os{\newpage}
+
+\item[{\rot\bf What employers ask for}]~\\[-\lblskip]
+\bi
+	\ite working with AI tools is a basic requirement, not a speciality: giving context, splitting tasks, reviewing and testing the result
+	\ite judgment from the first day: beginners do less routine work and more checking, integrating and deciding
+	\ite governance: 74\,\% of the companies in the Bitkom survey expect steering and controlling AI to become more important \cite{bitkom2026}
+	\ite AI literacy is a legal duty: since 02/2025 the EU AI Act (Art.\,4) requires employers to train staff who use AI, supervised since 08/2026 \cite{euaiact}
+	\ite in embedded systems in particular
+	\bi
+		\ite security and update processes: the EU Cyber Resilience Act requires vulnerability reporting since 09/2026 (chapter Networking)
+		\ite edge AI: running small neural networks on microcontrollers (TensorFlow Lite Micro, quantisation, memory and timing budgets)
+		\ite functional safety: traceable requirements and tests, also for generated code
+	\ei
+	\ite and still: analytical thinking, which 7 of 10 employers in the WEF survey call the most important core skill \cite{wef2025}
+\ei
+\os{\newpage}
+
+\item[{\rot\bf Preparing for your career}]~\\[-\lblskip]
+\bi
+	\ite learn the basics so well that you notice when the AI is wrong; this is what distinguishes you from the tool
+	\ite build projects that you can explain in an interview line by line, including the bugs you found
+	\ite show that you can verify: tests, simulation, measurements, reviews
+	\ite learn one agentic tool properly, including its limits, and the rules of your employer on confidential code
+	\ite keep learning: 61\,\% of the companies expect more pressure on IT staff to train continuously \cite{bitkom2026}
+\ei
+\os{\newpage}
+
 \item[{\rot\bf What you still need to know}]~\\[-\lblskip]
 \bi
 	\ite computer architecture, memory, interrupts and concurrency: without them you cannot tell wrong code from right code
@@ -341,6 +423,7 @@ randomised, 52 people & without AI: 67\,\%; largest gap in \textbf{debugging} \\
 	\ite Let an AI assistant write the debouncing example of chapter Peripherals and Interfaces in C. Review the code, run it in Wokwi with a bouncing button and list all problems you find.
 	\ite Ask an AI for the address of the register \texttt{GPIO\_OUT\_XOR} of the RP2040 and for the meaning of its bits. Check the answer in the datasheet.
 	\ite Solve one exercise of chapter Programming without AI and one with AI. Compare time, result and what you can explain afterwards.
+	\ite Read five current job advertisements for embedded software engineers. List which AI-related skills they ask for and which of them this lecture covers.
 \ei
 \os{\newpage}
 \end{description}
@@ -390,5 +473,6 @@ randomised, 52 people & without AI: 67\,\%; largest gap in \textbf{debugging} \\
 	\ite List ten embedded systems in your home. For each: which sensors, which actuators, which communication?
 	\ite Which of the characteristics (dependability, efficiency, real time, cost) is most important for an airbag control unit, a smart light bulb and a heart pacemaker?
 	\ite Open \url{https://wokwi.com}, start a new Raspberry Pi Pico project and let the on-board LED blink.
+	\ite Run the coffee machine (\texttt{examples/intro/coffee}). Press the button while the water is still cold. Then change the switching points to 85 and 95\,$^\circ$C: how does the temperature curve change, and how often does the heater switch?
 \ei
 \end{description}

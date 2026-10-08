@@ -1,0 +1,11 @@
+# Wokwi for VS Code and wokwi-cli. Build first:
+#   cargo build --release
+#   wokwi-cli chip compile ../coffee/coffee.chip.c -o ../coffee/coffee.chip.wasm
+[wokwi]
+version = 1
+firmware = "target/avr-none/release/coffee.elf"
+elf = "target/avr-none/release/coffee.elf"
+
+[[chip]]
+name = 'coffee'
+binary = '../coffee/coffee.chip.wasm'
