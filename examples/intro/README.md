@@ -9,6 +9,7 @@ program with a physical model that the simulator runs next to the Uno.
 | `coffee/sketch.ino` | the program: two-point control of the water temperature, button "coffee", LED "ready" |
 | `coffee/coffee.chip.c`, `coffee/coffee.chip.json` | the machine: heat balance of 100 ml water, 1200 W heater, pump 2 ml/s, sensor 10 mV/°C; the chip shows the cup filling |
 | `coffee/diagram.json` | Uno, the chip, button, LEDs "ready" (pin 7) and "heater" (pin 8) |
+| `coffee-rust/` | the same program in Rust with `arduino-hal` (avr-hal) - Wokwi for VS Code |
 
 Model of the chip, every 10 ms:
 
@@ -24,12 +25,28 @@ replace `sketch.ino` and `diagram.json`, then add the custom chip: file menu
 Wait for the green LED (about 25 s), then press the button: the pump runs for
 20 s and the cup on the chip fills up.
 
+## Rust version
+
+```sh
+cd coffee-rust
+cargo build --release     # nightly from rust-toolchain.toml, needs avr-gcc as linker
+wokwi-cli chip compile ../coffee/coffee.chip.c -o ../coffee/coffee.chip.wasm
+```
+
+`avr-gcc` comes with the Arduino AVR core (`~/.arduino15/packages/arduino/tools/avr-gcc/*/bin`,
+add it to `PATH`) or from the package `gcc-avr`. Differences to the C version:
+temperatures are integers in tenths of a degree (no floating point unit, and
+`ufmt` prints no floats), and the time is counted in 10 ms loop cycles instead
+of `millis()`. `Cargo.lock` pins `encoding_rs` to 0.8.35, because newer
+versions do not build with the nightly from the avr-hal template.
+
 ## Tested
 
 With `wokwi-cli` 0.28.1 and arduino:avr 1.8.8 in October 2026, scenario:
 button at 34 °C → "please wait, water at 34.2 C"; ready after about 27 s
 (93.8 °C, heater off); button → pump 20 s, water stays between 91 and 94 °C,
-"enjoy your coffee!". The cup drawing on the chip was not checked
+"enjoy your coffee!". The Rust version (2.9 KB) gives the same output with
+the same scenario. The cup drawing on the chip was not checked
 (`wokwi-cli` cannot take screenshots of custom chips).
 
 Why an Uno and not a Pico: the Uno's ADC uses 5 V as reference. On the
