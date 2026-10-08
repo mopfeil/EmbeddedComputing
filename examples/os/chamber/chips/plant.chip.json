@@ -1,0 +1,10 @@
+{
+  "name": "Thermal plant",
+  "author": "Embedded Computing lecture",
+  "pins": ["HEAT", "AIR", "GND", "", "VCC", "SCL", "SDA", ""],
+  "controls": [
+    { "id": "ambient", "label": "Ambient temperature (°C)", "type": "range", "min": 0, "max": 40, "step": 1 },
+    { "id": "fault", "label": "Sensor fault", "type": "range", "min": 0, "max": 1, "step": 1 }
+  ],
+  "display": { "width": 16, "height": 48 }
+}

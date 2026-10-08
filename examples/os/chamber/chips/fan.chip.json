@@ -1,0 +1,8 @@
+{
+  "name": "Fan",
+  "author": "Embedded Computing lecture",
+  "pins": ["PWM", "TACH", "AIR", "GND", "VCC"],
+  "controls": [
+    { "id": "stall", "label": "Rotor blocked", "type": "range", "min": 0, "max": 1, "step": 1 }
+  ]
+}

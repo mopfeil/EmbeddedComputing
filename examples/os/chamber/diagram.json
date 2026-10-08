@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "author": "Embedded Computing lecture",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "board-esp32-c3-devkitm-1", "id": "esp", "top": 0, "left": 0, "attrs": {} },
+    { "type": "chip-plant", "id": "plant", "top": 30, "left": 260, "attrs": { "ambient": "20", "fault": "0" } },
+    { "type": "chip-fan", "id": "fan", "top": 170, "left": 260, "attrs": { "stall": "0" } },
+    { "type": "wokwi-lcd1602", "id": "lcd", "top": -170, "left": 140, "attrs": { "pins": "i2c" } },
+    { "type": "wokwi-led", "id": "alarm", "top": 210, "left": 140, "attrs": { "color": "red", "label": "ALARM" } },
+    { "type": "wokwi-resistor", "id": "r1", "top": 260, "left": 90, "attrs": { "value": "220" } },
+    { "type": "wokwi-logic-analyzer", "id": "logic", "top": 320, "left": 230, "attrs": {} }
+  ],
+  "connections": [
+    [ "esp:TX", "$serialMonitor:RX", "", [] ],
+    [ "esp:RX", "$serialMonitor:TX", "", [] ],
+
+    [ "esp:8", "plant:SDA", "green", [] ],
+    [ "esp:9", "plant:SCL", "blue", [] ],
+    [ "esp:8", "lcd:SDA", "green", [] ],
+    [ "esp:9", "lcd:SCL", "blue", [] ],
+    [ "lcd:VCC", "esp:5V.1", "red", [] ],
+    [ "lcd:GND", "esp:GND.1", "black", [] ],
+    [ "plant:VCC", "esp:3V3.1", "red", [] ],
+    [ "plant:GND", "esp:GND.1", "black", [] ],
+
+    [ "esp:6", "plant:HEAT", "orange", [] ],
+    [ "esp:7", "fan:PWM", "violet", [] ],
+    [ "fan:TACH", "esp:5", "gold", [] ],
+    [ "fan:AIR", "plant:AIR", "cyan", [] ],
+    [ "fan:VCC", "esp:3V3.1", "red", [] ],
+    [ "fan:GND", "esp:GND.1", "black", [] ],
+
+    [ "esp:10", "r1:1", "red", [] ],
+    [ "r1:2", "alarm:A", "red", [] ],
+    [ "alarm:C", "esp:GND.1", "black", [] ],
+
+    [ "logic:D0", "esp:9", "blue", [] ],
+    [ "logic:D1", "esp:8", "green", [] ],
+    [ "logic:D2", "esp:6", "orange", [] ],
+    [ "logic:D3", "esp:7", "violet", [] ],
+    [ "logic:D4", "esp:5", "gold", [] ],
+    [ "logic:D5", "esp:10", "red", [] ],
+    [ "logic:GND", "esp:GND.1", "black", [] ]
+  ],
+  "serialMonitor": { "display": "terminal", "convertEol": true },
+  "dependencies": {}
+}
