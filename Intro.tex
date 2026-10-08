@@ -240,6 +240,13 @@ the hardware, read the datasheet, write tests and know how to debug. We
 found the same while preparing this lecture. So it still teaches these
 things in detail, with or without AI.
 \newline
+The section also maps where AI is used along the development of an
+embedded system today -- from code and tests to PCB layout -- and where it
+is not yet: on the lab bench, in timing guarantees, in certified safety
+software and in the final responsibility for a product. It ends with the
+skills that matter when working with AI, the skills that must stay active
+without it, and the rules for using AI in this lecture.
+\newline
 The job market reacts as well. Employers now expect graduates to work with
 AI tools as a matter of course, and they pay more for these skills. At the
 same time there are fewer of the simple entry-level tasks that used to train
@@ -270,6 +277,65 @@ skills that job advertisements ask for.
 		\ite it cannot tell when it is wrong; an invented function or register looks just as convincing as a real one (``hallucination'')
 	\ei
 	\ite the answer is only as good as the context: give it the datasheet section, the existing code, the exact error message and the tool versions
+\ei
+\os{\newpage}
+
+\item[{\rot\bf Where AI is used in embedded development}]~\\[-\lblskip]
+\begin{figure}[!hbtp]
+\begin{center}
+\resizebox{0.95\textwidth}{!}{%
+\begin{tikzpicture}[font=\sffamily\small,>=Stealth,
+	st/.style={draw=rwuviolet,rounded corners,minimum width=36mm,minimum height=9mm,align=center},
+	hi/.style={st,fill=rwucyan!55},
+	mid/.style={st,fill=rwucyan!18},
+	lo/.style={st,fill=gray!35}]
+	% V model: specification on the left, verification on the right
+	\node[mid] (req) at (0,0)      {requirements};
+	\node[mid] (sys) at (1.9,-1.4) {system design};
+	\node[mid] (arc) at (3.8,-2.8) {software architecture};
+	\node[mid] (mod) at (5.7,-4.2) {module design};
+	\node[hi]  (cod) at (8.55,-5.6) {implementation (code)};
+	\node[hi]  (ut)  at (11.4,-4.2) {unit tests};
+	\node[mid] (it)  at (13.3,-2.8) {integration on the hardware};
+	\node[lo]  (sy)  at (15.2,-1.4) {system test, measurements};
+	\node[lo]  (val) at (17.1,0)    {validation, certification};
+	\foreach \a/\b in {req/sys,sys/arc,arc/mod,mod/cod,cod/ut,ut/it,it/sy,sy/val} \draw[->] (\a) -- (\b);
+	\foreach \a/\b in {req/val,sys/sy,arc/it,mod/ut} \draw[dashed,gray] (\a) -- (\b);
+	% hardware
+	\node[font=\sffamily\bfseries,text=rwuviolet] at (22,0.9) {hardware};
+	\node[mid] (sch) at (22,0)    {schematic};
+	\node[mid] (pcb) at (22,-1.4) {PCB layout};
+	\node[lo]  (bri) at (22,-2.8) {bring-up on the bench};
+	\draw[->] (sch) -- (pcb); \draw[->] (pcb) -- (bri);
+	% cross-cutting work
+	\node[hi,minimum width=210mm] at (11,-7.0) {documentation, code review, search in datasheets and manuals};
+	% legend
+	\node[hi,minimum width=10mm,minimum height=5mm] (l1) at (20.6,-4.2) {};
+	\node[right] at (l1.east) {used widely};
+	\node[mid,minimum width=10mm,minimum height=5mm] (l2) at (20.6,-4.9) {};
+	\node[right] at (l2.east) {assists, people decide};
+	\node[lo,minimum width=10mm,minimum height=5mm] (l3) at (20.6,-5.6) {};
+	\node[right] at (l3.east) {little or no AI yet};
+\end{tikzpicture}}
+\caption{AI along the V-model of an embedded system (own assessment, 2026)}
+\end{center}
+\end{figure}
+\bi
+	\ite AI is strongest where its result can be checked quickly and automatically: code that compiles and passes tests, text that a person reads
+	\ite it is weakest where the physical world, measurements or responsibility come in: the right side of the V and the lab bench
+\ei
+\os{\newpage}
+
+\item[{\rot\bf AI in the development process today}]~\\[-\lblskip]
+\bi
+	\ite \textbf{code}: completion, chat and agents -- by far the most common use \cite{so2025}
+	\ite \textbf{tests}: unit tests, stubs for hardware drivers, simulation scenarios (like the Wokwi tests in this lecture)
+	\ite \textbf{reviews and static analysis}: review comments on pull requests, fix proposals for analyzer warnings
+	\ite \textbf{knowledge}: questions about datasheets and reference manuals, summaries, porting between C and Rust or between SDKs
+	\ite \textbf{debugging}: explaining crash dumps, logs and traces -- the AI proposes hypotheses, the engineer checks them on the target
+	\ite \textbf{hardware}: schematic assistants (e.g.\ Flux), AI placement and routing of PCBs (e.g.\ Cadence Allegro X AI, Quilter); checked by design rules and engineers
+	\ite \textbf{chip design}: machine learning optimises the physical implementation of chips (e.g.\ Synopsys DSO.ai, Cadence Cerebrus)
+	\ite and \textbf{inside the product}: edge AI on microcontrollers -- keyword spotting, anomaly detection on motors, small vision models
 \ei
 \os{\newpage}
 
@@ -312,6 +378,22 @@ randomised, 52 people & without AI: 67\,\%; largest gap in \textbf{debugging} \\
 	\ei
 	\ite benchmark EmbedAgent (Raspberry Pi Pico, ESP32, Arduino, 126 tasks) \cite{xu2026embedagent}: the best model solved about 56\,\% of the tasks; porting code from Arduino to ESP-IDF succeeded in fewer than 30\,\% of the cases
 	\ite many errors show up only on the hardware or under real timing; that the compiler accepts the code proves little
+\ei
+\os{\newpage}
+
+\item[{\rot\bf Where AI is not (yet) active}]~\\[-\lblskip]
+\bi
+	\ite \textbf{on the bench}: bring-up, oscilloscope and logic analyzer, EMC and thermal tests -- the AI does not see the hardware, it only sees what we give it
+	\ite \textbf{timing guarantees}: worst-case execution time and schedulability come from measurements and static analysis tools, not from a language model
+	\ite \textbf{certified safety software} (ISO 26262, IEC 61508, DO-178C)
+	\bi
+		\ite tools need a confidence or qualification argument; LLM output is not deterministic
+		\ite generated code is treated like hand-written code: same reviews, tests and coverage
+		\ite qualified code generators exist, but they are deterministic and work from models (e.g.\ SCADE, Simulink Embedded Coder)
+	\ei
+	\ite \textbf{responsibility}: release decisions, safety cases and liability stay with people and companies -- the EU Product Liability Directive (2024) includes software
+	\ite \textbf{AI inside safety functions} is still rare: ISO/PAS 8800 for AI in road vehicles appeared in 12/2024 \cite{iso8800}; the AI Act obligations for AI in regulated products were postponed to 08/2028 \cite{aiomnibus2026}
+	\ite and where the data must not leave the company: confidential code, customer projects, export control
 \ei
 \os{\newpage}
 
@@ -392,8 +474,21 @@ Bitkom 2026 \cite{bitkom2026} & 79\,000 open IT positions in Germany (2023: 149\
 \ei
 \os{\newpage}
 
-\item[{\rot\bf What you still need to know}]~\\[-\lblskip]
+\item[{\rot\bf Critical skills for working with AI}]~\\[-\lblskip]
 \bi
+	\ite \textbf{specifying}: a precise task with interfaces, limits and acceptance criteria -- a good prompt is a good specification
+	\ite \textbf{giving context}: chip and board, SDK version, datasheet section, memory, timing and power budget
+	\ite \textbf{verifying}: tests designed independently of the code, simulation, measurement on the target
+	\ite \textbf{reviewing}: spotting the errors that look right -- races, interrupts, missing \texttt{volatile}, overflow, resource limits
+	\ite \textbf{knowing the tool}: how language models fail (invented APIs, outdated versions), what an agent may change and run
+	\ite \textbf{protecting data}: no secrets, no confidential or personal data in external services; licenses of generated code
+	\ite \textbf{thinking in systems}: hardware, software and the physical process together -- as in the case study of chapter Operating Systems
+\ei
+\os{\newpage}
+
+\item[{\rot\bf Skills that must stay active -- also with AI}]~\\[-\lblskip]
+\bi
+	\ite use it or lose it: practise regularly \textbf{without} AI -- when the tool is wrong, unavailable or not allowed, you need these skills
 	\ite computer architecture, memory, interrupts and concurrency: without them you cannot tell wrong code from right code
 	\ite reading datasheets and reference manuals, the only reliable source for registers, timing and electrical limits
 	\ite specifying a problem so clearly that a colleague, or an AI, can solve it: requirements, state machines, interfaces
@@ -406,15 +501,15 @@ Bitkom 2026 \cite{bitkom2026} & 79\,000 open IT positions in Germany (2023: 149\
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Using AI well in this course}]~\\[-\lblskip]
+\item[{\rot\bf Responsible use of AI in this lecture}]~\\[-\lblskip]
 \bi
-	\ite try it yourself first; you learn while you struggle with a problem
-	\ite ask why, not just how: in the Anthropic study, learners who asked conceptual questions and fixed their errors themselves learned the most
-	\ite give context: chip, board, SDK version, the relevant datasheet section, the complete error message
-	\ite check every API and register against the documentation
-	\ite never hand in or commit code that you cannot explain
-	\ite test in Wokwi or on the hardware; ``it compiles'' does not mean ``it works''
-	\ite follow the rules of the course and your employer on AI use, and state where AI was used
+	\ite \textbf{learn first}: try a problem yourself, then use AI to ask \emph{why} -- in the Anthropic study, learners who asked conceptual questions learned the most \cite{anthropic2026skills}
+	\ite \textbf{understand}: hand in only code and text that you can explain line by line -- we will ask
+	\ite \textbf{verify}: check every API and register against the documentation, test in Wokwi or on the hardware -- ``it compiles'' is not ``it works''
+	\ite \textbf{be transparent}: state which tool you used and for what (one line in the lab report is enough)
+	\ite \textbf{protect data}: no personal data, no exam material and no confidential company code in external AI services
+	\ite \textbf{follow the rules}: what is allowed in graded work is announced with each assignment; the examination rules of the university apply
+	\ite \textbf{the lecture does the same}: its examples were written with an AI assistant, then compiled and tested in the simulator -- report the errors you still find
 \ei
 \os{\newpage}
 
