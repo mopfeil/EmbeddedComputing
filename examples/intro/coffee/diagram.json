@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "author": "Embedded Computing lecture",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "wokwi-arduino-uno", "id": "uno", "top": 0, "left": 0, "attrs": {} },
+    { "type": "chip-coffee", "id": "machine", "top": -110, "left": 330, "attrs": {} },
+    { "type": "wokwi-pushbutton", "id": "btn", "top": -150, "left": 60, "attrs": { "color": "black", "label": "coffee" } },
+    { "type": "wokwi-led", "id": "ready", "top": -170, "left": 190, "attrs": { "color": "green", "label": "ready" } },
+    { "type": "wokwi-resistor", "id": "r1", "top": -90, "left": 180, "rotate": 90, "attrs": { "value": "220" } },
+    { "type": "wokwi-led", "id": "heat", "top": -170, "left": 250, "attrs": { "color": "red", "label": "heater" } },
+    { "type": "wokwi-resistor", "id": "r2", "top": -90, "left": 240, "rotate": 90, "attrs": { "value": "220" } }
+  ],
+  "connections": [
+    [ "uno:8", "machine:HEAT", "red", [] ],
+    [ "uno:9", "machine:PUMP", "blue", [] ],
+    [ "machine:TEMP", "uno:A0", "orange", [] ],
+    [ "machine:GND", "uno:GND.2", "black", [] ],
+    [ "uno:2", "btn:2.r", "green", [] ],
+    [ "btn:1.l", "uno:GND.1", "black", [] ],
+    [ "uno:7", "r1:2", "green", [] ],
+    [ "r1:1", "ready:A", "green", [] ],
+    [ "ready:C", "uno:GND.1", "black", [] ],
+    [ "uno:8", "r2:2", "red", [] ],
+    [ "r2:1", "heat:A", "red", [] ],
+    [ "heat:C", "uno:GND.1", "black", [] ]
+  ],
+  "dependencies": {}
+}

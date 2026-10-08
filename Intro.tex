@@ -67,6 +67,29 @@ Wokwi or on Replit, so they can be tried without any hardware.
 \end{figure}
 \os{\newpage}
 
+\item[{\rot\bf A first example: a coffee machine in the simulator}]~\\[-\lstskip]
+\begin{lstlisting}[language=C]
+void loop() {
+  float t = readTemperature();                      // sensor: 10 mV per degC on A0
+  if (t < 91.0) digitalWrite(PIN_HEATER, HIGH);     // actuator: two-point control
+  if (t > 94.0) digitalWrite(PIN_HEATER, LOW);
+  bool ready = t >= 90.0 && !brewing;
+  digitalWrite(PIN_READY, ready);                   // user interface
+  if (digitalRead(PIN_BUTTON) == LOW && ready) {    // "make coffee"
+    brewing = true;  brewStart = millis();  digitalWrite(PIN_PUMP, HIGH);
+  }
+  if (brewing && millis() - brewStart >= 20000) {   // 20 s = one cup
+    brewing = false;  digitalWrite(PIN_PUMP, LOW);
+  }
+}
+\end{lstlisting}
+\bi
+	\ite the \textbf{device} is simulated as well: a Wokwi \textbf{custom chip} with a physical model of the boiler, $m c\,\dot T = P_{heater} - k\,(T - T_{room}) - \dot m_{pump}\,c\,(T - T_{room})$
+	\ite the program knows the machine only through pins -- like the real one
+	\ite Arduino Uno, runs in the browser: \texttt{examples/intro/coffee}
+\ei
+\os{\newpage}
+
 \begin{figure}[!hbtp]
      \begin{center}
 	  \resizebox{0.6\textwidth}{!}{%
@@ -450,5 +473,6 @@ Bitkom 2026 \cite{bitkom2026} & 79\,000 open IT positions in Germany (2023: 149\
 	\ite List ten embedded systems in your home. For each: which sensors, which actuators, which communication?
 	\ite Which of the characteristics (dependability, efficiency, real time, cost) is most important for an airbag control unit, a smart light bulb and a heart pacemaker?
 	\ite Open \url{https://wokwi.com}, start a new Raspberry Pi Pico project and let the on-board LED blink.
+	\ite Run the coffee machine (\texttt{examples/intro/coffee}). Press the button while the water is still cold. Then change the switching points to 85 and 95\,$^\circ$C: how does the temperature curve change, and how often does the heater switch?
 \ei
 \end{description}
