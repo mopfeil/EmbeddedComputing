@@ -1,0 +1,17 @@
+# Wokwi for VS Code and wokwi-cli. Build first:
+#   cargo build --release
+#   wokwi-cli chip compile ../chips/plant.chip.c -o ../chips/plant.chip.wasm
+#   wokwi-cli chip compile ../chips/fan.chip.c -o ../chips/fan.chip.wasm
+[wokwi]
+version = 1
+firmware = "target/riscv32imc-unknown-none-elf/release/chamber"
+elf = "target/riscv32imc-unknown-none-elf/release/chamber"
+gdbServerPort = 3333
+
+[[chip]]
+name = 'plant'
+binary = '../chips/plant.chip.wasm'
+
+[[chip]]
+name = 'fan'
+binary = '../chips/fan.chip.wasm'

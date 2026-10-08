@@ -480,7 +480,7 @@ not exist as hardware: they are two \emph{custom chips}, small C programs
 that the simulator runs next to the processor and that model the physics.
 A logic analyzer records the signals between program and environment, and a
 test scenario switches faults on and off. The example is in
-\texttt{examples/os/chamber}.}
+\texttt{examples/os/chamber}, in C with FreeRTOS and in Rust with Embassy.}
 
 \begin{description}
 \item[{\rot\bf The embedded paradigm in the simulator}]~\\[-\lblskip]
@@ -600,6 +600,29 @@ if (f) {                                     // safe state: heater off, full air
   heat = 0;  fan = 1.0;  integral = 0;
 } else { /* PI controller */ }
 \end{lstlisting}
+\os{\newpage}
+
+\item[{\rot\bf The same program in Rust (Embassy)}]~\\[-\lstskip]
+\begin{lstlisting}[language=Rust]
+static MEASUREMENTS: Channel<CriticalSectionRawMutex, f32, 4> = Channel::new();
+type I2cBus = Mutex<NoopRawMutex, I2c<'static, Blocking>>;   // shared by sensor and LCD
+
+loop {   // control loop in main: it owns the PWM channels and the alarm LED
+    match with_timeout(Duration::from_millis(500), MEASUREMENTS.receive()).await {
+        Ok(t) => { temp = t; set_fault(SENSOR_LOST, false); }
+        Err(_) => set_fault(SENSOR_LOST, true),          // no value for 500 ms
+    }
+    let faults = FAULTS.lock(|f| f.get());   // critical section around a Cell
+    let (heat, fan) = if faults != 0 { (0.0, 1.0) } else { /* PI controller */ };
+    heater.set_duty_hw((heat * 1023.0) as u32);
+    ...
+}
+\end{lstlisting}
+\bi
+	\ite one executor, no priorities; the tach pulses are counted by a task that waits for the next edge (\texttt{wait\_for\_rising\_edge})
+	\ite own LCD driver (40 lines): an update takes 29\,ms instead of 95\,ms -- and now it overlaps a sensor read: the trace shows the read \textbf{waiting 7.5\,ms for the mutex}
+	\ite found in the simulator: the async I2C driver stopped the whole executor at the first transfer -- the blocking driver works (one transfer $\le$ 0.5\,ms)
+\ei
 \os{\newpage}
 
 \item[{\rot\bf Looking at the interfaces: the logic analyzer}]~\\[-\lblskip]

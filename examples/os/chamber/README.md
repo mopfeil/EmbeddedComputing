@@ -21,7 +21,8 @@ its interfaces, exactly as it would know real hardware.
 
 | File | Content |
 |---|---|
-| `chamber.ino` | the program: 4 tasks, queue, mailbox, mutex, event group, ISR |
+| `chamber.ino` | the program in C (FreeRTOS): 4 tasks, queue, mailbox, mutex, event group, ISR |
+| `rust/` | the same program in Rust (Embassy), with its own small LCD driver (`src/lcd.rs`) |
 | `chips/plant.chip.{c,json}` | thermal model, TMP102 register set on I2C, controls "ambient" and "sensor fault" |
 | `chips/fan.chip.{c,json}` | fan with rotor inertia, tachometer and airflow output, control "rotor blocked" |
 | `diagram.json`, `libraries.txt` | circuit (incl. LCD 1602 I2C and logic analyzer), library list |
@@ -61,9 +62,36 @@ stalled, bit 1 sensor lost). The plant chip prints the true temperature every
 500 ms (`[chip-plant] plant ... T=...`), so the simulation shows what the
 program measures and what really happens.
 
+## Rust version
+
+`rust/` is the same program with Embassy on esp-hal, built locally and
+simulated with Wokwi for VS Code or `wokwi-cli` (it uses `../chips`):
+
+```sh
+cd rust
+cargo build --release      # needs: rustup target add riscv32imc-unknown-none-elf
+# wokwi-cli: strip the ELF first, the full one (2.3 MB) makes the connection hang
+llvm-strip -g target/riscv32imc-unknown-none-elf/release/chamber -o chamber.elf
+```
+
+| C (FreeRTOS) | Rust (Embassy) |
+|---|---|
+| 4 tasks with priorities | 5 tasks on one executor, no priorities: each runs until its next `.await` |
+| queue | `Channel`, receive with `with_timeout(500 ms, ...)` |
+| I2C mutex | async `Mutex` around the I2C driver (in a `StaticCell`) |
+| mailbox `xQueueOverwrite` | `Cell<Option<Status>>` in a critical section |
+| event group | fault bits in a `Cell<u8>` in a critical section (no atomics on the ESP32-C3) |
+| ISR + counter | task `tach`: `wait_for_rising_edge().await` (the C3 has no pulse counter unit) |
+| LiquidCrystal_I2C | `lcd.rs`: HD44780 via PCF8574, about 40 lines |
+
+The I2C driver is the blocking one: with the async driver of esp-hal 1.2.2
+the whole executor stopped at the first transfer in Wokwi (not checked on
+real hardware). One transfer takes at most 0.5 ms, and the LCD driver awaits
+50 µs after each byte, so the other tasks still run in between.
+
 ## Tested
 
-With `wokwi-cli` 0.28.1 and arduino-esp32 in October 2026:
+C version with `wokwi-cli` 0.28.1 and arduino-esp32 in October 2026:
 
 | Test | Result in the simulator |
 |---|---|
@@ -72,6 +100,15 @@ With `wokwi-cli` 0.28.1 and arduino-esp32 in October 2026:
 | fan blocked at 21.3 s | alarm at 23.3 s (2.0 s), heater off; cleared 0.5 s after the fan turns again |
 | sensor silent at 39.3 s | alarm at 39.8 s (queue timeout 0.5 s), heater off; the chamber cools to 27 °C |
 | same, without the return value check | program reads 0xFFFF = −0.06 °C, heater 100 %, chamber 49 °C while the log shows −0.06 °C |
+
+Rust (Embassy), same scenario:
+
+| Test | Result in the simulator |
+|---|---|
+| start | 40.00 °C after about 18 s, heater 53 %, 1200 rpm, LCD as in C |
+| fan blocked / unblocked | alarm after 2.0 s, cleared after 0.5 s |
+| sensor silent | alarm after 0.5 s; cleared 0.1 s after the sensor answers again |
+| logic analyzer | LCD update 28.7 ms (own driver; the Arduino library needs 95 ms). It overlaps a sensor read: the read waits 7.5 ms for the bus mutex, the next one is on time again (`Ticker`) |
 
 Not tested: the small temperature bar on the plant chip (`wokwi-cli` cannot
 take a screenshot of a custom chip).

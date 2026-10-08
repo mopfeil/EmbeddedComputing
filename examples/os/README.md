@@ -19,8 +19,8 @@ VS Code, see `esp32-rust/wokwi.toml`).
 
 Case study **`chamber/`**: FreeRTOS program plus two custom chips that model
 the environment (thermal plant with I2C sensor, fan with tachometer), I2C LCD,
-logic analyzer and a fault injection scenario. C only. Its own `diagram.json`
-and README.
+logic analyzer and a fault injection scenario, in C (FreeRTOS) and Rust
+(Embassy, `chamber/rust`). Its own `diagram.json` and README.
 
 ```sh
 cd esp32-rust
@@ -39,7 +39,7 @@ All examples were run with `wokwi-cli` 0.27 in October 2026:
 | race_mutex (C) | without mutex: **1001** instead of 2000; with mutex: 2000 |
 | mutex (Rust) | 2000 |
 | priority_inversion (C) | binary semaphore: H waits **550 ms**; mutex: H waits **251 ms** |
-| chamber (C) | 40.00 °C; fan stall alarm after 2.0 s, sensor loss after 0.5 s (see `chamber/README.md`) |
+| chamber (C and Rust) | 40.00 °C; fan stall alarm after 2.0 s, sensor loss after 0.5 s (see `chamber/README.md`) |
 
 Note for `race_mutex` and `priority_inversion`: `setup()` runs in the Arduino
 loop task with priority 1. It raises its own priority first, so that all
