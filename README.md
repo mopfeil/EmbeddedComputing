@@ -16,6 +16,8 @@ with kind permission of Prof. Dr.-Ing. Franz Brümmer).
 
 - [Script (A4)](pdf/EmbeddedComputing_Script.pdf)
 - [Slides (A5 landscape)](pdf/EmbeddedComputing_Slides.pdf)
+- [Worksheet: GPIO output stages in Falstad CircuitJS](pdf/EmbeddedComputing_Worksheet_IO_Ports.pdf)
+  (circuits in [`examples/interfaces/falstad/`](examples/interfaces/falstad/))
 
 ## Build
 
@@ -23,7 +25,9 @@ with kind permission of Prof. Dr.-Ing. Franz Brümmer).
 make            builds docu.pdf (script) and slides.pdf (slides)
 make script     only the script
 make slides     only the slides
-make publish    builds both and copies them into pdf/
+make worksheet  builds the worksheet (student version and solutions)
+make publish    builds everything and copies script, slides and the
+                student worksheet into pdf/
 make clean      removes LaTeX build artifacts
 ```
 
