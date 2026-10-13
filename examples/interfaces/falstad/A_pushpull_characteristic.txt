@@ -1,0 +1,31 @@
+<cir f="1" ts="2e-07" ic="10.2" cb="50" pb="50" vr="5" mts="1e-07">
+  <mm nm="gpio-nmos" f="0" vt="0.6" be="0.012" sb="0" dsy="0" bd="1" bt="0" sbd="0"/>
+  <mm nm="gpio-pmos" f="0" vt="0.6" be="0.008" sb="0" dsy="0" bd="1" bt="0" sbd="0"/>
+  <x x="48 32 0 0" f="0" si="20" te="A: Push-pull GPIO output characteristic (curve tracer)"/>
+  <x x="48 64 0 0" f="0" si="14" te="Logic input = output register bit. The sweep source forces V(PIN) from -0.5 V to 3.8 V."/>
+  <x x="48 88 0 0" f="0" si="14" te="Left scope: X = V(PIN), Y = pin current (&gt; 0: out of the pin). Right scope: power in PMOS and NMOS."/>
+  <L x="128 256 80 256" f="0" p="1" hi="3.3" lo="0"/>
+  <I x="128 256 176 256" f="0" sl="0.5" hi="3.3"/>
+  <f x="240 208 304 208" f="1" mo="gpio-pmos"/>
+  <f x="240 304 304 304" f="0" mo="gpio-nmos"/>
+  <w x="240 208 240 256" f="0"/>
+  <w x="240 256 240 304" f="0"/>
+  <w x="304 224 304 256" f="0"/>
+  <w x="304 256 304 288" f="0"/>
+  <g x="304 320 304 352" f="0"/>
+  <R x="304 192 304 160" f="0" wf="0" maxv="3.3"/>
+  <w x="176 256 240 256" f="0"/>
+  <w x="304 256 368 256" f="0"/>
+  <ln x="368 256 368 224" f="4" te="PIN"/>
+  <Ammeter x="368 256 464 256" f="3" me="0" sc="0"/>
+  <v x="464 384 464 256" f="0" wf="3" fr="250" maxv="2.15" bias="1.65"/>
+  <g x="464 384 464 416" f="0"/>
+  <o en="17" sp="1" f="194" p="0">
+    <p v="0" sc="4"/>
+    <p e="16" v="3" sc="0.05"/>
+  </o>
+  <o en="5" sp="8" f="2" p="1">
+    <p v="7" sc="0.1"/>
+    <p e="6" v="7" sc="0.1"/>
+  </o>
+</cir>

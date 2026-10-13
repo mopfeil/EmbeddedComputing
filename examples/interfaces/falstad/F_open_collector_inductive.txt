@@ -1,0 +1,53 @@
+<cir f="1" ts="2e-07" ic="10.2" cb="50" pb="50" vr="5" mts="1e-07">
+  <dm nm="zener-24V" f="0" is="1.7143528192808883e-07" rs="0" n="2" bv="24"/>
+  <x x="48 32 0 0" f="0" si="20" te="F: Open-collector driver for a 12 V relay coil or lamp"/>
+  <x x="48 64 0 0" f="0" si="14" te="The 3.3 V GPIO switches an NPN transistor (beta = 100) through R_B. The load selector chooses relay coil or lamp."/>
+  <x x="48 88 0 0" f="0" si="14" te="Close 'flyback' to add the free-wheeling diode; open 'bypass' to put a 24 V zener in series with it."/>
+  <R x="400 128 400 96" f="0" wf="0" maxv="12"/>
+  <w x="400 128 464 128" f="0"/>
+  <w x="464 128 624 128" f="0"/>
+  <Ammeter x="400 128 400 176" f="3" me="0" sc="0"/>
+  <l x="400 176 400 240" f="2" l="0.1"/>
+  <r x="400 240 400 304" f="0" r="400"/>
+  <w x="400 176 336 176" f="0"/>
+  <w x="336 304 400 304" f="0"/>
+  <c x="336 176 336 304" f="2" c="1e-09"/>
+  <x x="208 240 0 0" f="0" si="14" te="relay coil"/>
+  <x x="208 264 0 0" f="0" si="14" te="0.1 H, 400 Ohm"/>
+  <w x="400 304 464 304" f="0"/>
+  <d x="464 304 464 240" f="0" mo="1N4148"/>
+  <z x="464 176 464 240" f="0" mo="zener-24V"/>
+  <w x="464 240 528 240" f="0"/>
+  <w x="528 176 464 176" f="0"/>
+  <s x="528 240 528 176" f="0" p="0" mo="0"/>
+  <x x="544 216 0 0" f="0" si="14" te="bypass"/>
+  <s x="464 176 464 128" f="0" p="1" mo="0"/>
+  <x x="480 168 0 0" f="0" si="14" te="flyback"/>
+  <r x="624 128 624 304" f="0" r="29"/>
+  <x x="640 216 0 0" f="0" si="14" te="lamp 12 V / 5 W"/>
+  <S x="512 400 512 336" f="0" p="0" mo="0" li="0" th="2"/>
+  <w x="496 336 496 320" f="0"/>
+  <w x="496 320 400 320" f="0"/>
+  <w x="400 320 400 304" f="0"/>
+  <w x="528 336 528 320" f="0"/>
+  <w x="528 320 624 320" f="0"/>
+  <w x="624 320 624 304" f="0"/>
+  <t x="448 448 512 448" f="0" pn="1" be="100" mo="default"/>
+  <w x="512 432 512 416" f="0"/>
+  <w x="512 416 512 400" f="0"/>
+  <ln x="512 416 576 416" f="4" te="C"/>
+  <g x="512 464 512 496" f="0"/>
+  <R x="256 448 208 448" f="0" wf="2" fr="200" maxv="1.65" bias="1.65"/>
+  <r x="256 448 448 448" f="0" r="1000"/>
+  <adj e="38" ei="0" en="Resistance (ohms)" mn="100" mx="100000.0" st="Base resistor R_B" log="1"/>
+  <adj e="37" ei="0" en="Frequency (Hz)" mn="10" mx="1000" st="Switching frequency" log="1"/>
+  <o en="35" sp="64" f="2" p="0">
+    <p v="0" sc="50"/>
+  </o>
+  <o en="6" sp="64" f="1" p="1">
+    <p v="3" sc="0.05"/>
+  </o>
+  <o en="32" sp="64" f="0" p="2">
+    <p v="7" sc="1"/>
+  </o>
+</cir>

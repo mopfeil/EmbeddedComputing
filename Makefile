@@ -9,7 +9,7 @@ else
 LATEXMK = latexmk -lualatex -interaction=nonstopmode -halt-on-error
 endif
 
-.PHONY: all script slides publish clean
+.PHONY: all script slides worksheet publish clean
 
 all: script slides
 
@@ -19,10 +19,17 @@ script:
 slides:
 	$(LATEXMK) slides.tex
 
+# Worksheet "GPIO output stages" (Falstad circuits in examples/interfaces/falstad):
+# student version and a version with solutions
+worksheet:
+	$(LATEXMK) Worksheet_IO_Ports.tex
+	$(LATEXMK) -jobname=Worksheet_IO_Ports_Solutions -usepretex='\def\solutions{}' Worksheet_IO_Ports.tex
+
 # Copy the built PDFs into pdf/, the versioned copies linked from README.md
 publish: all
 	cp docu.pdf pdf/EmbeddedComputing_Script.pdf
 	cp slides.pdf pdf/EmbeddedComputing_Slides.pdf
 
 clean:
-	latexmk -c docu.tex slides.tex
+	latexmk -c docu.tex slides.tex Worksheet_IO_Ports.tex
+	latexmk -c -jobname=Worksheet_IO_Ports_Solutions Worksheet_IO_Ports.tex

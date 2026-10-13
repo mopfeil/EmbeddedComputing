@@ -1,0 +1,46 @@
+<cir f="1" ts="1e-11" ic="10.2" cb="50" pb="50" vr="5" mts="1e-11">
+  <mm nm="gpio-nmos-fast" f="0" vt="0.6" be="0.03" sb="0" dsy="0" bd="1" bt="0" sbd="0"/>
+  <mm nm="gpio-pmos-fast" f="0" vt="0.6" be="0.025" sb="0" dsy="0" bd="1" bt="0" sbd="0"/>
+  <x x="48 32 0 0" f="0" si="20" te="G: Fast push-pull edges on a 50 Ohm PCB trace"/>
+  <x x="48 64 0 0" f="0" si="14" te="The trace (1 ns delay, about 15 cm on FR4) ends at the input of another chip: 5 pF plus ESD diodes."/>
+  <x x="48 88 0 0" f="0" si="14" te="Output in its fastest setting (R_on about 12-15 Ohm). Sliders: series resistor R_S, slew rate. Scope: PIN and RX."/>
+  <R x="96 256 48 256" f="0" wf="2" fr="10000000.0" maxv="1.65" bias="1.65"/>
+  <w x="96 256 128 256" f="0"/>
+  <I x="128 256 176 256" f="0" sl="5" hi="3.3"/>
+  <f x="240 208 304 208" f="1" mo="gpio-pmos-fast"/>
+  <f x="240 304 304 304" f="0" mo="gpio-nmos-fast"/>
+  <w x="240 208 240 256" f="0"/>
+  <w x="240 256 240 304" f="0"/>
+  <w x="304 224 304 256" f="0"/>
+  <w x="304 256 304 288" f="0"/>
+  <g x="304 320 304 352" f="0"/>
+  <R x="304 192 304 160" f="0" wf="0" maxv="3.3"/>
+  <w x="176 256 240 256" f="0"/>
+  <w x="304 256 336 256" f="0"/>
+  <ln x="336 256 336 224" f="4" te="PIN"/>
+  <r x="336 256 432 256" f="0" r="0.1"/>
+  <tl x="432 256 688 256" f="0" de="1e-09" im="50" wi="32"/>
+  <g x="432 288 432 320" f="0"/>
+  <g x="688 288 688 320" f="0"/>
+  <w x="688 256 752 256" f="0"/>
+  <w x="752 256 816 256" f="0"/>
+  <w x="816 256 880 256" f="0"/>
+  <ln x="752 256 752 224" f="4" te="RX"/>
+  <c x="880 256 880 336" f="0" c="5e-12"/>
+  <g x="880 336 880 368" f="0"/>
+  <d x="816 256 816 192" f="0" mo="default"/>
+  <R x="816 192 816 160" f="0" wf="0" maxv="3.3"/>
+  <d x="816 320 816 256" f="0" mo="default"/>
+  <g x="816 320 816 352" f="0"/>
+  <x x="736 400 0 0" f="0" si="14" te="receiver input"/>
+  <adj e="17" ei="0" en="Resistance (ohms)" mn="0.1" mx="100" st="Series resistor R_S"/>
+  <adj e="5" ei="0" en="Slew Rate (V/ns)" mn="0.1" mx="5" st="Output slew rate (V/ns)" log="1"/>
+  <o en="16" sp="6" f="2" p="0">
+    <p v="0" sc="5"/>
+    <p e="24" v="0" sc="5"/>
+  </o>
+  <o en="27" sp="6" f="1" p="1">
+    <p v="3" sc="0.05"/>
+    <p e="29" v="3" sc="0.05"/>
+  </o>
+</cir>

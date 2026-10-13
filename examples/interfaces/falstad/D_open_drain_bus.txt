@@ -1,0 +1,59 @@
+<cir f="1" ts="2e-09" ic="10.2" cb="50" pb="50" vr="5" mts="1e-09">
+  <mm nm="gpio-nmos" f="0" vt="0.6" be="0.012" sb="0" dsy="0" bd="1" bt="0" sbd="0"/>
+  <mm nm="gpio-pmos" f="0" vt="0.6" be="0.008" sb="0" dsy="0" bd="1" bt="0" sbd="0"/>
+  <x x="48 32 0 0" f="0" si="20" te="D: Open-drain bus (I2C-like) versus push-pull"/>
+  <x x="48 64 0 0" f="0" si="14" te="Device 1 sends a clock, device 2 can hold the bus low (wired AND). Pull-up R_P and bus capacitance C_bus are sliders."/>
+  <x x="48 88 0 0" f="0" si="14" te="The push-pull stage below drives the same capacitance for comparison. Scope 1: BUS and PP. Scope 2: current in R_P."/>
+  <R x="96 288 48 288" f="0" wf="2" fr="100000.0" maxv="1.65" bias="1.65"/>
+  <w x="96 288 128 288" f="0"/>
+  <I x="128 288 176 288" f="0" sl="0.5" hi="3.3"/>
+  <w x="176 288 240 288" f="0"/>
+  <f x="240 288 304 288" f="0" mo="gpio-nmos"/>
+  <g x="304 304 304 336" f="0"/>
+  <x x="224 368 0 0" f="0" si="14" te="device 1"/>
+  <L x="400 288 352 288" f="0" p="1" hi="3.3" lo="0"/>
+  <I x="400 288 448 288" f="0" sl="0.5" hi="3.3"/>
+  <f x="448 288 512 288" f="0" mo="gpio-nmos"/>
+  <g x="512 304 512 336" f="0"/>
+  <x x="432 368 0 0" f="0" si="14" te="device 2"/>
+  <R x="400 144 400 112" f="0" wf="0" maxv="3.3"/>
+  <r x="400 144 400 256" f="0" r="4700"/>
+  <w x="304 272 304 256" f="0"/>
+  <w x="304 256 400 256" f="0"/>
+  <w x="400 256 512 256" f="0"/>
+  <w x="512 256 576 256" f="0"/>
+  <w x="576 256 640 256" f="0"/>
+  <w x="512 272 512 256" f="0"/>
+  <ln x="576 256 576 224" f="4" te="BUS"/>
+  <c x="640 256 640 336" f="0" c="2e-10"/>
+  <g x="640 336 640 368" f="0"/>
+  <w x="96 288 96 512" f="0"/>
+  <w x="96 512 128 512" f="0"/>
+  <I x="128 512 176 512" f="0" sl="0.5" hi="3.3"/>
+  <f x="240 464 304 464" f="1" mo="gpio-pmos"/>
+  <f x="240 560 304 560" f="0" mo="gpio-nmos"/>
+  <w x="240 464 240 512" f="0"/>
+  <w x="240 512 240 560" f="0"/>
+  <w x="304 480 304 512" f="0"/>
+  <w x="304 512 304 544" f="0"/>
+  <g x="304 576 304 608" f="0"/>
+  <R x="304 448 304 416" f="0" wf="0" maxv="3.3"/>
+  <w x="176 512 240 512" f="0"/>
+  <w x="304 512 576 512" f="0"/>
+  <w x="576 512 640 512" f="0"/>
+  <ln x="576 512 576 480" f="4" te="PP"/>
+  <c x="640 512 640 592" f="0" c="2e-10"/>
+  <g x="640 592 640 624" f="0"/>
+  <x x="224 640 0 0" f="0" si="14" te="push-pull reference"/>
+  <adj e="24" ei="0" en="Capacitance (F)" mn="1e-11" mx="1e-09" st="Bus capacitance C_bus" log="1"/>
+  <adj e="41" ei="0" en="Capacitance (F)" mn="1e-11" mx="1e-09" st="" log="1" ss="0"/>
+  <adj e="16" ei="0" en="Resistance (ohms)" mn="220" mx="47000" st="Pull-up R_P" log="1"/>
+  <adj e="3" ei="0" en="Frequency (Hz)" mn="10000.0" mx="2000000.0" st="Clock frequency" log="1"/>
+  <o en="23" sp="16" f="2" p="0">
+    <p v="0" sc="4"/>
+    <p e="40" v="0" sc="4"/>
+  </o>
+  <o en="16" sp="16" f="1" p="1">
+    <p v="3" sc="0.01"/>
+  </o>
+</cir>

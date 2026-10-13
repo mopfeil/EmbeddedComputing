@@ -1,0 +1,673 @@
+%************************************************************************
+% Worksheet: GPIO output stages (push-pull, open drain, open collector)
+% simulated in Falstad CircuitJS. Circuits: examples/interfaces/falstad/
+%
+%   make worksheet      builds Worksheet_IO_Ports.pdf (students)
+%                       and Worksheet_IO_Ports_Solutions.pdf (lecturer)
+%************************************************************************
+\documentclass[a4paper,11pt]{article}
+\input{preamble}
+\usepackage[colorlinks=true,pdfpagemode=UseNone]{hyperref}
+\hypersetup{linkcolor=rwuviolet,citecolor=rwucyandark,urlcolor=rwucyandark}
+\usepackage[a4paper,top=22mm,bottom=25mm,left=22mm,right=22mm]{geometry}
+\usepackage{titlesec}
+\titleformat*{\section}{\sffamily\Large\bfseries\color{rwuviolet}}
+\titleformat*{\subsection}{\sffamily\large\bfseries\color{rwucyandark}}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\color{rwugray}\small Embedded Computing -- Worksheet: GPIO output stages\ifdefined\solutions\ (solutions)\fi}
+\fancyhead[R]{\color{rwugray}\small RWU}
+\fancyfoot[C]{\color{rwugray}\small\thepage}
+\renewcommand{\headrulewidth}{0pt}
+\usepackage{booktabs,enumitem,siunitx,amssymb,needspace}
+\sisetup{per-mode=symbol}
+\usepackage[most]{tcolorbox}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.5ex}
+\setlist{itemsep=0.3ex,topsep=0.5ex}
+
+\input{figures/falstad/links}
+
+% numbered tasks: P = preparation (paper), S = simulation, D = discussion
+\newcounter{task}[section]
+\renewcommand{\thetask}{\thesection.\arabic{task}}
+\newcommand{\task}[1]{\par\medskip\refstepcounter{task}%
+  {\sffamily\bfseries\color{rwuviolet}Task \thetask}\ {\sffamily\small\color{rwucyandark}[#1]}\quad}
+\newtcolorbox{modelbox}[1]{colback=rwucyan40!25,colframe=rwucyan,fonttitle=\sffamily\bfseries,title=#1,boxrule=0.6pt,arc=1mm}
+\newtcolorbox{solbox}{colback=rwuviolet!6,colframe=rwuviolet,fonttitle=\sffamily\bfseries,title=Solution,boxrule=0.6pt,arc=1mm,breakable}
+\ifdefined\solutions
+  \newenvironment{solution}{\begin{solbox}}{\end{solbox}}
+\else
+  \usepackage{comment}
+  \excludecomment{solution}
+\fi
+% "open circuit X" link with the file name
+\newcommand{\circuitlink}[2]{\href{#1}{\color{rwucyandark}\sffamily\bfseries $\blacktriangleright$\ open in Falstad}\ \ (\texttt{#2})}
+\newcommand{\schematic}[2][0.62]{\begin{center}\includegraphics[width=#1\textwidth]{figures/falstad/#2_schematic}\end{center}}
+
+\begin{document}
+
+\begin{center}
+  \rwulogo\\[6mm]
+  {\sffamily\bfseries\LARGE\color{rwuviolet} GPIO Output Stages in Simulation}\\[2mm]
+  {\sffamily\Large\color{rwucyandark} Push-pull, open drain and open collector: switching speed, voltage and current limits}\\[3mm]
+  {\sffamily Embedded Computing -- Master of Engineering -- Worksheet\ifdefined\solutions\ with solutions\fi}
+\end{center}
+
+\section*{Overview}
+
+Every GPIO pin ends in an output stage: two transistors (push-pull) or one transistor to ground (open drain,
+open collector). In this worksheet you will take these stages apart in a circuit simulator. You will find out
+how much current a pin can deliver, how fast it can switch a load, why a pull-up resistor makes a bus slow,
+and which voltages and currents destroy a pin or the circuit behind it.
+
+\textbf{Learning outcomes.} After this worksheet you can
+\begin{itemize}
+  \item model a GPIO output stage by on-resistance and saturation current and relate the model to the
+        $V_{OH}$/$V_{OL}$ specifications of a data sheet,
+  \item predict rise and fall times, the maximum toggle frequency and the dynamic power of a push-pull output,
+  \item dimension the pull-up resistor of an open-drain bus such as I$^2$C from rise-time and $V_{OL}$ limits,
+  \item judge where the maximum output voltage and current of a pin come from (body diodes, injection current,
+        back-powering, transistor breakdown and saturation) and protect a driver against inductive kick-back,
+  \item recognise when a PCB trace has to be treated as a transmission line and terminate it.
+\end{itemize}
+
+\textbf{Organisation.} About 4 hours, in teams of two. Tasks marked \textsf{[P]} are preparation on paper and
+should be done \emph{before} you open the simulation. \textsf{[S]} means simulate and measure, \textsf{[D]} means
+discuss and explain. Hand in a short report (PDF): for each task your calculation, the measured values
+(tables, screenshots of the scopes) and your explanation. When a measurement differs from your prediction by
+more than about \SI{10}{\percent}, explain why.
+
+\textbf{Tool.} Falstad CircuitJS runs in the browser: \url{https://www.falstad.com/circuit/}. Each part of this
+sheet has a link that opens the prepared circuit. The circuit files are also in the folder
+\href{https://github.com/mopfeil/EmbeddedComputing/tree/main/examples/interfaces/falstad}{\texttt{examples/interfaces/falstad/}}
+of the lecture repository (open them with \emph{File $\rightarrow$ Open File}).
+
+\begin{modelbox}{Working with CircuitJS}
+\begin{itemize}[leftmargin=*]
+  \item Hover over an element to see its voltages, currents and power in the lower right corner.
+  \item Click on a logic input (\textsf{H}/\textsf{L}) or a switch to toggle it. Double-click an element to edit
+        its value. Sliders on the right change the values marked in the circuit.
+  \item Scopes: right-click $\rightarrow$ \emph{Properties} sets the time base (``scope speed''), the scale and
+        shown values (e.g.\ average, peak-to-peak). Drag with the mouse in a scope to measure time differences.
+  \item \emph{Reset} restarts the simulation, \emph{Run/STOP} freezes it for reading values.
+  \item \emph{Options $\rightarrow$ Other Options} lets you change the simulation time step. If edges look
+        jagged, make the time step smaller.
+\end{itemize}
+\end{modelbox}
+
+\begin{modelbox}{The transistor model used in all circuits}
+The MOSFETs follow the square-law (Shichman--Hodges) model with threshold $V_T=\SI{0.6}{V}$ and
+\[
+  I_D=\begin{cases}
+     \beta\left[(V_{GS}-V_T)\,V_{DS}-\tfrac12 V_{DS}^2\right] & V_{DS} < V_{GS}-V_T \quad\text{(triode)}\\[1mm]
+     \tfrac{\beta}{2}\,(V_{GS}-V_T)^2 & V_{DS} \ge V_{GS}-V_T \quad\text{(saturation)}
+  \end{cases}
+\]
+with $\beta_N=\SI{12}{mA/V^2}$ for the NMOS and $\beta_P=\SI{8}{mA/V^2}$ for the PMOS of the output stage (PMOS:
+use $V_{SG}$, $V_{SD}$). Both have a body diode. The supply is $V_{DD}=\SI{3.3}{V}$.
+The model knows no gate or junction capacitances, no temperature and no breakdown. Pin and load capacitances are
+drawn as explicit capacitors. Keep in mind what the model cannot show when you interpret the results.
+\end{modelbox}
+
+%======================================================================
+\needspace{0.45\textheight}
+\section{Push-pull output: static characteristic}
+%======================================================================
+\circuitlink{\linkA}{A\_pushpull\_characteristic.txt}
+
+The logic input is the bit in the output register. Two inverters (the predriver and the CMOS stage) make the pin
+follow it. A triangle voltage source acts as a curve tracer: it forces the pin voltage from \SI{-0.5}{V} to
+\SI{3.8}{V}, and an ammeter measures the pin current (positive = current out of the pin). The left scope shows the
+current over the voltage, the right scope the power in both transistors.
+
+\schematic[0.55]{A}
+
+\task{P} For $V_{GS}=V_{DD}$, calculate the on-resistance $R_{on}=1/(\beta(V_{GS}-V_T))$ of both transistors
+(valid for small $V_{DS}$) and their saturation currents. Which one is the stronger transistor, and why do chip
+designers make the PMOS larger than the NMOS?
+
+\begin{solution}
+$R_{on,N}=1/(\SI{12}{mA/V^2}\cdot\SI{2.7}{V})=\SI{30.9}{\ohm}$, $R_{on,P}=1/(\SI{8}{mA/V^2}\cdot\SI{2.7}{V})=\SI{46.3}{\ohm}$.
+$I_{sat,N}=\tfrac12\cdot 12\cdot 2.7^2\,\si{mA}=\SI{43.7}{mA}$, $I_{sat,P}=\SI{29.2}{mA}$.
+The NMOS is stronger. Hole mobility is about 2--3 times lower than electron mobility, so a PMOS needs a
+correspondingly wider channel for the same current. Here the PMOS is still weaker, which is typical: data sheets
+often allow a larger $V_{OH}$ drop than $V_{OL}$ rise, or specify asymmetric currents.
+\end{solution}
+
+\task{S} Set the output to \textsf{H} and then to \textsf{L}. From the curve, read $V_{OH}$ and $V_{OL}$ at
+pin currents of 2, 4, 8, 12 and \SI{20}{mA} (Run/STOP and hovering over the PIN label helps).
+Compare with the values from the model equations and enter both in a table. Also read the short-circuit
+currents (pin at \SI{0}{V} for \textsf{H}, pin at \SI{3.3}{V} for \textsf{L}).
+
+\begin{solution}
+Model and simulation agree to within the reading accuracy:\\[1mm]
+\begin{tabular}{lccccc}
+  \toprule
+  $|I|$ / mA & 2 & 4 & 8 & 12 & 20\\
+  \midrule
+  $V_{OH}$ / V & 3.21 & 3.11 & 2.90 & 2.67 & 2.11\\
+  $V_{OL}$ / V & 0.06 & 0.13 & 0.26 & 0.40 & 0.71\\
+  \bottomrule
+\end{tabular}\\[1mm]
+Short-circuit currents: \SI{29.2}{mA} (high, PMOS saturated), \SI{43.7}{mA} (low, NMOS saturated).
+\end{solution}
+
+\task{D} The RP2040 data sheet specifies $V_{OH}\ge\SI{2.62}{V}$ and $V_{OL}\le\SI{0.5}{V}$ at a load current
+equal to the selected drive strength (2, 4, 8 or \SI{12}{mA}) and $IOVDD=\SI{3.3}{V}$. Which drive strength
+setting does the model represent? Drive strength is implemented by switching transistor ``fingers'' in parallel,
+i.e.\ by scaling $\beta$. Which $\beta_P$ would just meet the \SI{4}{mA} setting?
+
+\begin{solution}
+At $V_{OH}=\SI{2.62}{V}$ the model PMOS delivers \SI{12.8}{mA}, the NMOS sinks \SI{12}{mA} at $V_{OL}=\SI{0.4}{V}$:
+the model corresponds to the \SI{12}{mA} setting. Since $I_D\propto\beta$ at a fixed operating point,
+$\beta_P=\SI{8}{mA/V^2}\cdot 4/12.8=\SI{2.5}{mA/V^2}$ meets the \SI{4}{mA} setting, i.e.\ about one third of
+the fingers.
+\end{solution}
+
+\task{P/S} A red LED ($V_F\approx\SI{2.0}{V}$) with a \SI{100}{\ohm} series resistor is connected from the pin to
+GND. The naive calculation gives $I=(\SI{3.3}{V}-\SI{2.0}{V})/\SI{100}{\ohm}=\SI{13}{mA}$. Draw the load line
+$I=(V_{PIN}-V_F)/R$ into the measured characteristic and find the real operating point. Optional: verify it by
+replacing the sweep source with an LED and a resistor (\emph{Draw $\rightarrow$ Outputs and Labels $\rightarrow$
+Add LED}).
+
+\begin{solution}
+Intersection with the PMOS triode curve: $V_{SD}=\SI{0.44}{V}$, i.e.\ $V_{PIN}=\SI{2.86}{V}$ and
+$I=\SI{8.6}{mA}$, a third less than the naive value. The output resistance of the pin is not negligible
+compared to \SI{100}{\ohm}; for a defined LED current either the resistor must be larger (pin resistance becomes
+negligible) or the output stage must be included in the calculation.
+\end{solution}
+
+\task{D} Look at the curve below \SI{0}{V} and above \SI{3.3}{V}. Which element conducts there? Relate this to the
+absolute maximum rating ``pin voltage $-0.5\ldots IOVDD+\SI{0.5}{V}$'' of the RP2040 and to the term
+\emph{injection current}. Why can a large injection current upset an analogue measurement or even a digital
+circuit on the same chip?
+
+\begin{solution}
+Above $V_{DD}$ the body diode of the PMOS (and in a real chip also the ESD clamp diode) conducts into the supply;
+below \SI{0}{V} the body diode of the NMOS conducts from GND. From about \SI{0.4}{V} beyond the rails the current
+rises exponentially (in the model to about \SI{9}{mA} at \SI{3.7}{V}). The limits $\pm\SI{0.5}{V}$ keep these
+diodes nearly off. Injected current flows as minority carriers into the substrate or into the supply rail: it can
+shift the ADC reference and neighbouring channels, trigger the parasitic thyristor of the CMOS structure
+(latch-up), or raise $V_{DD}$ (see part~\ref{sec:overvoltage}).
+\end{solution}
+
+\task{S/D} Read the maximum power in the transistors from the right scope. Many microcontrollers allow
+\SIrange{50}{100}{mA} in total for all pins of one supply domain. What does this mean for the number of pins
+that may drive LEDs at the same time, and what happens to the chip temperature if a pin is shorted to GND?
+
+\begin{solution}
+In a short circuit to GND the PMOS dissipates $\SI{3.3}{V}\cdot\SI{29}{mA}\approx\SI{96}{mW}$ (up to
+\SI{110}{mW} at $-0.5$\,V). One pin is survivable, but the total current budget (e.g.\ \SI{50}{mA}) allows only
+about five LEDs at \SI{8.6}{mA}. The power is dissipated in a tiny area at the pad; together with metal
+migration in the supply lines this is why per-pin and per-domain current limits exist. Larger loads need an
+external driver (part~\ref{sec:oc}).
+\end{solution}
+
+%======================================================================
+\needspace{0.45\textheight}
+\section{Two push-pull outputs on one line}
+%======================================================================
+\circuitlink{\linkC}{C\_bus\_contention.txt}
+
+\schematic[0.62]{C}
+
+\task{P} Output A drives high, output B drives low. Set up the equation $I_{D,P,A}(V)=I_{D,N,B}(V)$ for the line
+voltage $V$ and solve it numerically. Which region does each transistor work in? Calculate the current and the
+power in both transistors.
+
+\begin{solution}
+Both transistors are in the triode region. $\beta_P[2.7\,(3.3-V)-\tfrac12(3.3-V)^2]=\beta_N[2.7\,V-\tfrac12V^2]$
+gives $V=\SI{1.09}{V}$ and $I=\SI{28.2}{mA}$. Power: $P_{P,A}=(3.3-1.09)\,\si{V}\cdot\SI{28.2}{mA}=\SI{62}{mW}$,
+$P_{N,B}=\SI{31}{mW}$.
+\end{solution}
+
+\task{S} Verify with the simulation. What logic level does a receiver see on the line?
+
+\begin{solution}
+Simulation: \SI{28.20}{mA}, \SI{1.09}{V}, \SI{62.3}{mW} and \SI{30.8}{mW}. \SI{1.09}{V} lies between
+$V_{IL,max}$ and $V_{IH,min}$ of a \SI{3.3}{V} CMOS input (about 0.8--2.0\,V): the level is undefined.
+\end{solution}
+
+\task{D} Name three situations in embedded practice where this happens. How do tri-state outputs, open-drain
+outputs and series resistors prevent the damage? Calculate the series resistor in each output that limits the
+contention current to \SI{5}{mA}.
+
+\begin{solution}
+Examples: two masters on a shared line (bus arbitration error), a bidirectional data line where both sides
+drive at the same time during the turn-around, bit-banged I$^2$C with the pin configured push-pull, a debugger
+and the board both driving reset, two boards connected with swapped TX lines, a pin shorted to its neighbour.
+Tri-state: only one driver is enabled at a time (protocol must guarantee it). Open drain: nobody drives high, so a
+conflict only produces a low level. Series resistors: $2R+R_{on,P}+R_{on,N}\ge \SI{3.3}{V}/\SI{5}{mA}=\SI{660}{\ohm}$
+$\Rightarrow R\approx\SI{290}{\ohm}$ per output (\SI{330}{\ohm} standard value), at the cost of speed (part 3).
+\end{solution}
+
+%======================================================================
+\needspace{0.45\textheight}
+\section{Push-pull output: switching speed and dynamic power}
+%======================================================================
+\circuitlink{\linkB}{B\_pushpull\_capacitive\_load.txt}
+
+The square wave is the program toggling the pin. The predriver is a logic inverter with an adjustable slew rate
+(how fast the gate voltage changes). The output drives the load capacitance $C_L$ (pin, trace, inputs of other
+chips). An ammeter measures the current taken from the supply.
+
+\schematic[0.55]{B}
+
+\task{P} Estimate the rise and fall times (\SIrange{10}{90}{\percent}) for $C_L=$ \SI{10}{pF}, \SI{100}{pF}
+and \SI{1}{nF}:
+\begin{enumerate}[label=(\alph*)]
+  \item with the RC approximation $t_{r}=2.2\,R_{on}C_L$,
+  \item exactly with the square-law model: the transistor starts in saturation (constant current) and enters the
+        triode region when $V_{DS}=V_{GS}-V_T$. Integrate $dt=C_L\,dV/I_D(V)$. Hint:
+        $\int\frac{dx}{x(2a-x)}=\frac{1}{2a}\ln\frac{x}{2a-x}$.
+\end{enumerate}
+
+\begin{solution}
+(a) $t_r=2.2\cdot\SI{46.3}{\ohm}\cdot C_L$, $t_f=2.2\cdot\SI{30.9}{\ohm}\cdot C_L$: \SI{1.0}{ns}/\SI{0.68}{ns},
+\SI{10.2}{ns}/\SI{6.8}{ns}, \SI{102}{ns}/\SI{68}{ns}.\\
+(b) Rising edge, $a=V_{GS}-V_T=\SI{2.7}{V}$: from \SI{0.33}{V} to \SI{0.6}{V} the PMOS is saturated,
+$t_1=C_L\cdot\SI{0.27}{V}/\SI{29.2}{mA}$; then triode from $V_{SD}=\SI{2.7}{V}$ down to \SI{0.33}{V}:
+\[
+  t_2=\frac{C_L}{\beta}\int_{0.33}^{2.7}\frac{dx}{x(a-x/2)}=\frac{C_L}{\beta a}\left[\ln\frac{x}{2a-x}\right]_{0.33}^{2.7}
+     =\frac{C_L}{\beta}\cdot\SI{1.012}{V^{-1}}.
+\]
+Result $t_r=\SI{1.36}{ns}$, \SI{13.6}{ns}, \SI{136}{ns} and $t_f=\SI{0.90}{ns}$, \SI{9.0}{ns}, \SI{90}{ns}.
+The RC estimate is about \SI{25}{\percent} too optimistic, because at the start of the edge the transistor
+delivers only $I_{sat}$ instead of $V_{DD}/R_{on}$.
+\end{solution}
+
+\task{S} Set the predriver slew rate to its maximum and measure $t_r$ and $t_f$ for the three capacitances
+(set the scope time base accordingly, or zoom in with Run/STOP). Compare with both predictions. For which $C_L$
+does the predriver dominate the edge?
+
+\begin{solution}
+Simulation (slew \SI{2}{V/ns} or more): \SI{1.5}{ns}/\SI{1.1}{ns}, \SI{13.6}{ns}/\SI{9.1}{ns},
+\SI{136}{ns}/\SI{90}{ns}, i.e.\ exactly model (b) for \SI{100}{pF} and \SI{1}{nF}. At \SI{10}{pF} and below
+the gate itself needs about \SI{1.5}{ns} to swing, so the predriver dominates.
+\end{solution}
+
+\task{S/D} Increase the toggle frequency with $C_L=\SI{1}{nF}$ until the pin no longer reaches valid logic levels
+($V_{IH}=0.7\,V_{DD}$, $V_{IL}=0.3\,V_{DD}$). Derive a rule of thumb for the maximum frequency from $t_r$ and $t_f$.
+Why do data sheets specify the maximum GPIO frequency only together with a load capacitance?
+
+\begin{solution}
+Each half period must be long enough for the output to cross the threshold: roughly $f_{max}\approx
+1/(2\,t_r)$ with the slower edge, here $\approx\SI{3.7}{MHz}$ for \SI{1}{nF}; beyond that the swing shrinks and
+at about \SIrange{5}{6}{MHz} the levels are no longer valid. Since $t_r\propto C_L$, a frequency without a
+load capacitance is meaningless (typical: ``\SI{50}{MHz} at \SI{30}{pF}'').
+\end{solution}
+
+\task{S} Set $f=\SI{1}{MHz}$ and the fastest slew rate. Read the average supply current (right scope) for the three
+capacitances and compare with $I=C_L V_{DD} f$. Show that the energy taken from the supply per cycle is
+$C_L V_{DD}^2$, independent of $R_{on}$. Where is it dissipated?
+
+\begin{solution}
+Simulation: \SI{34}{\micro A}, \SI{330}{\micro A}, \SI{3300}{\micro A}; formula: \SI{33}{\micro A},
+\SI{330}{\micro A}, \SI{3300}{\micro A}. During charging the supply delivers $Q V_{DD}=C_LV_{DD}^2$; half of it is
+stored in $C_L$, the other half is converted to heat in the PMOS, whatever its resistance. During discharge the
+stored half is dissipated in the NMOS. $P=C_LV_{DD}^2f$ is the dynamic power of all CMOS logic.
+\end{solution}
+
+\task{S/D} Set $C_L=\SI{1}{pF}$ and reduce the predriver slew rate to \SI{0.02}{V/ns}. Observe the supply current.
+Explain what you see, calculate the time window in which both transistors conduct, and compare the average
+supply current with $C_LV_{DD}f$. Why do microcontroller input pins have Schmitt triggers, and why does a slowly
+changing analogue voltage on a digital input increase the current consumption?
+
+\begin{solution}
+Both transistors conduct while $V_T<V_G<V_{DD}-V_T$, i.e.\ \SIrange{0.6}{2.7}{V}; at \SI{0.02}{V/ns} this takes
+\SI{105}{ns} per edge. A cross-conduction (shoot-through) current flows directly from $V_{DD}$ to GND (peak
+\SI{5.8}{mA}). The average supply current rises from \SI{6}{\micro A} to \SI{376}{\micro A}, more than
+100 times $C_LV_{DD}f=\SI{3.3}{\micro A}$. An input stage is also a CMOS inverter: a slow input edge or an analogue
+voltage near $V_{DD}/2$ keeps both transistors on (static cross current) and may make the output oscillate.
+A Schmitt trigger switches quickly and only once; unused or analogue pins should have the digital input buffer
+disabled.
+\end{solution}
+
+%======================================================================
+\needspace{0.45\textheight}
+\section{Open-drain bus versus push-pull}
+%======================================================================
+\circuitlink{\linkD}{D\_open\_drain\_bus.txt}
+
+Two open-drain devices share a line with one pull-up resistor $R_P$, as on an I$^2$C bus. Device~1 sends a clock;
+device~2 can hold the line low. A push-pull stage drives the same capacitance for comparison.
+
+\schematic[0.62]{D}
+
+\task{P} Show that the I$^2$C rise time (\SIrange{30}{70}{\percent} of $V_{DD}$) of an RC charge is
+$t_r=\ln(7/3)\,R_PC_b=0.8473\,R_PC_b$. Calculate it for $R_P=\SI{4.7}{k\ohm}$ and $C_b=\SI{200}{pF}$.
+
+\begin{solution}
+$V(t)=V_{DD}(1-e^{-t/\tau})$ reaches $0.3V_{DD}$ at $t_{30}=\tau\ln(1/0.7)$ and $0.7V_{DD}$ at $t_{70}=\tau\ln(1/0.3)$;
+the difference is $\tau\ln(0.7/0.3)=0.8473\,\tau$. With \SI{4.7}{k\ohm} and \SI{200}{pF}: \SI{796}{ns}.
+\end{solution}
+
+\task{S} Measure the rise and fall times of BUS and the rise time of PP (same thresholds). Explain the difference
+between rising and falling edge of the open-drain line.
+
+\begin{solution}
+BUS: $t_r=\SI{796}{ns}$ (exactly the prediction), $t_f=\SI{8}{ns}$; PP: $t_r=\SI{12}{ns}$. The falling edge is
+driven by the NMOS (\SI{31}{\ohm}), the rising edge only by the pull-up resistor (\SI{4.7}{k\ohm}): the ratio of
+the resistances is the ratio of the edges. The asymmetry is the price for the wired-AND function.
+\end{solution}
+
+\task{P} Dimension $R_P$ for $C_b=\SI{200}{pF}$ and $V_{DD}=\SI{3.3}{V}$ according to the I$^2$C specification
+(NXP UM10204): $V_{OL}\le\SI{0.4}{V}$ at a sink current of \SI{3}{mA}, $t_r\le\SI{1000}{ns}$ (Standard-mode,
+\SI{100}{kHz}) and $t_r\le\SI{300}{ns}$ (Fast-mode, \SI{400}{kHz}). Give the permitted range of $R_P$ for both
+modes.
+
+\begin{solution}
+$R_{P,min}=(V_{DD}-V_{OL})/I_{OL}=\SI{2.9}{V}/\SI{3}{mA}=\SI{967}{\ohm}$.
+$R_{P,max}=t_r/(0.8473\,C_b)$: \SI{5.9}{k\ohm} (Standard-mode), \SI{1.77}{k\ohm} (Fast-mode).
+Standard-mode: \SI{1}{k\ohm}\ldots\SI{5.6}{k\ohm}; Fast-mode: \SI{1}{k\ohm}\ldots\SI{1.8}{k\ohm} (standard values,
+\SI{1.8}{k\ohm} is just at the limit).
+\end{solution}
+
+\task{S} Check your limits in the simulation: measure $t_r$ at $R_{P,max}$ for Fast-mode, and $V_{OL}$ and the
+current through $R_P$ during the low phase for $R_P=\SI{4.7}{k\ohm}$, \SI{1}{k\ohm}, \SI{470}{\ohm} and
+\SI{220}{\ohm}. Increase $C_b$ to \SI{400}{pF} (the maximum allowed by I$^2$C) with $R_P=\SI{4.7}{k\ohm}$:
+which mode still works?
+
+\begin{solution}
+$R_P=\SI{1.8}{k\ohm}$: $t_r=\SI{306}{ns}$, just above the Fast-mode limit (\SI{1.5}{k\ohm} gives margin);
+$R_P=\SI{5.9}{k\ohm}$: $t_r=\SI{1000}{ns}$.\\[1mm]
+\begin{tabular}{lcccc}
+  \toprule
+  $R_P$ & \SI{4.7}{k\ohm} & \SI{1}{k\ohm} & \SI{470}{\ohm} & \SI{220}{\ohm}\\
+  \midrule
+  $I_{low}$ / mA & 0.70 & 3.2 & 6.6 & 13.0\\
+  $V_{OL}$ / mV & 22 & 101 & 211 & 437\\
+  $t_r$ / ns & 796 & 168 & 78 & 36\\
+  \bottomrule
+\end{tabular}\\[1mm]
+Our pin (\SI{31}{\ohm}) keeps $V_{OL}$ below \SI{0.4}{V} down to about \SI{250}{\ohm}; the specification
+demands only \SI{3}{mA} at \SI{0.4}{V}, so \SI{967}{\ohm} is the limit for a weak but compliant device.
+With $C_b=\SI{400}{pF}$ and \SI{4.7}{k\ohm}: $t_r=\SI{1.59}{\micro s}$, neither mode is met, at
+\SI{100}{kHz} the line does not even reach $V_{DD}$ (\SI{3.0}{V}). $R_P$ has to be reduced (Standard-mode:
+$\le\SI{2.9}{k\ohm}$), Fast-mode with \SI{400}{pF} needs $R_P\le\SI{885}{\ohm}<R_{P,min}$. This only works if all devices
+meet the additional Fast-mode rating of \SI{6}{mA} at $V_{OL}=\SI{0.6}{V}$ ($R_{P,min}=\SI{450}{\ohm}$, e.g.\
+\SI{820}{\ohm}), with Fast-mode Plus devices (\SI{20}{mA}), or if the bus is split by a buffer.
+\end{solution}
+
+\task{S/D} Set the input of device~2 to \textsf{L}. What happens to the clock of device~1? Which I$^2$C feature
+uses this behaviour? What would happen with two push-pull outputs (part 2)?
+
+\begin{solution}
+The bus stays low: the line is the AND of all outputs (``wired AND''). Device~1 can detect this by reading back
+the line. I$^2$C uses it for clock stretching (a slow slave holds SCL low), for arbitration between masters (a
+master that sends 1 but reads 0 has lost) and for the acknowledge bit. With push-pull outputs the same situation
+is a short circuit (part 2).
+\end{solution}
+
+\task{D} Calculate the static power in $R_P$ while the line is low, and the product of this power and the rise
+time. What follows for the trade-off between speed and power of an open-drain bus, compared to push-pull? Propose
+a circuit that speeds up the rising edge without reducing $R_P$, and try it in the simulation (e.g.\ a current
+source pull-up or a switched pull-up).
+
+\begin{solution}
+$P=V_{DD}^2/R_P$ while low, $t_r=0.8473R_PC_b$, so $P\cdot t_r=0.8473\,V_{DD}^2C_b$ is independent of $R_P$:
+halving the rise time doubles the static power. (\SI{4.7}{k\ohm}: \SI{2.3}{mW}, \SI{1}{k\ohm}: \SI{11}{mW}.)
+Push-pull has no static current and drives both edges actively. Faster rising edges: a constant-current pull-up
+(linear instead of exponential edge, $t_r=0.4\,V_{DD}C_b/I$), a rise-time accelerator that switches on a strong
+pull-up as soon as the line rises above a threshold (e.g.\ LTC4311), or a push-pull ``high-speed mode'' as used
+by I$^2$C Hs-mode masters. All of them must not fight against a device that pulls low.
+\end{solution}
+
+%======================================================================
+\needspace{0.45\textheight}
+\section{Maximum output voltage: open drain with a 5\,V pull-up}\label{sec:overvoltage}
+%======================================================================
+\circuitlink{\linkE}{E\_open\_drain\_overvoltage.txt}
+
+A \SI{3.3}{V} microcontroller drives a \SI{5}{V} logic input through an open-drain output and a pull-up to
+\SI{5}{V}. PIN1 is a normal GPIO in open-drain mode: the PMOS is switched off, but it is still there. PIN2 is a
+\SI{5}{V}-tolerant open-drain pin without a PMOS. The \SI{3.3}{V} regulator can only source current (diode).
+The resistor ``MCU load'' represents the current consumption of the chip.
+
+\schematic[0.7]{E}
+
+\task{P} Predict the high level of PIN1 and PIN2 and the current that flows from the \SI{5}{V} supply into the
+\SI{3.3}{V} supply via PIN1 ($R_{PU}=\SI{4.7}{k\ohm}$, diode forward voltage about \SI{0.7}{V}).
+
+\begin{solution}
+PIN2 rises to \SI{5}{V}. PIN1 is clamped by the body diode of the PMOS to $V_{DD}+V_F\approx\SI{4.0}{V}$; the
+current $(5-4.0)\,\si{V}/\SI{4.7}{k\ohm}\approx\SI{0.2}{mA}$ flows into the \SI{3.3}{V} supply.
+\end{solution}
+
+\task{S} Measure both high levels and the injection current. Is the high level of PIN1 sufficient for a
+\SI{5}{V} CMOS input with $V_{IH}=0.7\cdot\SI{5}{V}$?
+
+\begin{solution}
+PIN1: \SI{4.10}{V}, PIN2: \SI{5.00}{V}, injection current \SI{0.19}{mA}. $V_{IH}=\SI{3.5}{V}$: 4.1\,V is
+sufficient here, but the pin is outside its absolute maximum rating ($IOVDD+\SI{0.5}{V}$), and the margin shrinks
+with a smaller injection current or a hot diode.
+\end{solution}
+
+\task{S/D} Set $R_{PU}=\SI{1}{k\ohm}$ and keep the MCU load at \SI{33}{k\ohm} (\SI{100}{\micro A}, e.g.\ in a
+sleep mode). Observe $V_{DD}$. Explain the effect (\emph{back-powering}). What happens if the
+microcontroller is switched off ($V_{DD}=0$) but the \SI{5}{V} side stays on?
+
+\begin{solution}
+$V_{DD}$ rises to \SI{3.9}{V} (with \SI{470}{\ohm}: \SI{4.0}{V}), above the absolute maximum of the chip.
+While PIN1 is high, \SI{0.25}{mA} flow through the body diode into the \SI{3.3}{V} rail (on average
+\SI{0.12}{mA}). The regulator can only source current, so the injected current must be consumed by the chip.
+If it consumes less, $V_{DD}$ rises until the load current equals the injected current. With a load of
+\SI{1}{mA} (\SI{3.3}{k\ohm}) the rail stays at \SI{3.27}{V}. If the microcontroller is switched off, it is
+powered through its pin (``phantom powering''): it may start partially, hold the bus low, or come up in an
+undefined state when the supply returns. Data sheets therefore forbid voltages above $V_{DD}+\SI{0.3}{V}$
+\ldots$+\SI{0.5}{V}$ on non-tolerant pins, also when the chip is off.
+\end{solution}
+
+\task{D} Look up in the data sheets of an RP2040, an RP2350 and an STM32F4 which pins are \SI{5}{V} tolerant
+and how large the injection current per pin and in total may be. Name two circuits that shift a
+\SI{3.3}{V} open-drain signal to \SI{5}{V} correctly, one of them bidirectional (for I$^2$C).
+
+\begin{solution}
+RP2040: no \SI{5}{V} tolerant GPIOs, pin voltage at most $IOVDD+\SI{0.5}{V}$. RP2350: GPIOs are \SI{5}{V}
+tolerant while IOVDD is powered (and fail-safe when unpowered), see its data sheet for the exact conditions.
+STM32F4: pins marked ``FT'' are \SI{5}{V} tolerant (in input or open-drain mode); the injection current is
+limited to about $\pm\SI{5}{mA}$ per pin and $\pm\SI{25}{mA}$ in total, and positive injection is not allowed
+on FT pins. Correct level shifters: an FT pin in open-drain mode with a pull-up to \SI{5}{V}; a single
+N-channel MOSFET (e.g.\ BSS138) with gate at \SI{3.3}{V} and pull-ups on both sides, which works in both
+directions for I$^2$C; dedicated translators (e.g.\ PCA9306, TXS0102).
+\end{solution}
+
+%======================================================================
+\needspace{0.45\textheight}
+\section{Open collector: high voltage, high current, inductive loads}\label{sec:oc}
+%======================================================================
+\circuitlink{\linkF}{F\_open\_collector\_inductive.txt}
+
+A \SI{3.3}{V} GPIO switches an NPN transistor ($\beta=100$) through the base resistor $R_B$. The collector is an
+open-collector output for a \SI{12}{V} load: a relay coil (\SI{0.1}{H}, \SI{400}{\ohm}, \SI{1}{nF} winding
+capacitance) or a \SI{12}{V}/\SI{5}{W} lamp. The switch \emph{flyback} adds a free-wheeling diode, opening the
+switch \emph{bypass} puts a \SI{24}{V} Zener diode in series with it. The timescale is shortened (switching at
+\SI{200}{Hz}) so that you can see several cycles.
+
+\schematic[0.62]{F}
+
+\task{P} Calculate the coil current, the base current with $R_B=\SI{1}{k\ohm}$ and the overdrive factor
+$\beta I_B/I_C$. Is the transistor saturated?
+
+\begin{solution}
+$I_C=\SI{12}{V}/\SI{400}{\ohm}=\SI{30}{mA}$, $I_B=(3.3-0.7)\,\si{V}/\SI{1}{k\ohm}=\SI{2.6}{mA}$,
+$\beta I_B=\SI{260}{mA}$, overdrive factor 8.7: the transistor is saturated.
+\end{solution}
+
+\task{P/S} Without flyback diode: when the transistor switches off, the coil current continues and charges the
+winding capacitance. Estimate the peak collector voltage from energy conservation
+($\tfrac12LI^2=\tfrac12CV^2$) and measure it. Compare with $V_{CEO}$ of a BC547 (\SI{45}{V}) or of a ULN2003
+driver (\SI{50}{V}). What does the simulation not show?
+
+\begin{solution}
+$\tfrac12LI^2=\tfrac12CV^2\Rightarrow \Delta V=I\sqrt{L/C}=\SI{30}{mA}\cdot\sqrt{\SI{0.1}{H}/\SI{1}{nF}}=\SI{300}{V}$
+above the \SI{12}{V} supply. Simulation: $V_C=\SI{296}{V}$ peak (some energy is lost in the coil resistance),
+followed by a ringing that drives the collector to \SI{-14}{V}, where the base-collector diode conducts. This
+is far above $V_{CEO}$ of any small-signal transistor. In reality the transistor breaks down (avalanche) at
+about \SIrange{45}{80}{V} and absorbs the coil energy in a small volume, which degrades or destroys it; the
+simulation models neither breakdown nor the resulting heating, and the real winding capacitance and damping
+determine the actual value. The fast edge also radiates (EMI) and couples into the GPIO via the base.
+\end{solution}
+
+\task{S} Close \emph{flyback}. Measure the maximum collector voltage and the time until the coil current has
+fallen to \SI{10}{\percent} (right-click the scope, \emph{Properties}, to change the time base). Then open \emph{bypass} (diode + \SI{24}{V} Zener) and measure again. Calculate both
+times ($\tau=L/R$) and explain why the Zener variant is faster. Why does that matter for a relay?
+
+\begin{solution}
+Diode: $V_{C,max}=\SI{12.8}{V}$. The coil current flows on through the diode and decays with
+$\tau=L/R=\SI{0.25}{ms}$: $i(t)=-V_F/R+(I_0+V_F/R)\,e^{-t/\tau}$ gives \SI{475}{\micro s} to \SI{10}{\percent}
+(simulation: \SI{474}{\micro s}; without $V_F$: $\tau\ln 10=\SI{576}{\micro s}$).\\
+Diode + Zener: $V_{C,max}=12+24+0.7\approx\SI{36.8}{V}$ (simulation \SI{36.8}{V}), still below $V_{CEO}$. The
+coil now discharges against $V_Z+V_F=\SI{24.7}{V}$:
+$i(t)=-\SI{61.8}{mA}+(\SI{30}{mA}+\SI{61.8}{mA})\,e^{-t/\tau}$ reaches \SI{3}{mA} after
+$\tau\ln(91.8/64.8)=\SI{87}{\micro s}$ (simulation \SI{87}{\micro s}). The energy is dissipated faster because the
+voltage across the coil is higher ($P=V\cdot i$). For a relay the release time determines how fast the contacts
+open: a slow decay lets the contacts drift apart slowly, which increases arcing and contact wear. The
+designer trades transistor voltage rating against release speed.
+\end{solution}
+
+\task{S/D} Increase $R_B$ to \SI{47}{k\ohm}. Measure $I_C$ and $V_{CE}$. Will the relay still pull in?
+
+\begin{solution}
+$I_B=\SI{55}{\micro A}$, $\beta I_B=\SI{5.5}{mA}$: the simulation shows $I_C=\SI{5.7}{mA}$ and
+$V_{CE}=\SI{9.7}{V}$. The transistor is in the active region (dissipating \SI{55}{mW}) and the coil receives
+only \SI{19}{\percent} of its nominal current: a relay with a typical pull-in current of \SIrange{70}{75}{\percent}
+of nominal will not switch. Rule: $R_B$ so that $\beta_{min}I_B\ge 2\ldots 5\cdot I_C$ (overdrive), using the
+minimum $\beta$ of the data sheet, not the typical one.
+\end{solution}
+
+\task{S/D} Switch the load to the lamp. Measure $I_C$, $V_{CE}$ and the power in the transistor for
+$R_B=\SI{1}{k\ohm}$ and \SI{330}{\ohm}. A small-signal transistor in SOT-23 tolerates about \SI{250}{mW}. Why
+is \SI{330}{\ohm} still not a good solution? Propose a better driver.
+
+\begin{solution}
+$R_B=\SI{1}{k\ohm}$: $I_C=\beta I_B=\SI{256}{mA}$ instead of \SI{414}{mA}, $V_{CE}=\SI{4.6}{V}$,
+$P=\SI{1.17}{W}$: the lamp stays dim and the transistor overheats within seconds.
+$R_B=\SI{330}{\ohm}$: $I_B=\SI{7.7}{mA}$, saturated, $I_C=\SI{410}{mA}$, $V_{CE}=\SI{0.12}{V}$, $P=\SI{50}{mW}$.
+But \SI{7.7}{mA} is a substantial load for the GPIO ($V_{OH}$ drops, part 1), the overdrive is only 1.9 with
+the typical $\beta$ and becomes insufficient with the minimum $\beta$ at high current, and the cold filament
+draws about ten times the nominal current when switched on. Better: a logic-level N-MOSFET (e.g.\ with
+$R_{DS(on)}<\SI{0.1}{\ohm}$ at $V_{GS}=\SI{2.5}{V}$, gate resistor about \SI{100}{\ohm}, pull-down
+\SI{100}{k\ohm}), a Darlington array such as the ULN2003 (\SI{500}{mA}, integrated clamp diodes), or a
+high-side switch with current limit.
+\end{solution}
+
+\task{D} Summarise: what limits the maximum output voltage and the maximum output current of a push-pull pin, of
+an open-drain pin and of an external open-collector stage?
+
+\begin{solution}
+Push-pull: $V_{OH}\le V_{DD}$ (body diodes clamp at $V_{DD}+V_F$), current limited by $R_{on}$, $I_{sat}$ and the
+per-pin/per-domain ratings (part 1). Open-drain pin: voltage limited by the pin structure (body/ESD diode to
+$V_{DD}$, or the rating of an FT pin, typically \SI{5.5}{V}), sink current by the NMOS like push-pull; the high
+level is only as strong as the pull-up. External open collector/drain: voltage limited by $V_{CEO}$/$V_{DS,max}$ of
+the transistor (and inductive kick-back), current by $\beta I_B$ (or $V_{GS}$ for a MOSFET), the
+saturation voltage and the power dissipation of the package.
+\end{solution}
+
+%======================================================================
+\needspace{0.45\textheight}
+\section{Fast edges on a PCB trace}
+%======================================================================
+\circuitlink{\linkG}{G\_transmission\_line.txt}
+
+The push-pull pin drives a \SI{50}{\ohm} trace with \SI{1}{ns} delay (about \SI{15}{cm} on FR4). At the end there is
+the input of another chip: \SI{5}{pF} and ESD diodes to $V_{DD}$ and GND. $R_S$ is a series resistor at the
+driver. The output stage is set to its highest drive strength and fastest slew rate, modelled by
+$\beta_N=\SI{30}{mA/V^2}$ and $\beta_P=\SI{25}{mA/V^2}$. The slew rate is adjustable as on many
+microcontrollers (RP2040: \texttt{SLEWFAST}, STM32: \texttt{OSPEEDR}).
+
+\schematic[0.75]{G}
+
+\task{P} A trace is ``electrically long'' if the edge is shorter than about twice the delay of the trace.
+Is that the case here with the fastest slew rate? Calculate the reflection coefficients at the receiver
+(open end) and at the driver ($R_{on}+R_S$ against $Z_0$), the voltage step launched into the line and the
+first voltage at the receiver, for $R_S=0$.
+
+\begin{solution}
+In its fastest setting the output edge takes well below \SI{1}{ns}, the round trip takes
+\SI{2}{ns}: the trace is electrically long. With $R_{on,P}=1/(\SI{25}{mA/V^2}\cdot\SI{2.7}{V})=\SI{15}{\ohm}$:
+$\Gamma_S=(15-50)/(15+50)=-0.54$, $\Gamma_L\approx+1$ (open end; the \SI{5}{pF} only rounds the edge).
+Launched step $\SI{3.3}{V}\cdot 50/(50+15)=\SI{2.54}{V}$; at the receiver it doubles to \SI{5.1}{V}, i.e.\
+\SI{1.8}{V} above $V_{DD}$, so the ESD diode clamps it. The reflected wave returns to the driver, is reflected
+with $-0.54$ and arrives as an undershoot of about $-0.54\cdot\SI{2.5}{V}$ after another \SI{2}{ns}
+(again limited by the GND clamp): the edge rings with a period of \SI{4}{ns}.
+\end{solution}
+
+\task{S} Measure overshoot and undershoot at RX and the peak current in the ESD diodes for $R_S=0$. Then find
+the $R_S$ that gives the cleanest edge at RX. Compare with the rule $R_S=Z_0-R_{on}$.
+
+\begin{solution}
+$R_S=0$: RX swings to \SI{3.9}{V} and \SI{-0.64}{V}, i.e.\ beyond the \SI{\pm0.5}{V} limits; the ESD
+diodes conduct up to \SI{30}{mA} (to $V_{DD}$) and \SI{40}{mA} (to GND) for each edge, and the ringing can
+produce double clocking at the receiver.
+\begin{tabular}{lccccc}
+  \toprule
+  $R_S$ / \si{\ohm} & 0 & 10 & 22 & 36 & 50\\
+  \midrule
+  $V_{RX,max}$ / V & 3.92 & 3.89 & 3.74 & 3.30 & 3.30\\
+  $V_{RX,min}$ / V & $-0.64$ & $-0.61$ & $-0.52$ & $-0.02$ & 0.00\\
+  $I_{ESD}$ / mA & 30/40 & 14/21 & 1/4 & 0 & 0\\
+  \bottomrule
+\end{tabular}\\[1mm]
+The cleanest edge is at $R_S\approx\SI{36}{\ohm}=Z_0-R_{on}$ (between $50-15$ for the rising and $50-12$ for the
+falling edge; standard value \SI{33}{\ohm}). Then the driver launches $V_{DD}/2$, the open end doubles it to
+$V_{DD}$, and the reflection is absorbed at the source. Larger $R_S$ only slows the edge (the line voltage
+steps up in several round trips).
+\end{solution}
+
+\task{S/D} Set $R_S$ back to 0 and reduce the slew rate. From which slew rate on does the ringing disappear?
+Why should you select the slowest slew rate that meets the timing of your interface?
+
+\begin{solution}
+The slider sets the slew rate of the gate; the output switches during only part of the gate swing, so
+measure the edge at PIN. At \SI{1}{V/ns} the ringing is unchanged (ESD currents \SI{19}{mA}/\SI{24}{mA}),
+at \SI{0.3}{V/ns} it is reduced (\SI{4.5}{mA}/\SI{6.6}{mA}), at \SI{0.1}{V/ns} (output edge several
+\si{ns}, much longer than the \SI{2}{ns} round trip) the trace behaves like a lumped capacitance and the edge
+is clean. A slow edge also has a narrower spectrum: less crosstalk, less radiated EMI, smaller ground bounce
+when many pins switch together, and less supply current (part 3). The fastest setting is only needed when the
+timing budget of the interface requires it.
+\end{solution}
+
+%======================================================================
+\needspace{0.45\textheight}
+\section{Design task}
+%======================================================================
+
+\task{P/S/D} A \SI{3.3}{V} microcontroller board has to
+\begin{enumerate}[label=(\alph*)]
+  \item read a \SI{5}{V} sensor over I$^2$C at \SI{400}{kHz}; the cable is \SI{30}{cm} long, the total bus
+        capacitance is estimated at \SI{250}{pF},
+  \item switch a \SI{24}{V}/\SI{50}{mA} solenoid valve at up to \SI{10}{Hz},
+  \item send a \SI{10}{MHz} SPI clock over a \SI{10}{cm} trace to a flash memory.
+\end{enumerate}
+For each signal choose the output type and configuration of the pin (push-pull/open drain, drive strength, slew
+rate), dimension the external components and verify your choice in a simulation that you build from the given
+circuits. Document the remaining risks.
+
+\begin{solution}
+A possible solution (other justified solutions are equally valid):
+\begin{enumerate}[label=(\alph*)]
+  \item I$^2$C: open drain is mandatory (wired AND, clock stretching, ACK). The RP2040 pins are not
+        \SI{5}{V} tolerant $\Rightarrow$ a BSS138 level shifter per line (or a PCA9306) with pull-ups on both
+        sides. The cable (\SI{250}{pF}) is on the \SI{5}{V} side: $R_{P,max}=\SI{300}{ns}/(0.8473\cdot\SI{250}{pF})
+        =\SI{1.42}{k\ohm}$, but $R_{P,min}=(\SI{5}{V}-\SI{0.4}{V})/\SI{3}{mA}=\SI{1.53}{k\ohm}$: no resistor meets
+        both. Options: devices that are rated for \SI{6}{mA} at \SI{0.6}{V} ($R_{P,min}=\SI{733}{\ohm}$, choose
+        \SI{1.2}{k\ohm}), a rise-time accelerator or bus buffer, or Standard-mode at \SI{100}{kHz}
+        ($R_P=\SI{1.8}{k\ohm}\ldots\SI{4.7}{k\ohm}$). On the short \SI{3.3}{V} side \SI{4.7}{k\ohm} is enough.
+        Simulation: part D with \SI{5}{V} pull-up and \SI{250}{pF}. Risk: the capacitance estimate; measure
+        $t_r$ on the real board.
+  \item Solenoid: low-side N-MOSFET (logic level, $V_{DS}\ge\SI{40}{V}$) or ULN2003 channel; GPIO push-pull,
+        \SI{100}{\ohm} gate resistor, \SI{100}{k\ohm} pull-down so the valve stays off during reset (pins are
+        inputs then). Free-wheeling: diode + Zener (e.g.\ \SI{24}{V}) if the valve must close quickly,
+        $V_{DS}\ge 24+24+1\approx\SI{50}{V}$, otherwise a diode alone. Simulation: part F with \SI{24}{V},
+        \SI{480}{\ohm} and the valve inductance.
+  \item SPI clock: push-pull, moderate drive strength and slew rate, series resistor $R_S=Z_0-R_{on}$
+        (e.g.\ \SI{33}{\ohm}) at the MCU. A \SI{10}{cm} trace has \SI{0.67}{ns} delay; with the fastest edge
+        it is long, so terminate or slow the edge (still $t_r\ll\SI{50}{ns}$ half period). Simulation: part G with
+        the trace delay changed to \SI{0.67}{ns}. Risk: ringing causes double clocking of the flash.
+\end{enumerate}
+\end{solution}
+
+\end{document}

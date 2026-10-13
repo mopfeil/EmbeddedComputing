@@ -1,0 +1,44 @@
+<cir f="1" ts="1e-09" ic="10.2" cb="50" pb="50" vr="5" mts="1e-09">
+  <mm nm="gpio-nmos" f="0" vt="0.6" be="0.012" sb="0" dsy="0" bd="1" bt="0" sbd="0"/>
+  <mm nm="gpio-pmos" f="0" vt="0.6" be="0.008" sb="0" dsy="0" bd="1" bt="0" sbd="0"/>
+  <x x="48 32 0 0" f="0" si="20" te="C: Two push-pull outputs on one line (bus contention)"/>
+  <x x="48 64 0 0" f="0" si="14" te="Both pins are wired together, e.g. two devices on a shared line or a pin shorted to a neighbour."/>
+  <x x="48 88 0 0" f="0" si="14" te="Set A = H and B = L (or vice versa). Scope: line current, power in the PMOS of A and the NMOS of B."/>
+  <L x="128 256 80 256" f="0" p="1" hi="3.3" lo="0"/>
+  <I x="128 256 176 256" f="0" sl="0.5" hi="3.3"/>
+  <f x="240 208 304 208" f="1" mo="gpio-pmos"/>
+  <f x="240 304 304 304" f="0" mo="gpio-nmos"/>
+  <w x="240 208 240 256" f="0"/>
+  <w x="240 256 240 304" f="0"/>
+  <w x="304 224 304 256" f="0"/>
+  <w x="304 256 304 288" f="0"/>
+  <g x="304 320 304 352" f="0"/>
+  <R x="304 192 304 160" f="0" wf="0" maxv="3.3"/>
+  <w x="176 256 240 256" f="0"/>
+  <L x="528 256 480 256" f="0" p="0" hi="3.3" lo="0"/>
+  <I x="528 256 576 256" f="0" sl="0.5" hi="3.3"/>
+  <f x="640 208 704 208" f="1" mo="gpio-pmos"/>
+  <f x="640 304 704 304" f="0" mo="gpio-nmos"/>
+  <w x="640 208 640 256" f="0"/>
+  <w x="640 256 640 304" f="0"/>
+  <w x="704 224 704 256" f="0"/>
+  <w x="704 256 704 288" f="0"/>
+  <g x="704 320 704 352" f="0"/>
+  <R x="704 192 704 160" f="0" wf="0" maxv="3.3"/>
+  <w x="576 256 640 256" f="0"/>
+  <w x="304 256 336 256" f="0"/>
+  <ln x="336 256 336 224" f="4" te="PIN_A"/>
+  <w x="336 256 336 416" f="0"/>
+  <Ammeter x="336 416 528 416" f="3" me="0" sc="0"/>
+  <w x="528 416 736 416" f="0"/>
+  <w x="736 416 736 256" f="0"/>
+  <w x="736 256 704 256" f="0"/>
+  <ln x="736 256 736 224" f="4" te="PIN_B"/>
+  <o en="28" sp="16" f="1" p="0">
+    <p v="3" sc="0.05"/>
+  </o>
+  <o en="5" sp="16" f="2" p="1">
+    <p v="7" sc="0.1"/>
+    <p e="17" v="7" sc="0.1"/>
+  </o>
+</cir>

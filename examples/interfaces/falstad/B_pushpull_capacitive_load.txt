@@ -1,0 +1,37 @@
+<cir f="1" ts="1e-10" ic="10.2" cb="50" pb="50" vr="5" mts="5e-11">
+  <mm nm="gpio-nmos" f="0" vt="0.6" be="0.012" sb="0" dsy="0" bd="1" bt="0" sbd="0"/>
+  <mm nm="gpio-pmos" f="0" vt="0.6" be="0.008" sb="0" dsy="0" bd="1" bt="0" sbd="0"/>
+  <x x="48 32 0 0" f="0" si="20" te="B: Push-pull output switching a capacitive load"/>
+  <x x="48 64 0 0" f="0" si="14" te="The square wave is the program toggling the pin; the predriver slew rate sets how fast the gates switch."/>
+  <x x="48 88 0 0" f="0" si="14" te="Left scope: gate G and PIN. Right scope: supply current and its average. Sliders on the right."/>
+  <R x="96 320 48 320" f="0" wf="2" fr="1000000.0" maxv="1.65" bias="1.65"/>
+  <w x="96 320 128 320" f="0"/>
+  <I x="128 320 176 320" f="0" sl="2" hi="3.3"/>
+  <w x="176 320 208 320" f="0"/>
+  <ln x="208 320 208 288" f="4" te="G"/>
+  <f x="240 272 304 272" f="1" mo="gpio-pmos"/>
+  <f x="240 368 304 368" f="0" mo="gpio-nmos"/>
+  <w x="240 272 240 320" f="0"/>
+  <w x="240 320 240 368" f="0"/>
+  <w x="304 288 304 320" f="0"/>
+  <w x="304 320 304 352" f="0"/>
+  <g x="304 384 304 416" f="0"/>
+  <w x="208 320 240 320" f="0"/>
+  <R x="304 176 304 144" f="0" wf="0" maxv="3.3"/>
+  <Ammeter x="304 176 304 256" f="3" me="0" sc="0"/>
+  <w x="304 320 368 320" f="0"/>
+  <w x="368 320 432 320" f="0"/>
+  <ln x="368 320 368 288" f="4" te="PIN"/>
+  <c x="432 320 432 400" f="0" c="1e-10"/>
+  <g x="432 400 432 432" f="0"/>
+  <adj e="21" ei="0" en="Capacitance (F)" mn="1e-12" mx="1e-09" st="Load capacitance C_L" log="1"/>
+  <adj e="3" ei="0" en="Frequency (Hz)" mn="100000.0" mx="50000000.0" st="Toggle frequency" log="1"/>
+  <adj e="5" ei="0" en="Slew Rate (V/ns)" mn="0.01" mx="5" st="Predriver slew rate (V/ns)" log="1"/>
+  <o en="7" sp="32" f="2" p="0">
+    <p v="0" sc="4"/>
+    <p e="20" v="0" sc="4"/>
+  </o>
+  <o en="17" sp="32" f="131073" p="1">
+    <p v="3" sc="0.05"/>
+  </o>
+</cir>

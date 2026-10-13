@@ -1,0 +1,61 @@
+<cir f="1" ts="1e-07" ic="10.2" cb="50" pb="50" vr="5" mts="1e-07">
+  <mm nm="gpio-nmos" f="0" vt="0.6" be="0.012" sb="0" dsy="0" bd="1" bt="0" sbd="0"/>
+  <mm nm="gpio-pmos" f="0" vt="0.6" be="0.008" sb="0" dsy="0" bd="1" bt="0" sbd="0"/>
+  <dm nm="ideal-reg" f="0" is="1e-14" rs="0" n="0.05" bv="0"/>
+  <x x="48 32 0 0" f="0" si="20" te="E: Open drain with a 5 V pull-up: maximum pin voltage"/>
+  <x x="48 64 0 0" f="0" si="14" te="Both NMOS are switched by the same signal. PIN1 is a normal 3.3 V GPIO in open-drain mode,"/>
+  <x x="48 88 0 0" f="0" si="14" te="PIN2 a 5 V-tolerant open-drain pin. The regulator can only source current (diode)."/>
+  <v x="96 352 96 192" f="0" wf="0" maxv="3.3"/>
+  <g x="96 352 96 384" f="0"/>
+  <d x="96 192 176 192" f="0" mo="ideal-reg"/>
+  <x x="48 416 0 0" f="0" si="14" te="3.3 V regulator"/>
+  <w x="176 192 208 192" f="0"/>
+  <w x="208 192 272 192" f="0"/>
+  <w x="272 192 336 192" f="0"/>
+  <w x="336 192 400 192" f="0"/>
+  <ln x="176 192 176 160" f="4" te="VDD"/>
+  <c x="208 192 208 272" f="0" c="1e-06"/>
+  <g x="208 272 208 304" f="0"/>
+  <r x="272 192 272 272" f="0" r="33000"/>
+  <g x="272 272 272 304" f="0"/>
+  <x x="224 336 0 0" f="0" si="14" te="MCU load"/>
+  <Ammeter x="400 256 400 192" f="3" me="0" sc="0"/>
+  <f x="336 272 400 272" f="1" mo="gpio-pmos"/>
+  <w x="336 272 336 192" f="0"/>
+  <f x="336 368 400 368" f="0" mo="gpio-nmos"/>
+  <g x="400 384 400 416" f="0"/>
+  <w x="400 288 400 320" f="0"/>
+  <w x="400 320 400 352" f="0"/>
+  <w x="400 320 464 320" f="0"/>
+  <ln x="464 320 464 352" f="4" te="PIN1"/>
+  <R x="464 240 464 208" f="0" wf="0" maxv="5"/>
+  <r x="464 240 464 320" f="0" r="4700"/>
+  <R x="240 480 192 480" f="0" wf="2" fr="10000.0" maxv="1.65" bias="1.65"/>
+  <I x="240 480 288 480" f="0" sl="0.5" hi="3.3"/>
+  <w x="288 480 336 480" f="0"/>
+  <w x="336 480 336 368" f="0"/>
+  <w x="336 480 592 480" f="0"/>
+  <w x="592 480 592 368" f="0"/>
+  <f x="592 368 656 368" f="0" mo="gpio-nmos"/>
+  <g x="656 384 656 416" f="0"/>
+  <w x="656 352 656 320" f="0"/>
+  <w x="656 320 720 320" f="0"/>
+  <ln x="720 320 720 352" f="4" te="PIN2"/>
+  <R x="656 240 656 208" f="0" wf="0" maxv="5"/>
+  <r x="656 240 656 320" f="0" r="4700"/>
+  <x x="304 544 0 0" f="0" si="14" te="normal GPIO, open-drain mode"/>
+  <x x="576 544 0 0" f="0" si="14" te="5 V-tolerant open-drain pin"/>
+  <adj e="27" ei="0" en="Resistance (ohms)" mn="470" mx="47000" st="Pull-ups to 5 V" log="1"/>
+  <adj e="40" ei="0" en="Resistance (ohms)" mn="470" mx="47000" st="" log="1" ss="0"/>
+  <adj e="14" ei="0" en="Resistance (ohms)" mn="1000" mx="1000000.0" st="MCU load (3.3 V / I_DD)" log="1"/>
+  <o en="25" sp="64" f="2" p="0">
+    <p v="0" sc="5"/>
+    <p e="38" v="0" sc="5"/>
+  </o>
+  <o en="11" sp="64" f="2" p="1">
+    <p v="0" sc="5"/>
+  </o>
+  <o en="17" sp="64" f="1" p="2">
+    <p v="3" sc="0.001"/>
+  </o>
+</cir>

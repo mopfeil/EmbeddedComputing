@@ -24,3 +24,6 @@ Sources/
 .rawstudio/
 PaxHeader/
 Thumbs.db
+Worksheet_IO_Ports.pdf
+Worksheet_IO_Ports_Solutions.pdf
+__pycache__/
