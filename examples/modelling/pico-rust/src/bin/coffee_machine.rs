@@ -1,5 +1,6 @@
-//! The coffee machine on the Pico: buttons LEFT (GP10), RIGHT (GP11),
-//! READY (GP12); LEDs COFFEE (GP16), MILK (GP17), SUGAR (GP18).
+//! The coffee machine on the Pico: buttons LEFT (GP10), RIGHT (GP11);
+//! LEDs COFFEE (GP16), MILK (GP17), SUGAR (GP18). READY is not a button:
+//! a timer signals it when the brewing time is over.
 //! The state machine itself is the hardware independent crate `coffee-fsm`.
 #![no_std]
 #![no_main]
@@ -13,6 +14,9 @@ use rp_pico::hal::fugit::RateExtU32;
 use rp_pico::hal::uart::{DataBits, StopBits, UartConfig, UartPeripheral};
 use rp_pico::hal::{Clock, gpio};
 use rp_pico::{entry, hal, hal::pac};
+
+/// READY comes 3 s after a Make... state is entered
+const BREW_TIME_MS: u64 = 3000;
 
 #[entry]
 fn main() -> ! {
@@ -40,27 +44,33 @@ fn main() -> ! {
 
     let mut left = pins.gpio10.into_pull_up_input();
     let mut right = pins.gpio11.into_pull_up_input();
-    let mut ready = pins.gpio12.into_pull_up_input();
     let mut led_coffee = pins.gpio16.into_push_pull_output();
     let mut led_milk = pins.gpio17.into_push_pull_output();
     let mut led_sugar = pins.gpio18.into_push_pull_output();
 
     let mut state = State::Idle;
-    let mut last = [false; 3];
+    let mut last = [false; 2];
+    let mut state_entered = delay.get_counter(); // time of the last state change
     writeln!(uart, "state: {state:?}\r").unwrap();
 
     loop {
         // a press (edge released -> pressed) becomes one input event;
         // sampling every 50 ms also filters the contact bounce
-        let now = [left.is_low().unwrap(), right.is_low().unwrap(), ready.is_low().unwrap()];
-        let events = [Input::Left, Input::Right, Input::Ready];
-        let input = (0..3).find(|&i| now[i] && !last[i]).map(|i| events[i]);
+        let now = [left.is_low().unwrap(), right.is_low().unwrap()];
+        let events = [Input::Left, Input::Right];
+        let mut input = (0..2).find(|&i| now[i] && !last[i]).map(|i| events[i]);
         last = now;
+        // timer: the brewing time is over -> event Ready (only Make... states react)
+        let elapsed = delay.get_counter() - state_entered;
+        if elapsed.to_millis() >= BREW_TIME_MS && state.next(Input::Ready) != state {
+            input = Some(Input::Ready);
+        }
 
         if let Some(input) = input {
             let next = state.next(input);
             if next != state {
                 state = next;
+                state_entered = delay.get_counter(); // restart the timer
                 writeln!(uart, "state: {state:?}\r").unwrap();
             }
         }

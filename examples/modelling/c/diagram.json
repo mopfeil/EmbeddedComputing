@@ -31,16 +31,6 @@
       }
     },
     {
-      "type": "wokwi-pushbutton",
-      "id": "btn_ready",
-      "top": 30,
-      "left": -180,
-      "attrs": {
-        "color": "yellow",
-        "label": "READY"
-      }
-    },
-    {
       "type": "wokwi-led",
       "id": "led_coffee",
       "top": -60,
@@ -135,18 +125,6 @@
     [
       "btn_right:2.r",
       "pico:GND.2",
-      "black",
-      []
-    ],
-    [
-      "pico:GP12",
-      "btn_ready:1.r",
-      "blue",
-      []
-    ],
-    [
-      "btn_ready:2.r",
-      "pico:GND.3",
       "black",
       []
     ],

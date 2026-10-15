@@ -1,0 +1,26 @@
+# Coffee machine: LEFT, RIGHT, RIGHT -> coffee+milk+sugar, READY after 3 s
+#   wokwi-cli --scenario ../test/coffee.yaml --timeout 10000 .
+name: Coffee with everything
+version: 1
+steps:
+  - wait-serial: 'state: '
+  - set-control: { part-id: btn_left, control: pressed, value: 1 }
+  - delay: 100ms
+  - set-control: { part-id: btn_left, control: pressed, value: 0 }
+  - delay: 100ms
+  - set-control: { part-id: btn_right, control: pressed, value: 1 }
+  - delay: 100ms
+  - set-control: { part-id: btn_right, control: pressed, value: 0 }
+  - delay: 100ms
+  - set-control: { part-id: btn_right, control: pressed, value: 1 }
+  - delay: 100ms
+  - set-control: { part-id: btn_right, control: pressed, value: 0 }
+  - delay: 200ms
+  - expect-pin: { part-id: pico, pin: GP16, value: 1 }
+  - expect-pin: { part-id: pico, pin: GP17, value: 1 }
+  - expect-pin: { part-id: pico, pin: GP18, value: 1 }
+  - delay: 2000ms
+  - expect-pin: { part-id: pico, pin: GP18, value: 1 }   # still brewing after 2.3 s
+  - delay: 1000ms
+  - expect-pin: { part-id: pico, pin: GP16, value: 0 }   # ready after 3 s: idle
+  - expect-pin: { part-id: pico, pin: GP18, value: 0 }
