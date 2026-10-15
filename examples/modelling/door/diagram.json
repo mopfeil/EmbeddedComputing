@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "author": "Embedded Computing lecture",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "wokwi-pi-pico", "id": "pico", "top": 0, "left": 0, "attrs": {} },
+    { "type": "wokwi-pushbutton", "id": "btn", "top": 60, "left": -170, "attrs": { "color": "green", "label": "REMOTE" } },
+    { "type": "chip-door", "id": "door", "top": 20, "left": 220, "attrs": { "obstacle": "0", "jam": "0" } },
+    { "type": "wokwi-led", "id": "lamp", "top": 160, "left": 260, "attrs": { "color": "orange", "label": "WARNING" } },
+    { "type": "wokwi-resistor", "id": "r_lamp", "top": 205, "left": 170, "attrs": { "value": "220" } }
+  ],
+  "connections": [
+    [ "$serialMonitor:RX", "pico:GP0", "", [] ],
+    [ "$serialMonitor:TX", "pico:GP1", "", [] ],
+    [ "pico:GP10", "btn:1.r", "green", [] ],
+    [ "btn:2.r", "pico:GND.3", "black", [] ],
+    [ "pico:GP16", "door:UP", "blue", [] ],
+    [ "pico:GP17", "door:DOWN", "violet", [] ],
+    [ "door:TOP", "pico:GP2", "green", [] ],
+    [ "door:BOTTOM", "pico:GP3", "green", [] ],
+    [ "door:BEAM", "pico:GP4", "red", [] ],
+    [ "door:GND", "pico:GND.8", "black", [] ],
+    [ "door:VCC", "pico:3V3", "red", [] ],
+    [ "pico:GP18", "r_lamp:1", "orange", [] ],
+    [ "r_lamp:2", "lamp:A", "orange", [] ],
+    [ "lamp:C", "pico:GND.6", "black", [] ]
+  ],
+  "dependencies": {}
+}

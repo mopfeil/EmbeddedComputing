@@ -1,0 +1,11 @@
+# Wokwi for VS Code and wokwi-cli. Build first (see ../README.md):
+#   arduino-cli compile -b rp2040:rp2040:rpipico --output-dir build .
+#   wokwi-cli chip compile chips/door.chip.c -o chips/door.chip.wasm
+[wokwi]
+version = 1
+firmware = 'build/door.ino.uf2'
+elf = 'build/door.ino.elf'
+
+[[chip]]
+name = 'door'
+binary = 'chips/door.chip.wasm'

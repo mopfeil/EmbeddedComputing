@@ -1,0 +1,32 @@
+# Garage door: open, auto close, obstacle reverses, jam -> FAULT
+#   wokwi-cli --scenario test/door.yaml --timeout 60000 .
+name: Garage door
+version: 1
+steps:
+  - wait-serial: 'door: closed'
+  - set-control: { part-id: btn, control: pressed, value: 1 }
+  - wait-serial: 'door: opening'
+  - set-control: { part-id: btn, control: pressed, value: 0 }
+  - expect-pin: { part-id: pico, pin: GP16, value: 1 }        # motor up
+  - wait-serial: 'door: open'                                 # after 5 s
+  - expect-pin: { part-id: pico, pin: GP16, value: 0 }
+  - wait-serial: 'door: closing'                              # after 10 s: auto close
+  - delay: 2000ms
+  - set-control: { part-id: door, control: obstacle, value: 1 }
+  - wait-serial: 'door: opening'                              # beam: reverse
+  - set-control: { part-id: door, control: obstacle, value: 0 }
+  - wait-serial: 'door: open'
+  - set-control: { part-id: btn, control: pressed, value: 1 }  # close by button
+  - wait-serial: 'door: closing'
+  - set-control: { part-id: btn, control: pressed, value: 0 }
+  - delay: 1000ms
+  - set-control: { part-id: door, control: jam, value: 1 }     # door stuck
+  - wait-serial: 'door: FAULT'                                 # 8 s without end switch
+  - expect-pin: { part-id: pico, pin: GP17, value: 0 }         # motor off
+  - expect-pin: { part-id: pico, pin: GP18, value: 1 }         # lamp steady on
+  - set-control: { part-id: door, control: jam, value: 0 }
+  - set-control: { part-id: btn, control: pressed, value: 1 }  # acknowledge
+  - wait-serial: 'door: opening'
+  - set-control: { part-id: btn, control: pressed, value: 0 }
+  - wait-serial: 'door: open'
+  - expect-pin: { part-id: pico, pin: GP16, value: 0 }        # really open: motor off

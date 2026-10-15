@@ -1,0 +1,10 @@
+{
+  "name": "Garage door",
+  "author": "Embedded Computing lecture",
+  "pins": ["UP", "DOWN", "TOP", "BOTTOM", "BEAM", "GND", "VCC"],
+  "controls": [
+    { "id": "obstacle", "label": "Obstacle in the door", "type": "range", "min": 0, "max": 1, "step": 1 },
+    { "id": "jam", "label": "Door jammed", "type": "range", "min": 0, "max": 1, "step": 1 }
+  ],
+  "display": { "width": 64, "height": 64 }
+}
