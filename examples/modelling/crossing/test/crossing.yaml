@@ -1,0 +1,30 @@
+# Pedestrian crossing: request, walk phase, night mode
+#   wokwi-cli --scenario test/crossing.yaml --timeout 40000 .
+name: Pedestrian crossing
+version: 1
+steps:
+  - wait-serial: 'traffic: green'
+  - expect-pin: { part-id: pico, pin: GP18, value: 1 }       # cars green
+  - delay: 1000ms
+  - set-control: { part-id: btn, control: pressed, value: 1 }
+  - wait-serial: 'request: waiting'
+  - set-control: { part-id: btn, control: pressed, value: 0 }
+  - expect-pin: { part-id: pico, pin: GP21, value: 1 }       # WAIT on
+  - expect-pin: { part-id: pico, pin: GP18, value: 1 }       # minimum green time
+  - wait-serial: 'traffic: yellow'
+  - wait-serial: 'traffic: walk'
+  - delay: 100ms
+  - expect-pin: { part-id: pico, pin: GP20, value: 1 }       # pedestrians green
+  - expect-pin: { part-id: pico, pin: GP16, value: 1 }       # cars red
+  - expect-pin: { part-id: pico, pin: GP21, value: 0 }       # WAIT off
+  - set-control: { part-id: night, control: value, value: 1 }  # night during walk ...
+  - wait-serial: 'traffic: green'                              # ... waits for green
+  - wait-serial: 'mode: night'
+  - delay: 100ms
+  - expect-pin: { part-id: pico, pin: GP18, value: 0 }
+  - expect-pin: { part-id: pico, pin: GP17, value: 1 }       # yellow flashing
+  - delay: 500ms
+  - expect-pin: { part-id: pico, pin: GP17, value: 0 }
+  - set-control: { part-id: night, control: value, value: 0 }
+  - wait-serial: 'mode: day'
+  - wait-serial: 'traffic: green'

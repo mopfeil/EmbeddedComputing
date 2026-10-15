@@ -1,0 +1,6 @@
+# Wokwi for VS Code and wokwi-cli. Build first (see ../README.md):
+#   arduino-cli compile -b rp2040:rp2040:rpipico --output-dir build .
+[wokwi]
+version = 1
+firmware = 'build/crossing.ino.uf2'
+elf = 'build/crossing.ino.elf'
