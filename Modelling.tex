@@ -1,6 +1,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Chapter: Modelling
-% Example: examples/modelling (coffee machine state machine in C and Rust,
+% Examples: examples/modelling (coffee machine state machine in C and Rust,
+% garage door with a custom chip door model, pedestrian crossing;
 % Raspberry Pi Pico in Wokwi)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -19,8 +20,9 @@ implementation against it.
 No single kind of model covers all aspects of an embedded system. This
 chapter introduces the most important ones: state based models, which
 describe how a system reacts to events, and activity oriented models, which
-describe data flow and the order of operations. At the end we implement a
-state machine in C and in Rust and run it on the Pico in Wokwi.
+describe data flow and the order of operations. We implement a state machine
+in C and in Rust, then two StateCharts with hierarchy, timers and
+concurrency, and run all of them on the Pico in Wokwi.
 \newpage}
 
 \bi
@@ -297,14 +299,14 @@ sub-states is active whenever S is active.}
 \nsl{A state machine translates directly into code: one variable holds the
 current state, and a function that is called periodically or for every event
 computes the next state and the outputs. As an example we use a coffee
-machine with two selection buttons and a ``ready'' signal. The same machine
+machine with two selection buttons and a timer that signals ``ready''. The same machine
 is implemented in C with a \texttt{switch} statement and in Rust with
 \texttt{enum} and \texttt{match}. Both versions run on the Pico in Wokwi.}
 
 \begin{description}
 \item[{\rot\bf Example: a coffee machine}]~\\[-\lblskip]
 \bi
-	\ite inputs: buttons \textbf{left} and \textbf{right}, signal \textbf{ready} (coffee finished)
+	\ite inputs: buttons \textbf{left} and \textbf{right}, event \textbf{ready} from a timer 3\,s after brewing started (coffee finished)
 	\ite outputs: add coffee, milk, sugar -- depend only on the state $\Rightarrow$ Moore machine
 	\ite from idle: left = coffee with milk, right = coffee; then left = make it, right = add sugar
 \ei
@@ -329,7 +331,7 @@ is implemented in C with a \texttt{switch} statement and in Rust with
 3 & coffee+sugar & 0: idle & 7: make coffee+sugar & 000 \\
 4 & coffee+milk+sugar & 0: idle & 8: make coffee+milk+sugar & 000 \\
 \hline
- & & \multicolumn{2}{l|}{\textbf{ready}} & \\
+ & & \multicolumn{2}{l|}{\textbf{ready} (timer, after 3\,s)} & \\
 \hline
 5 & make coffee & \multicolumn{2}{l|}{0: idle} & 001 \\
 6 & make coffee+milk & \multicolumn{2}{l|}{0: idle} & 011 \\
@@ -393,6 +395,31 @@ int fsm_tic(int fsm_inp) {        // called periodically, every 50 ms
 \end{lstlisting}
 \bi
 	\ite the period defines the response time; sampling the buttons every 50\,ms also filters the contact bounce
+\ei
+\os{\newpage}
+
+\item[{\rot\bf C: a timer creates the event ready}]~\\[-\lstskip]
+\begin{lstlisting}[language=C]
+const uint32_t BREW_TIME_MS = 3000;  // READY comes 3 s after a MAKE state is entered
+uint32_t state_entered_ms;           // time of the last state change
+
+void loop() {
+  int inp = FSM_INP_NONE;
+  /* ... LEFT or RIGHT from the buttons (edge detection) ... */
+  // timer: the brewing time is over -> event READY (only MAKE states react)
+  if (fsm_state >= FSM_STATE_MAKE_COFFEE && millis() - state_entered_ms >= BREW_TIME_MS)
+    inp = FSM_INP_READY;
+  int old_state = fsm_state;
+  int out = fsm_tic(inp);
+  if (fsm_state != old_state) state_entered_ms = millis();  // restart the timer
+  /* ... write out to the LEDs, delay(50) ... */
+}
+\end{lstlisting}
+\bi
+	\ite a time-out is an event like a button press: \texttt{fsm\_tic()} is unchanged, only the source of \textbf{ready} is new
+	\ite StateCharts and UML write this as a \textbf{timed transition} \texttt{after(3 s)}
+	\ite never \texttt{delay(3000)} inside the state machine: it must keep reacting to other inputs (e.g.\ a cancel button) while it waits
+	\ite \texttt{millis() - start} with \texttt{uint32\_t} stays correct when \texttt{millis()} wraps around after 49 days
 \ei
 \os{\newpage}
 
@@ -461,7 +488,7 @@ fn coffee_with_everything() {
 	\ite implement a periodically called tick function (or an event handler) for transitions and outputs
 	\ite handle invalid states and unexpected inputs explicitly
 	\ite test the transition function separately from the hardware
-	\ite our example, tested in Wokwi (C and Rust): left, right, right $\rightarrow$ all three LEDs on; ready $\rightarrow$ all off
+	\ite our example, tested in Wokwi (C and Rust): left, right, right $\rightarrow$ all three LEDs on; 3\,s later (ready) $\rightarrow$ all off
 \ei
 \os{\newpage}
 
@@ -480,6 +507,298 @@ fn coffee_with_everything() {
 		\ite MATLAB/Simulink with Stateflow -- commercial, code generation, widely used in automotive
 		\ite UML/SysML tools (e.g.\ Enterprise Architect, Cameo); SysML v2 was adopted by the OMG in 2025
 	\ei
+\ei
+\os{\newpage}
+\end{description}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Implementing StateCharts}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\nsl{The coffee machine is a flat state machine. Real controllers need the
+elements of StateCharts: super-states whose transitions apply to all their
+sub-states, timed transitions, actions on entering and leaving a state, and
+regions that run concurrently. None of this needs a tool or a framework; a
+few rules turn a StateChart into plain C. Two examples show how. A garage
+door controller uses hierarchy, timers and a concurrent warning lamp, and
+the door itself is a model as well: a Wokwi custom chip that simulates the
+motor, the end switches and a light barrier. A pedestrian crossing uses an
+AND-super-state with two communicating regions and an OR-super-state for
+the night mode. Both are in \texttt{examples/modelling}, with Wokwi
+scenarios that test them.}
+
+\begin{description}
+\item[{\rot\bf Example: a garage door}]~\\[-\lblskip]
+\begin{figure}[!hbtp]
+\begin{center}
+\begin{adjustbox}{max width=0.95\textwidth, max height=0.45\textheight}
+\begin{tikzpicture}[font=\sffamily\small,>=Stealth,
+	st/.style={draw=rwuviolet,thick,fill=rwuviolet!12,rounded corners=2mm,minimum width=20mm,minimum height=8mm},
+	sup/.style={draw=rwuviolet,thick,rounded corners=3mm,fill=rwuviolet!4},
+	tr/.style={->,thick},
+	lbl/.style={font=\sffamily\scriptsize,align=center}]
+	\draw[rwuviolet!60,rounded corners=4mm] (-1.4,2.7) rectangle (11.2,-6.3);
+	\node[anchor=north west,text=rwuviolet,font=\sffamily\bfseries] at (-1.3,2.65) {DOOR};
+	% super-state MOVING
+	\draw[sup] (2.6,-1.9) rectangle (6.6,1.9);
+	\node[anchor=north west,text=rwuviolet,font=\sffamily\bfseries\small] at (2.65,1.85) {MOVING};
+	\node[st] (opening) at (4.6,0.8) {OPENING};
+	\node[st] (closing) at (4.6,-0.9) {CLOSING};
+	\node[st] (closed) at (0,0) {CLOSED};
+	\node[st] (open) at (9.6,0.8) {OPEN};
+	\node[st] (stopped) at (9.6,-1.3) {STOPPED};
+	\node[st,draw=red!70!black,fill=red!12] (fault) at (4.6,-3.4) {FAULT};
+	\fill (-0.9,1.0) circle (1mm);
+	\draw[tr] (-0.9,1.0) -- (closed.north west);
+	\draw[tr] (closed.north east) to[bend left=20] node[lbl,above]{button} (opening.west);
+	\draw[tr] (closing.west) to[bend left=20] node[lbl,below]{bottom} (closed.south east);
+	\draw[tr] (closing) -- node[lbl,right]{beam} (opening);
+	\draw[tr] (opening) -- node[lbl,above]{top} (open);
+	\draw[tr] (open.south west) -- node[lbl,above,sloped,pos=0.5,font=\sffamily\tiny]{button or after 10\,s [beam free]} (closing.east);
+	\draw[tr] (6.6,-1.15) -- node[lbl,above,pos=0.6]{button} (stopped.west |- 0,-1.15);
+	\draw[tr] (stopped.west |- 0,-1.55) -- node[lbl,below,pos=0.4]{button / other direction} (6.6,-1.55);
+	\draw[tr,red!70!black] (4.0,-1.9) -- node[lbl,left]{after 8\,s} (fault.north -| 4.0,0);
+	\draw[tr] (fault.north -| 5.2,0) -- node[lbl,right]{button / open} (5.2,-1.9);
+	% region LAMP
+	\draw[rwuviolet!60,dashed] (-1.4,-4.3) -- (11.2,-4.3);
+	\node[anchor=north west,text=rwuviolet,font=\sffamily\bfseries] at (-1.3,-4.35) {LAMP};
+	\node[st] (off) at (3.0,-5.3) {OFF};
+	\node[st] (on) at (7.0,-5.3) {ON};
+	\fill (1.2,-5.3) circle (1mm);
+	\draw[tr] (1.2,-5.3) -- (off);
+	\draw[tr] (off) to[bend left=15] node[lbl,above]{after 250\,ms [in(MOVING)] or [in(FAULT)]} (on);
+	\draw[tr] (on) to[bend left=15] node[lbl,below]{after 250\,ms or [not in(MOVING, FAULT)]} (off);
+\end{tikzpicture}
+\end{adjustbox}
+\caption{StateChart of the garage door: super-state MOVING, timed transitions, concurrent region LAMP}
+\end{center}
+\end{figure}
+\bi
+	\ite one button for everything (like a remote control): open, stop, close; closes by itself after 10\,s
+	\ite safety: a light barrier stops and reverses the closing door; a jammed door must not run the motor for ever
+\ei
+\os{\newpage}
+
+\item[{\rot\bf C: one function for every transition}]~\\[-\lstskip]
+\begin{lstlisting}[language=C]
+enum DoorState { CLOSED, OPENING, OPEN, CLOSING, STOPPED, FAULT, NUM_DOOR_STATES };
+DoorState door = CLOSED;
+uint32_t door_entered_ms;           // for the timed transitions "after(t)"
+bool last_moved_up;                 // what STOPPED remembers
+
+bool in_moving(DoorState s) {       // super-state MOVING = {OPENING, CLOSING}
+  return s == OPENING || s == CLOSING;
+}
+
+// every transition goes through here: exit actions, then entry actions
+void enter(DoorState next) {
+  digitalWrite(MOTOR_UP, LOW);      // exit: motor off, so UP and DOWN
+  digitalWrite(MOTOR_DOWN, LOW);    // are never on at the same time
+  door = next;
+  door_entered_ms = millis();
+  if (next == OPENING) { digitalWrite(MOTOR_UP, HIGH); last_moved_up = true; }
+  if (next == CLOSING) { digitalWrite(MOTOR_DOWN, HIGH); last_moved_up = false; }
+}
+\end{lstlisting}
+\bi
+	\ite entry and exit actions live in one place -- no transition can forget to switch the motor off
+	\ite a super-state needs no own variable: \texttt{in\_moving()} is a test on the sub-state
+\ei
+\os{\newpage}
+
+\item[{\rot\bf C: the transition function with hierarchy and timers}]~\\[-\lstskip]
+\begin{lstlisting}[language=C]
+void door_tic(bool button, bool top, bool bottom, bool beam) {
+  uint32_t t = millis() - door_entered_ms;
+  // transitions of the super-state come first: they leave every sub-state
+  if (in_moving(door) && t >= MOTOR_TIMEOUT_MS) { enter(FAULT); return; }
+
+  switch (door) {
+  case CLOSED:  if (button) enter(OPENING); break;
+  case OPENING: if (top) enter(OPEN);
+                else if (button) enter(STOPPED);
+                break;
+  case OPEN:    if ((button || t >= AUTO_CLOSE_MS) && !beam)   // guard [beam free]
+                  enter(CLOSING);
+                break;
+  case CLOSING: if (beam) enter(OPENING);            // safety first: reverse
+                else if (bottom) enter(CLOSED);
+                else if (button) enter(STOPPED);
+                break;
+  case STOPPED: if (button) enter(last_moved_up ? CLOSING : OPENING); break;
+  case FAULT:   if (button) enter(OPENING); break;   // acknowledge: try to open
+  default:      enter(STOPPED);                      // invalid state: motor off
+  }
+}
+\end{lstlisting}
+\bi
+	\ite the order of the \texttt{if}s is the priority of the transitions: in CLOSING the light barrier wins over everything else
+\ei
+\os{\newpage}
+
+\item[{\rot\bf C: a concurrent region}]~\\[-\lstskip]
+\begin{lstlisting}[language=C]
+enum LampState { LAMP_OFF, LAMP_ON };
+LampState lamp = LAMP_OFF;  uint32_t lamp_entered_ms;   // own state, own timer
+
+void lamp_tic() {
+  LampState next = lamp;
+  if (door == FAULT) next = LAMP_ON;                 // condition in(FAULT)
+  else if (!in_moving(door)) next = LAMP_OFF;        // condition in(MOVING)
+  else if (millis() - lamp_entered_ms >= BLINK_MS)
+    next = (lamp == LAMP_ON) ? LAMP_OFF : LAMP_ON;
+  if (next != lamp) { lamp = next; lamp_entered_ms = millis(); }
+  digitalWrite(LAMP, lamp == LAMP_ON);
+}
+void loop() {                              // every 20 ms
+  /* ... button edge, read TOP, BOTTOM, BEAM ... */
+  door_tic(button, top, bottom, beam);
+  lamp_tic();                              // both regions get every tick
+}
+\end{lstlisting}
+\bi
+	\ite an AND-super-state = one state variable and one tick function per region, all called in every tick
+	\ite regions communicate by reading each other's state (\texttt{in(...)}) -- read only, never write
+\ei
+\os{\newpage}
+
+\item[{\rot\bf The environment as a model: the door is a custom chip}]~\\[-\lblskip]
+\bi
+	\ite the door does not exist: a Wokwi \textbf{custom chip} (\texttt{door.chip.c}) models it, the controller sees only its pins
+	\ite inputs UP, DOWN (motor); outputs TOP, BOTTOM (end switches), BEAM (light barrier); a small display shows the door
+	\ite controls on the chip inject situations that are dangerous or expensive to test on a real door: \textbf{obstacle} in the door, door \textbf{jammed}
+	\ite the model checks the controller: both motor lines on $\Rightarrow$ ``short circuit!'', door closes onto the obstacle $\Rightarrow$ ``CRASH''
+\ei
+\begin{lstlisting}[language=C]
+static void on_step(void *user_data) {            // every 10 ms of simulated time
+  chip_t *c = user_data;
+  bool up = pin_read(c->up), down = pin_read(c->down);
+  bool obstacle = attr_read(c->obstacle_attr), jam = attr_read(c->jam_attr);
+  if (up && down) printf("motor UP and DOWN at the same time: short circuit!\n");
+  else if (!jam) c->pos += (up - down) * 0.01f / TRAVEL_S;   // 5 s from closed to open
+  /* ... limit pos to 0..1; obstacle under the door: stop at 15 %, print CRASH ... */
+  pin_write(c->top, c->pos >= 1);
+  pin_write(c->bottom, c->pos <= 0);
+  pin_write(c->beam, obstacle);
+}
+\end{lstlisting}
+\os{\newpage}
+
+\item[{\rot\bf Testing the StateChart against the model}]~\\[-\lstskip]
+\begin{lstlisting}[language=,basicstyle=\ttfamily\footnotesize]
+- wait-serial: 'door: closing'                    # after 10 s: auto close
+- delay: 2000ms
+- set-control: { part-id: door, control: obstacle, value: 1 }
+- wait-serial: 'door: opening'                    # beam: reverse
+- set-control: { part-id: door, control: obstacle, value: 0 }
+  ...
+- set-control: { part-id: door, control: jam, value: 1 }
+- wait-serial: 'door: FAULT'                      # 8 s without end switch
+- expect-pin: { part-id: pico, pin: GP17, value: 0 }     # motor off
+- expect-pin: { part-id: pico, pin: GP18, value: 1 }     # lamp steady on
+\end{lstlisting}
+\bi
+	\ite a Wokwi scenario (\texttt{door/test/door.yaml}) presses the button, switches the faults on the chip and checks pins and serial output
+	\ite the StateChart is the test plan: every transition needs a step that triggers it -- which ones does \texttt{door.yaml} still miss?
+	\ite the same idea at a larger scale: case study in chapter Operating Systems (climate chamber, two custom chips)
+\ei
+\os{\newpage}
+
+\item[{\rot\bf Example: a pedestrian crossing}]~\\[-\lblskip]
+\begin{figure}[!hbtp]
+\begin{center}
+\begin{adjustbox}{max width=0.95\textwidth, max height=0.4\textheight}
+\begin{tikzpicture}[font=\sffamily\small,>=Stealth,
+	st/.style={draw=rwuviolet,thick,fill=rwuviolet!12,rounded corners=2mm,minimum width=22mm,minimum height=8mm},
+	sup/.style={draw=rwuviolet,thick,rounded corners=3mm,fill=rwuviolet!4},
+	tr/.style={->,thick},
+	lbl/.style={font=\sffamily\scriptsize,align=center}]
+	\draw[rwuviolet!60,rounded corners=4mm] (-2.4,2.0) rectangle (13.6,-5.0);
+	\node[anchor=north west,text=rwuviolet,font=\sffamily\bfseries] at (-2.3,1.95) {OPERATING};
+	% AND-super-state DAY
+	\draw[sup] (-2.0,1.2) rectangle (8.6,-4.6);
+	\node[anchor=north west,text=rwuviolet,font=\sffamily\bfseries\small] at (-1.95,1.15) {DAY \normalfont(AND)};
+	\node[anchor=north east,text=rwuviolet,font=\sffamily\scriptsize] at (8.5,1.15) {TRAFFIC};
+	\node[st] (ry) at (0,0) {RED+YELLOW};
+	\node[st,fill=green!20] (green) at (3.3,0) {GREEN};
+	\node[st,fill=yellow!30] (yellow) at (6.6,0) {YELLOW};
+	\node[st] (allred) at (6.6,-1.8) {ALL RED};
+	\node[st,fill=green!20] (walk) at (3.3,-1.8) {WALK};
+	\node[st] (clear) at (0,-1.8) {CLEAR};
+	\fill (-1.7,0) circle (1mm);
+	\draw[tr] (-1.7,0) -- (ry);
+	\draw[tr] (ry) -- node[lbl,above]{1\,s} (green);
+	\draw[tr] (green) -- node[lbl,below]{5\,s\\[-1mm][in(WAITING)]} (yellow);
+	\draw[tr] (yellow) -- node[lbl,right]{2\,s} (allred);
+	\draw[tr] (allred) -- node[lbl,above]{1\,s} (walk);
+	\draw[tr] (walk) -- node[lbl,above]{5\,s} (clear);
+	\draw[tr] (clear) -- node[lbl,right]{2\,s} (ry);
+	\draw[rwuviolet!60,dashed] (-2.0,-2.7) -- (8.6,-2.7);
+	\node[anchor=north west,text=rwuviolet,font=\sffamily\scriptsize] at (-1.95,-2.75) {REQUEST};
+	\node[st] (idle) at (1.2,-3.7) {IDLE};
+	\node[st] (waiting) at (5.4,-3.7) {WAITING};
+	\fill (-0.6,-3.7) circle (1mm);
+	\draw[tr] (-0.6,-3.7) -- (idle);
+	\draw[tr] (idle) to[bend left=12] node[lbl,above]{button} (waiting);
+	\draw[tr] (waiting) to[bend left=12] node[lbl,below]{[in(WALK)]} (idle);
+	% OR: NIGHT
+	\draw[sup] (10.4,0.6) rectangle (13.2,-4.0);
+	\node[anchor=north west,text=rwuviolet,font=\sffamily\bfseries\small] at (10.45,0.55) {NIGHT};
+	\node[st,minimum width=20mm,fill=yellow!30] (bon) at (11.8,-0.8) {BLINK ON};
+	\node[st,minimum width=20mm] (boff) at (11.8,-2.8) {BLINK OFF};
+	\draw[tr] (bon) to[bend left=20] node[lbl,right]{0.5\,s} (boff);
+	\draw[tr] (boff) to[bend left=20] node[lbl,left]{0.5\,s} (bon);
+	\draw[tr] (8.6,-0.6) -- node[lbl,above]{night\\[-1mm][in(GREEN)]} (10.4,-0.6);
+	\draw[tr] (10.4,-3.2) -- node[lbl,below]{day} (8.6,-3.2);
+\end{tikzpicture}
+\end{adjustbox}
+\caption{StateChart of the pedestrian crossing: AND-super-state DAY with two regions, OR-super-state OPERATING}
+\end{center}
+\end{figure}
+\bi
+	\ite TRAFFIC (6 states) and REQUEST (2 states) run concurrently and talk only through conditions on each other's state
+	\ite the product machine would have $6 \times 2 = 12$ states -- and grows with every further region
+	\ite NIGHT can be entered only from GREEN: a guard on the super-state transition, never in the middle of a pedestrian phase
+\ei
+\os{\newpage}
+
+\item[{\rot\bf C: AND- and OR-super-states}]~\\[-\lstskip]
+\begin{lstlisting}[language=C]
+enum Mode { DAY, NIGHT };                         // OR-super-state OPERATING
+// + one enum each for the regions TRAFFIC, REQUEST and for NIGHT (BLINK_ON/OFF)
+void crossing_tic(bool button, bool night) {
+  switch (mode) {
+  case DAY:
+    if (night && traffic == GREEN) { mode = NIGHT; return; }  // only from a safe state
+    traffic_tic();                                 // AND: both regions run
+    request_tic(button);                           // in every tick
+    break;
+  case NIGHT:
+    if (!night) {
+      mode = DAY;                                  // enter DAY in its initial states
+      request = IDLE;
+      set_traffic(RED_YELLOW);
+      return;
+    }
+    blink_tic();
+    break;
+  }
+}
+\end{lstlisting}
+\bi
+	\ite one variable per OR-super-state, one per region; \texttt{traffic\_tic()} uses \texttt{request == WAITING}, \texttt{request\_tic()} uses \texttt{traffic == WALK}
+\ei
+\os{\newpage}
+
+\item[{\rot\bf Recipe for a StateChart in C}]~\\[-\lblskip]
+\bi
+	\ite one \texttt{enum} variable per OR-super-state and per concurrent region
+	\ite super-states without own variable: a function \texttt{in\_xxx()} that tests the sub-state
+	\ite transitions of a super-state are checked before those of its sub-states
+	\ite one function \texttt{enter()} for all transitions: exit actions, set the state, store the entry time, entry actions
+	\ite timed transitions: compare \texttt{millis() - entered\_ms} with the time -- never block with \texttt{delay()}
+	\ite one tick function per region; all are called in every tick, regions only read each other's state
+	\ite test against a model of the environment: custom chips in Wokwi, scenarios for every transition
+	\ite larger machines: a table of function pointers, or a framework (e.g.\ QP/C with hierarchical state machines) or a code generator (Stateflow, itemis CREATE)
 \ei
 \os{\newpage}
 \end{description}
@@ -574,6 +893,9 @@ Sequence charts show the communication between components over time.}
 \bi
 	\ite Extend the coffee machine by a ``cancel'' button that returns to idle from every selection state. Change the table first, then C and Rust. What does the Rust compiler say if you forget a case?
 	\ite Convert the coffee machine into a Mealy machine whose outputs are pulses on the transitions. Compare the number of states.
+	\ite Give the coffee machine a ``cancel'' time-out: a selection that is not completed within 10\,s returns to idle.
+	\ite Garage door: delete the transition CLOSING $\rightarrow$ OPENING on \textbf{beam} and run the scenario. What does the door model report? Which other transition of the StateChart protects people, and how would you test it?
+	\ite Pedestrian crossing: draw the product machine of TRAFFIC and REQUEST. Which of the 12 states can never be reached?
 	\ite Draw the state machine of the button debouncer of chapter Programming.
 	\ite Draw a message sequence chart of the MQTT example of chapter Networking (device, broker, smartphone).
 \ei
