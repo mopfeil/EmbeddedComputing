@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tank Twin</title>
+<style>
+  :root { --violet: #5c2483; --cyan: #009ee0; --bg: #f6f6f8; --card: #fff; --text: #222; --muted: #777; --grid: #e4e4e8; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #17171c; --card: #22222a; --text: #eee; --muted: #999; --grid: #33333c; }
+  }
+  body { margin: 0; font: 15px system-ui, sans-serif; background: var(--bg); color: var(--text); }
+  header { background: var(--violet); color: #fff; padding: 12px 16px; display: flex; gap: 16px; align-items: baseline; flex-wrap: wrap; }
+  header h1 { font-size: 20px; margin: 0; }
+  main { max-width: 1000px; margin: auto; padding: 16px; display: grid; gap: 16px; }
+  .card { background: var(--card); border-radius: 8px; padding: 12px 16px; box-shadow: 0 1px 3px #0002; }
+  .row { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
+  .tag { padding: 2px 10px; border-radius: 12px; font-weight: 600; font-size: 13px; }
+  .on { background: #2a2; color: #fff; } .off { background: #888; color: #fff; } .alarm { background: #d22; color: #fff; }
+  .stat b { font-size: 22px; display: block; } .stat { color: var(--muted); min-width: 90px; }
+  .stat b { color: var(--text); }
+  canvas { width: 100%; height: 240px; display: block; }
+  button, select, input { font: inherit; }
+  button { background: var(--cyan); color: #fff; border: 0; border-radius: 4px; padding: 6px 14px; cursor: pointer; }
+  .legend span { margin-right: 14px; } .legend i { display: inline-block; width: 16px; height: 3px; vertical-align: middle; margin-right: 4px; }
+  #msg { color: #d22; }
+</style>
+</head>
+<body>
+<header><h1>Water tank – digital twin</h1><span id="conn">connecting…</span></header>
+<main>
+  <div class="card row">
+    <label>Device <select id="device"></select></label>
+    <span id="online" class="tag off">offline</span>
+    <span id="alarm" class="tag off">no alarm</span>
+    <span class="stat">level<b id="v_h">–</b></span>
+    <span class="stat">twin<b id="v_twin">–</b></span>
+    <span class="stat">leak (estimated)<b id="v_leak">–</b></span>
+    <span class="stat">pump<b id="v_u">–</b></span>
+  </div>
+  <div class="card">
+    <div class="legend"><span><i style="background:#009ee0"></i>measured level</span><span><i style="background:#5c2483"></i>twin (observer)</span><span><i style="background:#e90"></i>model without measurements</span><span><i style="background:#2a2"></i>setpoint on the device</span></div>
+    <canvas id="level"></canvas>
+  </div>
+  <div class="card">
+    <div class="legend"><span><i style="background:#d22"></i>estimated leak flow (L/s)</span><span><i style="background:#888"></i>pump (0..1)</span><span><i style="background:#009ee0"></i>outlet flow (L/s)</span></div>
+    <canvas id="flow"></canvas>
+  </div>
+  <div class="card row">
+    <label>Setpoint <input id="sp" type="range" min="0.1" max="0.9" step="0.05" value="0.5"> <span id="spv">0.50 m</span></label>
+    <button id="send">Send setpoint</button>
+    <button id="reset">Acknowledge alarm</button>
+    <label>Operator key <input id="key" type="password" size="16"></label>
+    <span id="msg"></span>
+  </div>
+</main>
+<script>
+const WINDOW = 120;                       // seconds shown
+const devices = {};                       // id -> {online, history}
+let current = null, ws = null;
+const $ = id => document.getElementById(id);
+
+try { $('key').value = localStorage.getItem('twinKey') || ''; } catch (e) {}
+$('key').onchange = () => { try { localStorage.setItem('twinKey', $('key').value); } catch (e) {} };
+$('sp').oninput = () => $('spv').textContent = (+$('sp').value).toFixed(2) + ' m';
+
+function send(cmd) {
+  if (ws && current) ws.send(JSON.stringify({ id: current, key: $('key').value, ...cmd }));
+  $('msg').textContent = '';
+}
+$('send').onclick = () => send({ sp: +$('sp').value });
+$('reset').onclick = () => send({ reset: true });
+$('device').onchange = () => { current = $('device').value; render(); };
+
+function addDevice(id) {
+  if (!devices[id]) devices[id] = { online: false, history: [] };
+  if (![...$('device').options].some(o => o.value === id)) $('device').add(new Option(id, id));
+  if (!current) { current = id; $('device').value = id; }
+}
+
+function connect() {
+  ws = new WebSocket(`wss://${location.host}/ui`);
+  ws.onopen = () => $('conn').textContent = 'connected';
+  ws.onclose = () => { $('conn').textContent = 'reconnecting…'; setTimeout(connect, 2000); };
+  ws.onmessage = ev => {
+    const m = JSON.parse(ev.data);
+    if (m.type === 'hello') {
+      for (const [id, d] of Object.entries(m.devices)) { addDevice(id); Object.assign(devices[id], d); }
+    } else if (m.type === 'sample') {
+      addDevice(m.id);
+      const d = devices[m.id];
+      d.online = true;
+      d.history.push(m);
+      if (d.history.length > 600) d.history.shift();
+    } else if (m.type === 'connected') {
+      addDevice(m.id);
+      devices[m.id].history = [];
+    } else if (m.type === 'offline') {
+      if (devices[m.id]) devices[m.id].online = false;
+    } else if (m.type === 'error') {
+      $('msg').textContent = m.text;
+    }
+    render();
+  };
+}
+
+function chart(canvas, series, ymax, label) {
+  const dpr = window.devicePixelRatio || 1, w = canvas.clientWidth, h = canvas.clientHeight;
+  canvas.width = w * dpr; canvas.height = h * dpr;
+  const g = canvas.getContext('2d');
+  g.scale(dpr, dpr);
+  const css = getComputedStyle(document.documentElement);
+  const L = 44, B = 22, pw = w - L - 8, ph = h - B - 8;
+  const hist = devices[current]?.history || [];
+  const tStart = Math.max(0, (hist.length ? hist[hist.length - 1].t : 0) - WINDOW), tEnd = tStart + WINDOW;
+  const x = t => L + (t - tStart) / WINDOW * pw, y = v => 8 + ph - v / ymax * ph;
+  g.font = '11px system-ui'; g.fillStyle = css.getPropertyValue('--muted'); g.strokeStyle = css.getPropertyValue('--grid');
+  for (let i = 0; i <= 4; i++) {
+    const v = ymax * i / 4;
+    g.beginPath(); g.moveTo(L, y(v)); g.lineTo(L + pw, y(v)); g.stroke();
+    g.fillText(v.toFixed(2), 4, y(v) + 4);
+  }
+  for (let t = Math.ceil(tStart / 20) * 20; t <= tEnd; t += 20) g.fillText(t.toFixed(0) + ' s', x(t) - 10, h - 6);
+  g.fillText(label, L + 4, 18);
+  for (const [key, color, scale] of series) {
+    g.strokeStyle = color; g.lineWidth = 2; g.beginPath();
+    let first = true;
+    for (const s of hist) {
+      if (s.t < tStart) continue;
+      const v = Math.min(s[key] * (scale || 1), ymax);
+      first ? g.moveTo(x(s.t), y(v)) : g.lineTo(x(s.t), y(v));
+      first = false;
+    }
+    g.stroke();
+  }
+}
+
+function render() {
+  const d = devices[current];
+  if (!d) return;
+  const s = d.history[d.history.length - 1];
+  $('online').className = 'tag ' + (d.online ? 'on' : 'off');
+  $('online').textContent = d.online ? 'online' : 'offline';
+  const alarm = s && s.alarm;
+  $('alarm').className = 'tag ' + (alarm ? 'alarm' : 'off');
+  $('alarm').textContent = alarm ? 'LEAK ALARM' : 'no alarm';
+  if (s) {
+    $('v_h').textContent = (s.h * 1000).toFixed(0) + ' mm';
+    $('v_twin').textContent = (s.h_twin * 1000).toFixed(0) + ' mm';
+    $('v_leak').textContent = s.leak.toFixed(2) + ' L/s';
+    $('v_u').textContent = (s.u * 100).toFixed(0) + ' %';
+  }
+  chart($('level'), [['h', '#009ee0'], ['h_twin', '#5c2483'], ['h_model', '#e90'], ['sp', '#2a2']], 1.0, 'level in m');
+  chart($('flow'), [['leak', '#d22'], ['u', '#888'], ['q', '#009ee0']], 2.0, 'flow / pump');
+}
+window.onresize = render;
+connect();
+</script>
+</body>
+</html>

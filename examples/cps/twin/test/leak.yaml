@@ -1,0 +1,18 @@
+# End-to-end test with the twin server (must be running and reachable):
+#   wokwi-cli --scenario test/leak.yaml --timeout 120000 --serial-log-file device.csv . > device.log
+name: Leak detected by the digital twin
+version: 1
+steps:
+  - wait-serial: '# connected'
+  - delay: 30000ms
+  - set-control:            # the tank starts leaking; no sensor on the device sees it
+      part-id: tank
+      control: leak
+      value: 0.5
+  - wait-serial: '# alarm on'
+  - delay: 20000ms
+  - set-control:            # more consumption: the twin must not mistake it for a leak
+      part-id: tank
+      control: valve
+      value: 0.9
+  - delay: 20000ms

@@ -1,0 +1,11 @@
+# Wokwi for VS Code and wokwi-cli. Build first (see README.md):
+#   arduino-cli compile -b esp32:esp32:esp32c3 --output-dir build .
+#   wokwi-cli chip compile chips/tank.chip.c -o chips/tank.chip.wasm
+[wokwi]
+version = 1
+firmware = 'build/twin.ino.merged.bin'
+elf = 'build/twin.ino.elf'
+
+[[chip]]
+name = 'tank'
+binary = 'chips/tank.chip.wasm'

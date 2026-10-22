@@ -5,6 +5,9 @@
 * `simulate.py`: the same models simulated with Python (numpy, scipy,
   matplotlib); creates `cps_hde.pdf`, `cps_pendulum.pdf`, `cps_rlc.pdf`, the
   plots in the lecture. Runs on a PC or on Replit: `python3 simulate.py`.
+* `twin/`: case study "Digital Twin" -- a water tank in Wokwi (ESP32-C3 +
+  custom chip) connected over TLS to a twin server with a web dashboard.
+  See `twin/README.md`, including a checklist for using it in the lecture.
 
 Tested: `simulate.py` runs with Python 3.12 / scipy 1.11 (RLC end value
 i_L = 0.240 A = Vb/R as expected). The Modelica files were corrected by hand

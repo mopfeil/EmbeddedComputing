@@ -1,0 +1,7 @@
+build/
+chips/*.wasm
+chips/wokwi-api.h
+*.vcd
+*.log
+*.csv
+__pycache__/

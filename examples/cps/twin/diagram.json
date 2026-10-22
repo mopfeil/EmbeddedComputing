@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "author": "Embedded Computing lecture",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "board-esp32-c3-devkitm-1", "id": "esp", "top": 0, "left": 0, "attrs": {} },
+    { "type": "chip-tank", "id": "tank", "top": 40, "left": 260, "attrs": { "valve": "0.5", "leak": "0" } },
+    { "type": "wokwi-led", "id": "online", "top": -80, "left": 150, "attrs": { "color": "green", "label": "ONLINE" } },
+    { "type": "wokwi-resistor", "id": "r1", "top": -20, "left": 110, "attrs": { "value": "220" } },
+    { "type": "wokwi-led", "id": "alarm", "top": 210, "left": 140, "attrs": { "color": "red", "label": "ALARM" } },
+    { "type": "wokwi-resistor", "id": "r2", "top": 260, "left": 90, "attrs": { "value": "220" } }
+  ],
+  "connections": [
+    [ "esp:TX", "$serialMonitor:RX", "", [] ],
+    [ "esp:RX", "$serialMonitor:TX", "", [] ],
+
+    [ "esp:8", "tank:SDA", "green", [] ],
+    [ "esp:9", "tank:SCL", "blue", [] ],
+    [ "esp:6", "tank:PUMP", "orange", [] ],
+    [ "tank:VCC", "esp:3V3.1", "red", [] ],
+    [ "tank:GND", "esp:GND.1", "black", [] ],
+
+    [ "esp:4", "r1:1", "green", [] ],
+    [ "r1:2", "online:A", "green", [] ],
+    [ "online:C", "esp:GND.1", "black", [] ],
+    [ "esp:10", "r2:1", "red", [] ],
+    [ "r2:2", "alarm:A", "red", [] ],
+    [ "alarm:C", "esp:GND.1", "black", [] ]
+  ],
+  "serialMonitor": { "display": "terminal", "convertEol": true },
+  "dependencies": {}
+}
