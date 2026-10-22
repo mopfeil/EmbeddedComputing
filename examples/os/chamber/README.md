@@ -34,8 +34,9 @@ its interfaces, exactly as it would know real hardware.
 
 Open a new ESP32-C3 project on <https://wokwi.com/projects/new/esp32-c3>,
 replace `sketch.ino` and `diagram.json`, add `libraries.txt`, and create the
-two custom chips (file menu "New file…" → "Custom chip (C)") named `plant`
-and `fan`, then paste the content of the four files from `chips/`. Wokwi
+two custom chips (blue "+" button in the diagram → "Custom Chip", language
+C) named `plant` and `fan`, then paste the content of the four files from
+`chips/`. Wokwi
 compiles the chips in the browser.
 
 During the simulation, click on a chip to change its controls: ambient

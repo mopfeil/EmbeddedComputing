@@ -51,14 +51,20 @@ same data as the real one. Device and server talk over a secure WebSocket
    (Settings → Certificates → Authorities → Import) -- then the warning is
    gone for good. Paste the operator key into the field at the bottom (the
    browser remembers it).
-3. **Open the Wokwi project.** The first time: open
-   <https://wokwi.com/projects/new/esp32-c3>, replace `sketch.ino` with
-   `twin.ino` and `diagram.json`, add `libraries.txt`, create a custom chip
-   named `tank` ("New file…" → "Custom chip (C)") and paste
-   `chips/tank.chip.c` and `chips/tank.chip.json`. If the chip build reports
-   `wokwi-api.h` not found, add one more file named `wokwi-api.h` with the
-   content of <https://wokwi.com/api/chips/wokwi-api.h>. Save the project and
-   keep the link for the next lecture.
+3. **Open the Wokwi project.** The first time:
+   1. open <https://wokwi.com/projects/new/esp32-c3>
+   2. add the chip through the editor, not as plain files: blue **"+"**
+      button in the diagram → **"Custom Chip"** → name `tank`, language C →
+      "Create Chip". Wokwi creates `tank.chip.json` and `tank.chip.c` and
+      registers them as a chip part
+   3. replace the content of these two files with `chips/tank.chip.json`
+      and `chips/tank.chip.c`
+   4. replace `sketch.ino` with `twin.ino`, then `diagram.json` (last, it
+      also removes the template chip and wires the tank), and add
+      `libraries.txt` ("New file…", content `WebSockets`)
+   5. if the chip build reports `wokwi-api.h` not found: "New file…"
+      `wokwi-api.h` with the content of <https://wokwi.com/api/chips/wokwi-api.h>
+   6. save the project and keep the link for the next lecture
 4. **Start the simulation.** After about 5 s the green ONLINE LED is on and
    the device `tank1` appears on the dashboard.
 5. **Demo**, step by step:
