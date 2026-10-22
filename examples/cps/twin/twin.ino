@@ -128,7 +128,10 @@ void onWebSocket(WStype_t type, uint8_t *payload, size_t length) {
       lastHeard = millis();
       break;
     case WStype_DISCONNECTED:
-      Serial.println("# disconnected");
+      Serial.println("# disconnected (or connection failed), retry in 3 s");
+      break;
+    case WStype_ERROR:
+      Serial.printf("# error: %.*s\n", (int)length, (const char *)payload);
       break;
     case WStype_TEXT: {                    // {"sp":0.45,"alarm":0,...} from the twin
       lastHeard = millis();
@@ -156,8 +159,11 @@ void setup() {
   Serial.println("t_ms,h_mm,q_mls,u,sp_mm,online,alarm");
   xTaskCreate(controlTask, "control", 4096, NULL, 3, NULL);   // runs before Wi-Fi is up
 
+  Serial.println("# wifi: connecting to Wokwi-GUEST");
   WiFi.begin("Wokwi-GUEST", "", 6);
   while (WiFi.status() != WL_CONNECTED) delay(250);
+  Serial.printf("# wifi: connected, IP %s\n", WiFi.localIP().toString().c_str());
+  Serial.printf("# connecting to wss://%s:%u ...\n", HOST, PORT);
 
   char url[48], header[64];
   snprintf(url, sizeof url, "/device?id=%s", DEVICE);
