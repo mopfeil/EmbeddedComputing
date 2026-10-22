@@ -55,8 +55,10 @@ same data as the real one. Device and server talk over a secure WebSocket
    <https://wokwi.com/projects/new/esp32-c3>, replace `sketch.ino` with
    `twin.ino` and `diagram.json`, add `libraries.txt`, create a custom chip
    named `tank` ("New file…" → "Custom chip (C)") and paste
-   `chips/tank.chip.c` and `chips/tank.chip.json`. Save the project and keep
-   the link for the next lecture.
+   `chips/tank.chip.c` and `chips/tank.chip.json`. If the chip build reports
+   `wokwi-api.h` not found, add one more file named `wokwi-api.h` with the
+   content of <https://wokwi.com/api/chips/wokwi-api.h>. Save the project and
+   keep the link for the next lecture.
 4. **Start the simulation.** After about 5 s the green ONLINE LED is on and
    the device `tank1` appears on the dashboard.
 5. **Demo**, step by step:
@@ -81,7 +83,7 @@ same data as the real one. Device and server talk over a secure WebSocket
 ```sh
 arduino-cli lib install WebSockets
 arduino-cli compile -b esp32:esp32:esp32c3 --output-dir build .
-wokwi-cli chip compile chips/tank.chip.c -o chips/tank.chip.wasm
+wokwi-cli chip compile chips/tank.chip.c -o chips/tank.chip.wasm   # fetches chips/wokwi-api.h
 wokwi-cli --scenario test/leak.yaml --timeout 150000 --serial-log-file device.csv . > device.log
 python3 test/figures.py <dir with device.log and tank1.csv> ../../../figures
 ```
