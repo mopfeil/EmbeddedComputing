@@ -25,11 +25,16 @@ worksheet:
 	$(LATEXMK) Worksheet_IO_Ports.tex
 	$(LATEXMK) -jobname=Worksheet_IO_Ports_Solutions -usepretex='\def\solutions{}' Worksheet_IO_Ports.tex
 
+# Python with python-pptx, for the PPTX copy of the slides (one image per page)
+PPTXPY ?= $(HOME)/.local/share/lecture-tools/venv/bin/python
+
 # Copy the built PDFs into pdf/, the versioned copies linked from README.md
 # (student version of the worksheet only, the solutions stay local)
+
 publish: all worksheet
 	cp docu.pdf pdf/EmbeddedComputing_Script.pdf
 	cp slides.pdf pdf/EmbeddedComputing_Slides.pdf
+	$(PPTXPY) tools/pdf2pptx.py slides.pdf pdf/EmbeddedComputing_Slides.pptx
 	cp Worksheet_IO_Ports.pdf pdf/EmbeddedComputing_Worksheet_IO_Ports.pdf
 
 clean:

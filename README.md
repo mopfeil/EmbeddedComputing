@@ -15,7 +15,7 @@ with kind permission of Prof. Dr.-Ing. Franz Brümmer).
 ## Script and slides
 
 - [Script (A4)](pdf/EmbeddedComputing_Script.pdf)
-- [Slides (A5 landscape)](pdf/EmbeddedComputing_Slides.pdf)
+- [Slides (A5 landscape)](pdf/EmbeddedComputing_Slides.pdf), also as [PPTX](pdf/EmbeddedComputing_Slides.pptx) for presenting (one image per slide)
 - [Worksheet: GPIO output stages in Falstad CircuitJS](pdf/EmbeddedComputing_Worksheet_IO_Ports.pdf)
   (circuits in [`examples/interfaces/falstad/`](examples/interfaces/falstad/))
 
