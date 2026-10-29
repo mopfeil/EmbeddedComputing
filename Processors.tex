@@ -1,7 +1,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Chapter: Processors
-% Examples: examples/processors (the same C function compiled for AVR,
-% Cortex-M0+, Cortex-M4 and RISC-V)
+% Chapter: Processors (about 90 minutes)
+% Examples: examples/processors (sum.c and dot.c compiled for AVR,
+% Cortex-M0+/M4/M55, RISC-V and Xtensa)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -12,10 +12,13 @@ microcontrollers that cost a few cents to multi-core application processors
 that run Linux. The choice depends on the computing power needed, on the
 memory, on the peripherals, on the energy budget and, in large series, on
 the price. This chapter first describes the classes of processors and the
-basic architecture concepts. Then it looks at the families used in this
-lecture: the 8 bit AVR of the Arduino Uno, the ARM Cortex-M0+ of the
-Raspberry Pi Pico and the RISC-V core of the ESP32-C3. All three can be
-simulated in Wokwi.
+figures used to compare them. It then explains the architecture concepts
+that decide how fast and how predictably code runs: pipelines, caches and
+the instruction set. After that it looks at the important architectures
+(AVR, ARM Cortex-M/R/A, RISC-V, Xtensa and others) with assembly examples,
+at the inside of a microcontroller and at the semiconductor manufacturers
+and their product lines. Application processors with accelerators and a
+short comparison of microcontrollers and FPGAs complete the chapter.
 \newpage}
 
 \begin{description}
@@ -30,9 +33,91 @@ simulated in Wokwi.
 	\bi
 		\ite ARM Cortex-A (smartphones, Raspberry Pi), increasingly RISC-V application cores
 	\ei
+	\ite \textbf{real-time processor}: MCU-like determinism at high clock rates with safety features (ARM Cortex-R, Infineon TriCore)
 	\ite \textbf{digital signal processor} (DSP): optimised for filter and transformation algorithms (audio, radio, motor control)
 	\ite \textbf{FPGA}: configurable logic, for highly parallel or very fast functions; often combined with processor cores (system on chip)
-	\ite modern chips combine several of these: e.g.\ Cortex-A cores for Linux plus a Cortex-M core for real time on the same die
+	\ite modern chips combine several of these: e.g.\ Cortex-A cores for Linux plus a Cortex-M core for real time and an NPU for neural networks on the same die
+\ei
+\os{\newpage}
+
+\item[{\rot\bf The spectrum of embedded processors}]~\\[-\lblskip]
+\begin{center}
+{\footnotesize
+\begin{tabularx}{\linewidth}{|>{\raggedright}p{17mm}|L|>{\raggedright}p{17mm}|L|>{\raggedright}p{15mm}|>{\raggedright}p{15mm}|>{\raggedright\arraybackslash}p{19mm}|}
+\hline
+\textbf{class} & \textbf{examples} & \textbf{clock} & \textbf{memory} & \textbf{power} & \textbf{price (approx.)} & \textbf{software} \\
+\hline
+8 bit MCU & ATmega328P, PIC16, 8051 & 1--20\,MHz & 1--64\,KB flash, $<$\,8\,KB RAM & $\mu$W--mW & $<$\,1\,\texteuro{} & bare metal \\
+32 bit MCU & STM32G0, RP2040, ESP32-C3, nRF52 & 32--250\,MHz & 32\,KB--2\,MB flash, 8--512\,KB RAM & $\mu$W--100\,mW & 0.10--5\,\texteuro{} & bare metal, RTOS \\
+high-end MCU & STM32H7, i.MX RT1170, STM32N6 & 0.4--1\,GHz & MBs SRAM, external flash/RAM & 0.1--1\,W & 3--20\,\texteuro{} & RTOS \\
+real-time processor & Cortex-R5/R52, AURIX TriCore & 0.3--1.6\,GHz & TCM, ECC, MBs flash & 0.5--5\,W & 10--50\,\texteuro{} & AUTOSAR, RTOS \\
+application processor & BCM2712 (RPi 5), i.MX 93, AM62x & 1--2.4\,GHz, multi-core & 0.5--16\,GB DRAM & 1--15\,W & 5--100\,\texteuro{} & Linux, Android \\
+DSP & TI C2000, ADI SHARC & 0.1--1\,GHz & on-chip RAM & 0.1--5\,W & 2--50\,\texteuro{} & bare metal, RTOS \\
+FPGA / SoC-FPGA & Lattice iCE40, AMD Zynq & 50--500\,MHz & block RAM, DRAM & mW--tens of W & from 2\,\texteuro{} & HDL + processor software \\
+\hline
+\end{tabularx}}
+\end{center}
+\bi
+	\ite the borders blur: high-end MCUs reach the performance of older application processors, and many chips are heterogeneous
+\ei
+\os{\newpage}
+
+\item[{\rot\bf Key figures: performance}]~\\[-\lblskip]
+\bi
+	\ite execution time of a program:
+	\[ T = N_{\text{instr}} \cdot \text{CPI} \cdot \frac{1}{f_{\text{clk}}} \]
+	\bi
+		\ite $N_{\text{instr}}$: number of executed instructions -- depends on the instruction set and the compiler
+		\ite CPI: cycles per instruction (or IPC = 1/CPI) -- depends on the microarchitecture (pipeline, caches, wait states)
+		\ite $f_{\text{clk}}$: clock frequency -- depends on the technology and on the pipeline depth
+	\ei
+	\ite the clock alone says little: a 200\,MHz Cortex-M7 can be faster than a 400\,MHz Cortex-M0+
+	\ite benchmarks normalised to the clock:
+	\bi
+		\ite \textbf{DMIPS/MHz} (Dhrystone): old and easy to fool with compiler tricks
+		\ite \textbf{CoreMark/MHz} (EEMBC): list processing, matrix, state machine, CRC -- today's standard figure for MCU cores
+		\ite application benchmarks: EEMBC ULPMark (energy), MLPerf Tiny (neural networks), own code on an evaluation board
+	\ei
+\ei
+\os{\newpage}
+
+\item[{\rot\bf Key figures: CoreMark of ARM Cortex-M cores}]~\\[-\lblskip]
+\begin{center}
+\resizebox{0.95\textwidth}{!}{%
+\begin{tabular}{|l|c|c|l|}
+\hline
+\textbf{core} & \textbf{pipeline} & \textbf{CoreMark/MHz} & \textbf{example: chip, clock $\Rightarrow$ CoreMark} \\
+\hline
+Cortex-M0+ & 2 stages & 2.46 & RP2040, 133\,MHz $\Rightarrow$ $\approx$\,330 \\
+Cortex-M3 & 3 stages & 3.34 & STM32F103, 72\,MHz $\Rightarrow$ $\approx$\,240 \\
+Cortex-M4 & 3 stages & 3.42 & STM32F407, 168\,MHz $\Rightarrow$ $\approx$\,570 \\
+Cortex-M33 & 3 stages & 4.02 & RP2350, 150\,MHz $\Rightarrow$ $\approx$\,600 \\
+Cortex-M55 & 4 stages & 4.2 & STM32N6, 800\,MHz $\Rightarrow$ $\approx$\,3400 \\
+Cortex-M7 & 6 stages, dual issue & 5.01 & STM32H743, 480\,MHz $\Rightarrow$ $\approx$\,2400 \\
+Cortex-M85 & dual issue & 6.28 & Renesas RA8M1, 480\,MHz $\Rightarrow$ $\approx$\,3000 \\
+\hline
+\end{tabular}}
+\end{center}
+\bi
+	\ite figures published by Arm, measured under ideal conditions (code and data in zero wait state memory, best compiler)
+	\ite in a real chip, flash wait states, caches and the bus system can cost a large part of this
+	\ite an 8 bit AVR reaches well below one CoreMark/MHz -- 32 bit arithmetic costs several instructions
+\ei
+\os{\newpage}
+
+\item[{\rot\bf Key figures: everything else that matters}]~\\[-\lblskip]
+\bi
+	\ite \textbf{determinism}: interrupt latency (cycles from the event to the first instruction of the handler), jitter, worst-case execution time (WCET)
+	\ite \textbf{memory}: flash and RAM size, memory speed (wait states), code density of the instruction set
+	\ite \textbf{energy}:
+	\bi
+		\ite active current per MHz (low-power MCUs today: about 15--100\,$\mu$A/MHz)
+		\ite sleep current with RTC running (0.1--5\,$\mu$A), wake-up time ($\mu$s to ms), energy per operation
+	\ei
+	\ite \textbf{peripherals}: ADC/DAC, timers, communication interfaces, radio, security (crypto, secure boot, TrustZone)
+	\ite \textbf{environment}: temperature range (consumer 0--70\,\textdegree C, industrial $-$40--85\,\textdegree C, automotive up to 125/150\,\textdegree C), AEC-Q100 qualification
+	\ite \textbf{functional safety}: certified for ISO\,26262 (ASIL), IEC\,61508 (SIL): lock-step cores, ECC on memories, self tests
+	\ite \textbf{business}: price, long-term availability (many vendors guarantee 10--15 years), second source, software ecosystem
 \ei
 \os{\newpage}
 
@@ -54,6 +139,39 @@ special & EEPROM, 5\,V & PIO, USB & Wi-Fi, Bluetooth LE & CAN, USB \\
 \end{center}
 \bi
 	\ite the successor of the RP2040, the RP2350 (Raspberry Pi Pico 2), offers two Cortex-M33 \textbf{or} two RISC-V cores on the same chip -- selectable at boot
+	\ite Wokwi also simulates the ESP32 and ESP32-S3 (Xtensa) and other ESP32 variants
+\ei
+\os{\newpage}
+\end{description}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Architecture Fundamentals}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\nsl{An \emph{instruction set architecture} (ISA) is the contract between
+software and hardware: registers, instructions, data types, addressing modes
+and the exception model. A \emph{microarchitecture} is one implementation of
+it. The Cortex-M3 and the Cortex-M4 implement almost the same ISA, but very
+different processors such as the Hazard3 in the RP2350 and the cores in the
+ESP32-C3 implement RISC-V. The ISA decides about $N_{\text{instr}}$ and code
+size, the microarchitecture about CPI, clock rate and predictability. The
+most important microarchitecture concepts are the pipeline and the memory
+hierarchy with its caches.}
+
+\begin{description}
+\item[{\rot\bf Instruction set and microarchitecture}]~\\[-\lblskip]
+\bi
+	\ite \textbf{ISA} (instruction set architecture): what the programmer and the compiler see
+	\bi
+		\ite registers, instructions and their encoding, data types, addressing modes, exceptions and privilege levels
+		\ite examples: ARMv6-M, ARMv7-M, ARMv8-M, RV32IMC, AVR, Xtensa LX
+	\ei
+	\ite \textbf{microarchitecture}: how the ISA is built in hardware
+	\bi
+		\ite pipeline depth, number of execution units, caches, branch prediction, bus interfaces
+		\ite examples: Cortex-M3 and Cortex-M4 (both ARMv7-M), Hazard3 and ESP32-C3 core (both RV32)
+	\ei
+	\ite the same binary code runs on all cores of an ISA -- only faster or slower
+	\ite ISA properties that matter in embedded systems: code density, interrupt model, deterministic timing, availability of compilers, debuggers and RTOS ports
 \ei
 \os{\newpage}
 
@@ -88,23 +206,337 @@ special & EEPROM, 5\,V & PIO, USB & Wi-Fi, Bluetooth LE & CAN, USB \\
 
 \item[{\rot\bf RISC and CISC}]~\\[-\lblskip]
 \bi
-	\ite \textbf{CISC} (complex instruction set computer, e.g.\ x86): many instructions, memory operands in arithmetic instructions, variable length
-	\ite \textbf{RISC} (reduced instruction set computer): all microcontroller architectures of this lecture
+	\ite \textbf{CISC} (complex instruction set computer, e.g.\ x86, Renesas RX): many instructions, memory operands in arithmetic instructions, variable length
+	\ite \textbf{RISC} (reduced instruction set computer): almost all embedded architectures today
 	\bi
 		\ite \textbf{load/store architecture}: arithmetic only on registers; memory accessed only with load and store
 		\ite many general purpose registers (AVR 32 $\times$ 8 bit, Cortex-M 13 $\times$ 32 bit + SP, LR, PC, RISC-V 31 $\times$ 32 bit + zero register)
 		\ite simple, mostly fixed length instructions $\Rightarrow$ easy to decode and to pipeline
 		\ite compressed instruction sets for small code: ARM Thumb (16 bit), RISC-V ``C'' extension
 	\ei
-	\ite \textbf{pipeline}: fetch, decode, execute overlap -- ideally one instruction per clock
+	\ite the difference has become smaller: x86 processors translate their instructions internally into RISC-like micro-operations, and ``RISC'' ISAs have gained DSP, vector and crypto instructions
+	\ite for embedded systems, \textbf{code density} matters more than the label: flash costs chip area and money
+\ei
+\os{\newpage}
+
+\item[{\rot\bf Data width, alignment and byte order}]~\\[-\lblskip]
+\bi
+	\ite the \textbf{word width} is the width of registers and ALU: 8, 16, 32 or 64 bit
 	\bi
-		\ite Cortex-M0+: 2 stages; Cortex-M3/M4: 3 stages; Cortex-M7: 6 stages, two instructions per clock
-		\ite a jump empties the pipeline: branches cost extra cycles
+		\ite C: \texttt{int} is 16 bit on AVR and MSP430, 32 bit on ARM and RISC-V $\Rightarrow$ use the types of \texttt{stdint.h}: \texttt{uint16\_t}, \texttt{int32\_t}
+		\ite address width decides the address space: 16 bit = 64\,KB, 32 bit = 4\,GB
+	\ei
+	\ite \textbf{alignment}: a 32 bit value at an address divisible by 4
+	\bi
+		\ite Cortex-M0+ and many RISC-V cores: unaligned access causes a fault (or a slow trap)
+		\ite Cortex-M3/M4/M7: unaligned single loads work, but cost extra cycles
+		\ite matters for communication buffers and structures declared as \texttt{packed}
+	\ei
+	\ite \textbf{byte order} (endianness): almost all MCUs today are little endian, network protocols are big endian (\texttt{htons}, \texttt{ntohl})
+\ei
+\os{\newpage}
+
+\item[{\rot\bf Pipeline}]~\\[-\lblskip]
+\begin{figure}[!hbtp]
+\begin{center}
+\resizebox{0.7\textwidth}{!}{%
+\begin{tikzpicture}[font=\sffamily\small,
+	s/.style={draw,thick,minimum width=10mm,minimum height=6mm},
+	F/.style={s,fill=rwucyan!20},D/.style={s,fill=rwuviolet!20},E/.style={s,fill=green!20},
+	X/.style={s,fill=gray!15,text=gray}]
+	\foreach \c in {1,...,8} \node at (\c,0.8) {\c};
+	\node[anchor=east] at (0.3,0.8) {clock cycle};
+	% instr, start, label
+	\foreach \i/\t/\n in {1/1/{ldr r1,[r0]},2/2/{add r2,r2,r1},3/3/{cmp r3,r4},4/4/{bne loop}} {
+		\node[anchor=east] at (0.3,-\i*0.7) {\texttt{\n}};
+		\node[F] at (\t,-\i*0.7) {F};
+		\node[D] at (\t+1,-\i*0.7) {D};
+		\node[E] at (\t+2,-\i*0.7) {E};
+	}
+	\node[anchor=east] at (0.3,-3.5) {\texttt{(next)}};
+	\node[X] at (5,-3.5) {F}; \node[X] at (6,-3.5) {D};
+	\node[anchor=east] at (0.3,-4.2) {\texttt{loop: ldr ...}};
+	\node[F] at (7,-4.2) {F}; \node[D] at (8,-4.2) {D};
+	\draw[thick,red!70!black,->] (6.6,-2.8) -- (6.6,-3.9);
+	\node[red!70!black,anchor=west,font=\sffamily\scriptsize] at (6.7,-3.2) {branch taken: flush};
+\end{tikzpicture}}
+\caption{Three-stage pipeline (fetch, decode, execute) as in the Cortex-M3/M4}
+\end{center}
+\end{figure}
+\bi
+	\ite the stages work in parallel on consecutive instructions $\Rightarrow$ ideally one instruction per clock (CPI = 1)
+	\ite a taken branch is only known in the execute stage: the instructions fetched behind it are thrown away (\textbf{branch penalty})
+	\ite deeper pipelines allow higher clock rates, but make branches and dependencies more expensive
+\ei
+\os{\newpage}
+
+\item[{\rot\bf Pipeline hazards}]~\\[-\lblskip]
+\bi
+	\ite \textbf{data hazard}: an instruction needs the result of the previous one
+	\bi
+		\ite \textbf{forwarding} passes the result directly from the ALU output to the next instruction
+		\ite a load followed by its use often still costs one stall cycle (load-use hazard)
+	\ei
+	\ite \textbf{control hazard}: branches
+	\bi
+		\ite Cortex-M0+: a taken branch costs 2 cycles instead of 1; Cortex-M4: 1 + 1\ldots3 cycles refill
+		\ite \textbf{branch prediction} guesses the direction (static: ``backwards = taken'', dynamic: history tables); Cortex-M7 and application cores predict dynamically
+		\ite compilers help: loop unrolling, conditional execution (ARM \texttt{IT} blocks), \textbf{zero-overhead loops} in DSPs, Xtensa (\texttt{loop}) and ARMv8.1-M (\texttt{dls}/\texttt{le})
+	\ei
+	\ite \textbf{structural hazard}: two instructions need the same unit, e.g.\ one memory port for instruction fetch and data $\Rightarrow$ reason for Harvard buses
+	\ite for real time: a simple pipeline makes the cycle count of a code section easy to predict
+\ei
+\os{\newpage}
+
+\item[{\rot\bf Superscalar and out-of-order execution}]~\\[-\lblskip]
+\bi
+	\ite \textbf{superscalar} (dual issue): two instructions start in the same cycle if they are independent
+	\bi
+		\ite Cortex-M7, Cortex-M85, Cortex-A53/A55, ESP32-P4 cores; IPC up to about 2
+	\ei
+	\ite \textbf{out-of-order}: the core reorders instructions to fill waiting slots, with register renaming and speculative execution
+	\bi
+		\ite larger Cortex-A cores (A72, A76 in the Raspberry Pi 5), x86
+		\ite much higher performance per MHz, but much more chip area and energy
+	\ei
+	\ite microcontrollers stay \textbf{in-order}:
+	\bi
+		\ite execution time depends far less on history $\Rightarrow$ WCET can be analysed
+		\ite small, cheap and energy-efficient
+	\ei
+	\ite speculative execution opened security holes (Spectre, Meltdown, 2018) -- another reason for simple cores in security-critical devices
+\ei
+\os{\newpage}
+
+\item[{\rot\bf Memory hierarchy}]~\\[-\lblskip]
+\begin{center}
+{\footnotesize
+\begin{tabularx}{\linewidth}{|l|l|L|}
+\hline
+\textbf{memory} & \textbf{typical access time} & \textbf{remark} \\
+\hline
+registers & 0 cycles (operand of the instruction) & 16--32 registers \\
+TCM (tightly coupled memory) & 1 cycle, always & Cortex-M7/M55/M85, Cortex-R: deterministic \\
+on-chip SRAM & 1--2 cycles & bus matrix: conflicts with DMA possible \\
+cache hit & 1 cycle & only if the cache is present and the data is in it \\
+internal flash & 0--7 wait states & e.g.\ STM32F407 at 168\,MHz: 5 wait states, hidden by prefetch/ART cache \\
+external QSPI flash (XIP), cache miss & 20--100+ cycles & RP2040, ESP32: code lives here \\
+external DRAM & 50--150\,ns & application processors \\
+\hline
+\end{tabularx}}
+\end{center}
+\bi
+	\ite the CPU is faster than the memory: without caches or wait-state hiding a 480\,MHz core would mostly wait
+	\ite \textbf{locality}: programs use the same addresses again soon (temporal) and neighbouring addresses (spatial) -- caches exploit both
+\ei
+\os{\newpage}
+
+\item[{\rot\bf How a cache works}]~\\[-\lblskip]
+\begin{figure}[!hbtp]
+\begin{center}
+\resizebox{0.8\textwidth}{!}{%
+\begin{tikzpicture}[font=\sffamily\small]
+	\node[draw,thick,fill=rwuviolet!20,minimum width=60mm,minimum height=7mm] (t) at (0,0) {tag (20 bit)};
+	\node[draw,thick,fill=rwucyan!20,minimum width=21mm,minimum height=7mm,right=0mm of t] (i) {index (7)};
+	\node[draw,thick,fill=green!20,minimum width=15mm,minimum height=7mm,right=0mm of i] (o) {offset (5)};
+	\node[anchor=south west,font=\sffamily\scriptsize] at (t.north west) {31};
+	\node[anchor=south east,font=\sffamily\scriptsize] at (o.north east) {0};
+	\node[align=left,anchor=north west,font=\sffamily\scriptsize] at (-3,-0.7) {selects one of 128 sets;\\each set has 4 ways (lines of 32 bytes);\\the tags of the 4 lines are compared in parallel};
+	\draw[->,thick] (i.south) -- ++(0,-0.4);
+\end{tikzpicture}}
+\caption{Address split of a 16\,KB, 4-way set-associative data cache with 32 byte lines (Cortex-M7)}
+\end{center}
+\end{figure}
+\bi
+	\ite a \textbf{cache line} (16--64 bytes) is loaded as a whole on a miss $\Rightarrow$ spatial locality
+	\ite \textbf{direct mapped} (1 way): simple, but two addresses with the same index throw each other out; \textbf{n-way set-associative}: a line can go into n places
+	\ite \textbf{write-through}: every write also goes to memory; \textbf{write-back}: only when the line is replaced (faster, but memory is temporarily out of date)
+	\ite Cortex-M7: instruction cache 2-way, data cache 4-way, 0--64\,KB each; RP2040: 16\,KB XIP cache for the external flash
+\ei
+\os{\newpage}
+
+\item[{\rot\bf Caches in embedded practice}]~\\[-\lblskip]
+\bi
+	\ite \textbf{DMA coherency}: DMA writes to RAM, the CPU still sees the old data in its cache (and vice versa)
+	\bi
+		\ite before DMA reads a buffer: clean the cache (\texttt{SCB\_CleanDCache\_by\_Addr}); after DMA wrote it: invalidate (\texttt{SCB\_InvalidateDCache\_by\_Addr})
+		\ite or mark the buffer as non-cacheable with the MPU -- a classic source of bugs when porting from a Cortex-M4 to an M7
+	\ei
+	\ite \textbf{timing}: the same code can take very different times depending on the cache content $\Rightarrow$ WCET analysis must assume misses
+	\bi
+		\ite put interrupt handlers and control loops into TCM or SRAM (\texttt{IRAM\_ATTR} on the ESP32, \texttt{\_\_not\_in\_flash\_func} on the RP2040)
+		\ite some cores allow cache locking: lines that are never replaced
+	\ei
+	\ite \textbf{multi-core}: application processors keep caches of several cores coherent in hardware; on MCUs with two cores (RP2040, RP2350, i.MX RT1170) shared data needs care
+\ei
+\os{\newpage}
+\end{description}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Architectures and their Particularities}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\nsl{Most new designs today use one of two 32 bit architectures: ARM
+Cortex-M, licensed by Arm to almost every semiconductor company, or RISC-V,
+an open instruction set that anybody may implement without license fees.
+8 bit microcontrollers are still produced in huge numbers for very simple
+and cost-sensitive devices, and some application areas have their own
+architectures: Xtensa in older Espressif chips, TriCore and RH850 in
+automotive control units, C2000 in motor control. The assembly examples
+at the end of this section show how the same C code becomes different
+machine code.}
+
+\begin{description}
+\item[{\rot\bf Overview of embedded architectures}]~\\[-\lblskip]
+\begin{center}
+{\footnotesize
+\begin{tabularx}{\linewidth}{|l|c|L|L|L|}
+\hline
+\textbf{architecture} & \textbf{bits} & \textbf{owner, license} & \textbf{particularities} & \textbf{typical use} \\
+\hline
+AVR, PIC, 8051 & 8 & Microchip and many others & simple, robust, 5\,V, tiny RAM & toys, household devices, sensors \\
+MSP430 & 16 & TI & extremely low power & metering, battery sensors \\
+ARM Cortex-M & 32 & Arm, licensed core & one ecosystem for thousands of chips & almost all MCU applications \\
+ARM Cortex-R & 32 (64) & Arm, licensed core & TCM, lock-step, ECC, fast interrupts & storage controllers, automotive, 5G modems \\
+ARM Cortex-A & 64 & Arm, licensed core & MMU, caches, out-of-order (larger cores) & Linux devices, smartphones, infotainment \\
+RISC-V & 32/64 & open ISA (RISC-V International) & modular, custom extensions, no license fees & MCUs, coprocessors, AI chips, growing fast \\
+Xtensa & 32 & Cadence, configurable & register windows, custom instructions & ESP32/ESP32-S3, audio DSPs \\
+TriCore, RH850 & 32 & Infineon, Renesas & safety features, automotive certification & engine and brake control units \\
+C2000, SHARC & 32 & TI, ADI & DSP features, fast control loops & motor control, power conversion, audio \\
+\hline
+\end{tabularx}}
+\end{center}
+\os{\newpage}
+
+\item[{\rot\bf 8 bit AVR (ATmega328P)}]~\\[-\lblskip]
+\bi
+	\ite 32 registers of 8 bit, most instructions in one clock cycle, 16\,MHz on the Arduino Uno
+	\ite two-stage pipeline: the next instruction is fetched while the current one executes
+	\ite pure Harvard architecture: 32\,KB flash for code, 2\,KB SRAM for data, 1\,KB EEPROM
+	\ite 5\,V operation, robust I/O pins, very low sleep current (well below 1\,$\mu$A in power-down)
+	\ite interrupts: the hardware only saves the PC, the compiler saves the registers $\Rightarrow$ short handlers matter
+	\ite limits: 16 or 32 bit arithmetic needs several instructions, no hardware division, little RAM
+	\ite still used for simple control tasks; and it made embedded programming popular through Arduino
+\ei
+\os{\newpage}
+
+\item[{\rot\bf ARM: three profiles}]~\\[-\lblskip]
+\bi
+	\ite \textbf{Cortex-A} (application): AArch64 (64 bit), MMU, multi-level caches, NEON/SVE vector units; Linux, Android
+	\bi
+		\ite big.LITTLE: fast cores (A76, A78) together with efficient cores (A53, A55) on one chip
+	\ei
+	\ite \textbf{Cortex-R} (real time): high clock rates \textbf{and} deterministic response
+	\bi
+		\ite TCM instead of (only) caches, ECC, \textbf{dual-core lock-step} (two cores compute the same, a comparator detects faults)
+		\ite Cortex-R5/R52: automotive (ASIL\,D), hard disk/SSD controllers, 4G/5G modems; R52 supports a hypervisor for mixed criticality
+	\ei
+	\ite \textbf{Cortex-M} (microcontroller): small, energy-efficient, easy to program completely in C or Rust
+	\bi
+		\ite vector table with addresses, hardware register saving, NVIC, SysTick, SWD debug -- the same on every Cortex-M chip
+	\ei
+	\ite Arm sells licenses: a core license (e.g.\ Cortex-M33) or an architecture license (own core, e.g.\ Apple, Qualcomm)
+\ei
+\os{\newpage}
+
+\item[{\rot\bf ARM Cortex-M family}]~\\[-\lblskip]
+\begin{center}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{core} & \textbf{architecture} & \textbf{features} \\
+\hline
+Cortex-M0 / M0+ & ARMv6-M & smallest and most efficient; Thumb subset, no division instruction \\
+Cortex-M3 & ARMv7-M & full Thumb-2 instruction set, hardware division \\
+Cortex-M4 & ARMv7E-M & + DSP instructions (SIMD, MAC), optional single precision FPU \\
+Cortex-M7 & ARMv7E-M & superscalar, caches, TCM, optional double precision FPU, up to about 1\,GHz \\
+Cortex-M23 / M33 & ARMv8-M & + TrustZone security extension (M33 also DSP and FPU) \\
+Cortex-M52 / M55 / M85 & ARMv8.1-M & + Helium vector extension (MVE) for signal processing and machine learning \\
+\hline
+\end{tabular}}
+\end{center}
+\bi
+	\ite common to all: NVIC interrupt controller, SysTick timer, vector table, debug via SWD
+	\ite upward compatible: code for the M0+ runs on all others
+	\ite most used today: M0+ (cheap), M4 (DSP + FPU), M33 (security); M55/M85 for edge AI
+\ei
+\os{\newpage}
+
+\item[{\rot\bf Cortex-M instruction set particularities}]~\\[-\lblskip]
+\bi
+	\ite \textbf{Thumb-2}: 16 and 32 bit instructions mixed freely -- good code density at almost full ARM performance
+	\ite conditional execution with \texttt{IT} blocks (``if-then''): up to 4 instructions without a branch
+	\ite load/store multiple (\texttt{push \{r4-r7, lr\}}, \texttt{ldm}, \texttt{stm}), compare-and-branch-if-zero (\texttt{cbz})
+	\ite \textbf{DSP extension} (M4, M7, M33): single-cycle MAC (\texttt{smlabb}), SIMD on 2 $\times$ 16 or 4 $\times$ 8 bit (\texttt{sadd16}, \texttt{smlad}), saturation (\texttt{ssat}, \texttt{qadd})
+	\ite \textbf{ARMv8.1-M}: low-overhead loops (\texttt{dls}/\texttt{le}), Helium vectors on 128 bit registers (8 $\times$ 16 bit, 4 $\times$ float), pointer authentication against return-oriented programming (PACBTI, M85)
+	\ite exception entry in hardware: \texttt{r0}--\texttt{r3}, \texttt{r12}, \texttt{lr}, \texttt{pc}, \texttt{xpsr} are stacked automatically $\Rightarrow$ an interrupt handler is a normal C function
+	\ite calling convention (AAPCS): arguments in \texttt{r0}--\texttt{r3}, return value in \texttt{r0}, \texttt{r4}--\texttt{r11} must be preserved
+\ei
+\os{\newpage}
+
+\item[{\rot\bf TrustZone for Cortex-M (ARMv8-M)}]~\\[-\lblskip]
+\bi
+	\ite the processor runs in a \textbf{secure} or a \textbf{non-secure} state; memory and peripherals are assigned to one of the states
+	\bi
+		\ite SAU/IDAU (security attribution unit) defines the regions; the switch to the secure state is only possible through defined entry points (\texttt{sg} instruction)
+	\ei
+	\ite the secure side holds keys, the secure boot loader, crypto and firmware update -- the application cannot read them even if it is compromised
+	\ite reference software: Trusted Firmware-M (TF-M), certification after PSA Certified
+	\ite important for the EU Cyber Resilience Act (CRA): products with digital elements must be secure by design and receive security updates
+	\ite available in Cortex-M23, M33, M35P, M52, M55, M85 (e.g.\ RP2350, STM32U5, nRF54L, LPC55)
+\ei
+\os{\newpage}
+
+\item[{\rot\bf RISC-V}]~\\[-\lblskip]
+\bi
+	\ite open instruction set architecture (since 2010, UC Berkeley; today RISC-V International) -- no license fees
+	\ite modular: a small base set plus standard extensions
+	\bi
+		\ite \textbf{RV32I}: 32 bit integer base, 32 registers (\texttt{x0} is always 0); \textbf{RV32E}: only 16 registers for the smallest cores
+		\ite \textbf{M} multiplication/division, \textbf{A} atomic operations, \textbf{F}/\textbf{D} floating point, \textbf{C} compressed 16 bit instructions, \textbf{V} vectors, \textbf{B} bit manipulation
+		\ite \textbf{Zc*}: further compressed instructions for code size (e.g.\ \texttt{cm.push}/\texttt{cm.pop})
+		\ite ESP32-C3 = RV32IMC; Hazard3 in the RP2350 = RV32IMAC + bit manipulation + Zc*
+	\ei
+	\ite \textbf{profiles} bundle extensions: RVA23 for application processors (Linux distributions target it), smaller profiles for MCUs
+	\ite \textbf{privilege modes}: M (machine), S (supervisor, for Linux), U (user); embedded: M + U with PMP (physical memory protection) as MPU
+	\ite \textbf{custom instructions} are allowed and documented: e.g.\ DSP or AI instructions for a single application
+\ei
+\os{\newpage}
+
+\item[{\rot\bf RISC-V: chances and challenges}]~\\[-\lblskip]
+\bi
+	\ite \textbf{chances}
+	\bi
+		\ite no license fee and no dependence on one company -- strategically important (EU, China, India)
+		\ite many implementations: commercial IP (SiFive, Andes, Codasip, Nuclei), vendor cores (Espressif, WCH, Nordic), open source (Hazard3, Ibex in OpenTitan, CV32E40P from OpenHW, VexRiscv)
+		\ite the same compilers (GCC, LLVM), the same Rust targets, Zephyr and FreeRTOS ports as for ARM
+		\ite popular as small coprocessor next to an ARM core: nRF54 (VPR), ESP32-C6 (LP core), many SoCs for management and security tasks
+	\ei
+	\ite \textbf{challenges}
+	\bi
+		\ite fragmentation: which extensions, which custom instructions, which interrupt controller (CLINT, CLIC, PLIC or vendor-specific)?
+		\ite the ecosystem of debug probes, trace and certified safety tools is younger than for ARM
+		\ite verification: every vendor must prove that its core implements the ISA correctly
 	\ei
 \ei
 \os{\newpage}
 
-\item[{\rot\bf The same C function on four processors}]~\\[-\lstskip]
+\item[{\rot\bf Xtensa and other architectures}]~\\[-\lblskip]
+\bi
+	\ite \textbf{Xtensa} (Cadence): configurable cores; the customer chooses options and adds own instructions
+	\bi
+		\ite ESP32 (LX6), ESP32-S3 (LX7 with vector instructions for AI); Espressif's newer chips use RISC-V
+		\ite \textbf{register windows}: \texttt{entry}/\texttt{retw} rotate a window of 16 out of 64 registers -- fewer pushes and pops, but a window overflow causes an exception
+		\ite zero-overhead \texttt{loop}, MAC16 unit; also used in many audio DSPs (HiFi)
+	\ei
+	\ite \textbf{Infineon TriCore} (AURIX): RISC, MCU and DSP in one, up to 6 cores, lock-step, hardware security module -- leader in engine and chassis control units
+	\ite \textbf{Renesas RH850}: automotive MCUs; \textbf{Renesas RX}: 32 bit CISC with variable instruction length (1--8 bytes)
+	\ite \textbf{TI C2000}: DSP core C28x plus real-time control accelerators (CLA) for motor control and power electronics
+	\ite \textbf{Synopsys ARC}: configurable cores, often hidden inside SoCs (sensor hubs, SSD controllers)
+	\ite \textbf{PIC}, \textbf{8051}, \textbf{MSP430}: 8 and 16 bit, still common in cost-sensitive mass products
+\ei
+\os{\newpage}
+
+\item[{\rot\bf Assembly: the same C function on four processors}]~\\[-\lstskip]
 \begin{lstlisting}[language=C]
 uint32_t sum(const uint16_t *a, int n) {
     uint32_t s = 0;
@@ -128,7 +560,7 @@ RISC-V RV32IMC & 7 & 28 bytes & mix of 16 and 32 bit instructions \\
 \end{tabular}}
 \end{center}
 \bi
-	\ite compiled with \texttt{-Os} (optimise for size); listings and script in \texttt{examples/processors}, or try it on \url{https://godbolt.org}
+	\ite compiled with \texttt{-Os} (optimise for size); listings and script in \texttt{examples/\-processors},\\ or try it on \url{https://godbolt.org}
 \ei
 \os{\newpage}
 
@@ -174,80 +606,83 @@ RISC-V RV32IMC & 7 & 28 bytes & mix of 16 and 32 bit instructions \\
 \bi
 	\ite RISC-V has no status flags: compare and branch are one instruction (\texttt{blt})
 	\ite only one addressing mode (register + 12 bit offset) -- the address is computed with normal instructions
-	\ite register names of the calling convention: \texttt{a0}--\texttt{a7} arguments and return values, \texttt{sp} stack pointer, \texttt{ra} return address, \texttt{zero} always 0
+	\ite register names of the calling convention: \texttt{a0}--\texttt{a7} arguments and return values, \texttt{s0}--\texttt{s11} preserved, \texttt{sp} stack pointer, \texttt{ra} return address, \texttt{zero} always 0
 	\ite more about assembly programming in chapter Programming
 \ei
 \os{\newpage}
-\end{description}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Microcontroller Families}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\nsl{Most new designs today use one of two 32 bit architectures: ARM
-Cortex-M, licensed by Arm to almost every semiconductor company, or RISC-V,
-an open instruction set that anybody may implement without license fees.
-8 bit microcontrollers are still produced in huge numbers for very simple
-and cost-sensitive devices. Because the cores are similar, the differences
-between microcontrollers are mostly in the peripherals, the memory, the
-power consumption and the software support.}
-
-\begin{description}
-\item[{\rot\bf 8 bit AVR (ATmega328P)}]~\\[-\lblskip]
-\bi
-	\ite 32 registers of 8 bit, most instructions in one clock cycle, 16\,MHz on the Arduino Uno
-	\ite pure Harvard architecture: 32\,KB flash for code, 2\,KB SRAM for data, 1\,KB EEPROM
-	\ite 5\,V operation, robust I/O pins, very low sleep current (well below 1\,$\mu$A in power-down)
-	\ite limits: 16 or 32 bit arithmetic needs several instructions, no hardware division, little RAM
-	\ite still used for simple control tasks; and it made embedded programming popular through Arduino
-\ei
-\os{\newpage}
-
-\item[{\rot\bf ARM Cortex-M}]~\\[-\lblskip]
-\bi
-	\ite Arm designs the cores and licenses them; the chip manufacturers (ST, NXP, Raspberry Pi, Nordic, \ldots) add memory and peripherals
-	\ite the same core, the same tools and the same interrupt controller across thousands of chips
-\ei
+\item[{\rot\bf A DSP kernel: dot product in fixed point}]~\\[-\lstskip]
+\begin{lstlisting}[language=C]
+int32_t dot_q15(const int16_t *a, const int16_t *b, int n) {
+    int32_t s = 0;
+    for (int i = 0; i < n; i++)
+        s += (int32_t)a[i] * b[i];
+    return s;
+}
+\end{lstlisting}
 \begin{center}
-\resizebox{\textwidth}{!}{%
-\begin{tabular}{|l|l|l|}
+\resizebox{0.95\textwidth}{!}{%
+\begin{tabular}{|l|c|l|}
 \hline
-\textbf{core} & \textbf{architecture} & \textbf{features} \\
+\textbf{processor} & \textbf{instr.\ in loop} & \textbf{what the compiler uses (\texttt{-O2})} \\
 \hline
-Cortex-M0 / M0+ & ARMv6-M & smallest and most efficient; Thumb subset, no division instruction \\
-Cortex-M3 & ARMv7-M & full Thumb-2 instruction set, hardware division \\
-Cortex-M4 & ARMv7E-M & + DSP instructions (SIMD, MAC), optional single precision FPU \\
-Cortex-M7 & ARMv7E-M & superscalar, caches, optional double precision FPU, up to about 1\,GHz \\
-Cortex-M23 / M33 & ARMv8-M & + TrustZone security extension (M33 also DSP and FPU) \\
-Cortex-M55 / M85 & ARMv8.1-M & + Helium vector extension for signal processing and machine learning \\
+Cortex-M0+ & 7 & \texttt{ldrsh}, \texttt{muls}, \texttt{adds}, compare and branch \\
+RISC-V RV32IMC & 7 & \texttt{lh}, \texttt{mul}, \texttt{add} -- no multiply-accumulate in the base ISA \\
+Cortex-M4 / M33 & 5 & \texttt{ldrh} with pointer increment, \texttt{smlabb}: 16 $\times$ 16 + 32 bit in one instruction \\
+Cortex-M55 & 4 & as M4, plus low-overhead loop \texttt{dls}/\texttt{le}: no compare, no branch \\
+Xtensa LX7 (ESP32-S3) & 5 & zero-overhead \texttt{loop}, MAC16 \texttt{mula.aa.ll} into the accumulator \texttt{ACCLO} \\
 \hline
 \end{tabular}}
 \end{center}
 \bi
-	\ite common to all: NVIC interrupt controller, SysTick timer, vector table, debug via SWD
+	\ite DSP features = fewer instructions \textbf{and} no branch penalty per iteration
+	\ite the compiler finds MAC and loop instructions by itself; SIMD (\texttt{smlad}: two MACs at once) usually needs intrinsics or CMSIS-DSP
 \ei
 \os{\newpage}
 
-\item[{\rot\bf RISC-V}]~\\[-\lblskip]
+\item[{\rot\bf The DSP loop in assembly: Cortex-M4 and Xtensa}]~\\[-\lstskip]
+\begin{lstlisting}[language={}]
+@ Cortex-M4: r3 -> a, r1 -> b, r2 = end of a, s in r0
+.L3:  ldrh    lr, [r3, #2]!     @ load a[i], pointer += 2 (pre-increment)
+      ldrh    ip, [r1, #2]!     @ load b[i], pointer += 2
+      cmp     r3, r2            @ end reached?
+      smlabb  r0, lr, ip, r0    @ s += a[i] * b[i] (bottom halves, signed)
+      bne     .L3
+\end{lstlisting}
+\begin{lstlisting}[language={}]
+# Xtensa LX7: a8 = iteration count, a9 -> a, a3 -> b
+      wsr     a10, ACCLO        # accumulator = 0
+      loop    a8, .L3_LEND      # hardware loop: repeat a8 times
+.L3:  l16ui   a11, a9, 0        # load a[i]
+      l16ui   a10, a3, 0        # load b[i]
+      addi.n  a9, a9, 2
+      mula.aa.ll a11, a10       # ACC += a[i] * b[i]
+      addi.n  a3, a3, 2
+.L3_LEND:
+      rsr     a2, ACCLO         # result from the accumulator
+\end{lstlisting}
 \bi
-	\ite open instruction set architecture (since 2010, UC Berkeley; today RISC-V International) -- no license fees
-	\ite modular: a small base set plus standard extensions
-	\bi
-		\ite \textbf{RV32I}: 32 bit integer base, 32 registers (\texttt{x0} is always 0)
-		\ite \textbf{M} multiplication/division, \textbf{A} atomic operations, \textbf{F}/\textbf{D} floating point, \textbf{C} compressed 16 bit instructions, \textbf{V} vectors
-		\ite ESP32-C3 = RV32IMC
-	\ei
-	\ite many implementations: commercial (SiFive, Andes, Espressif) and open source (e.g.\ the Hazard3 cores in the RP2350)
-	\ite the same compilers (GCC, LLVM) and the same Rust targets as for ARM
-	\ite peripherals and interrupt controllers are not standardised as uniformly as on Cortex-M yet
+	\ite the compiler schedules \texttt{cmp} before \texttt{smlabb} so that the flags are ready for \texttt{bne} without a stall
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Other architectures}]~\\[-\lblskip]
+\item[{\rot\bf Floating point: software, FPU and vector unit}]~\\[-\lstskip]
+\begin{lstlisting}[language={}]
+@ Cortex-M0+ (no FPU): every operation is a library call of 30-100 cycles
+      bl    __aeabi_fmul        @ a[i] * b[i]
+      bl    __aeabi_fadd        @ s + product
+@ Cortex-M4F: fused multiply-add in the FPU, 3 cycles
+      vfma.f32  s0, s14, s15    @ s0 += s14 * s15
+@ Cortex-M55 with -ffast-math: Helium, 4 floats per instruction
+.L14: vldrw.32  q3, [ip], #16   @ load a[i..i+3]
+      vldrw.32  q1, [r3], #16   @ load b[i..i+3]
+      vmul.f32  q3, q3, q1
+      vadd.f32  q2, q2, q3      @ 4 partial sums
+      le        lr, .L14        @ low-overhead loop end
+\end{lstlisting}
 \bi
-	\ite \textbf{Xtensa} (Cadence): configurable cores in the ESP32 and ESP32-S3; Espressif's newer chips use RISC-V
-	\ite \textbf{PIC}, \textbf{8051}: 8 bit, still common in cost-sensitive mass products
-	\ite \textbf{MSP430}: 16 bit, extremely low power (metering, sensors)
-	\ite manufacturer-specific automotive cores (e.g.\ Infineon TriCore, Renesas RH850): safety features such as cores running in lock-step
+	\ite without \texttt{-ffast-math} the M55 multiplies vectors, but adds the products one by one: float addition is not associative, and C requires the order of the source code
+	\ite ESP32-C3 (RV32IMC) calls \texttt{\_\_mulsf3}/\texttt{\_\_addsf3}; the ESP32-S3 has an FPU (\texttt{madd.s}); RP2040 has fast float routines in its boot ROM
 \ei
 \os{\newpage}
 \end{description}
@@ -303,7 +738,7 @@ be predicted and how long a battery lasts.}
 	\ei
 	\ite \textbf{SRAM}: fast, volatile working memory for data, stack and time-critical code
 	\ite \textbf{EEPROM} or flash emulation: small, byte-wise changeable non-volatile data (settings, calibration)
-	\ite caches make programs faster on average, but timing less predictable $\Rightarrow$ put real-time critical code into RAM (e.g.\ \texttt{IRAM\_ATTR} on the ESP32, \texttt{\_\_not\_in\_flash\_func} on the RP2040)
+	\ite new non-volatile memories in recent MCUs: MRAM, RRAM, FRAM -- byte-writable, fast, many write cycles (e.g.\ in 22\,nm and smaller processes, where embedded flash is hard to build)
 	\ite \textbf{MPU} (memory protection unit): protects memory regions (e.g.\ catches stack overflows); an MMU with virtual memory exists only on application processors
 \ei
 \os{\newpage}
@@ -335,10 +770,10 @@ be predicted and how long a battery lasts.}
 \bi
 	\ite the \textbf{vector table} at the start of the program contains the initial stack pointer and the addresses of all handlers (reset, faults, interrupts)
 	\ite Cortex-M: the hardware saves 8 registers on the stack before the handler starts, so a handler is an ordinary C or Rust function
-	\ite interrupt latency: 15 clock cycles on the Cortex-M0+, 12 on the Cortex-M3/M4
+	\ite interrupt latency: 15 clock cycles on the Cortex-M0+, 12 on the Cortex-M3/M4/M33
 	\ite \textbf{NVIC}: priorities, nesting, and \textbf{tail chaining} -- a pending interrupt starts directly after the current one without restoring and saving the registers again
 	\ite \textbf{faults} (HardFault, MemManage, BusFault, UsageFault): invalid memory accesses, undefined instructions, division by zero -- the fault handler is the place to log the error and reset
-	\ite RISC-V: similar concepts, but the interrupt controller depends on the implementation (CLIC, PLIC or vendor-specific)
+	\ite RISC-V: similar concepts, but the interrupt controller depends on the implementation (CLINT, CLIC, PLIC or vendor-specific); with CLIC, vectored and nested interrupts similar to the NVIC
 \ei
 \os{\newpage}
 
@@ -353,6 +788,7 @@ be predicted and how long a battery lasts.}
 		\ite a battery device spends most of its time sleeping: average current = sum of (current $\times$ time share)
 	\ei
 	\ite example: 2000\,mAh battery, 10\,$\mu$A sleep and 1 second at 100\,mA every 10 minutes $\Rightarrow$ average $\approx 0.18$\,mA $\Rightarrow$ about 15 months
+	\ite ``race to sleep'': a faster core that finishes earlier and sleeps longer often needs less energy than a slow one
 \ei
 \os{\newpage}
 
@@ -366,18 +802,152 @@ be predicted and how long a battery lasts.}
 	\ite FPU (Cortex-M4F, M7, M33, ESP32-S3): single precision float in one or a few cycles -- \texttt{double} is still done in software if the FPU is single precision only
 	\ite \textbf{DSP features}: multiply-accumulate (MAC) in one cycle, saturating arithmetic, SIMD (two 16 bit or four 8 bit operations in one 32 bit instruction)
 	\ite dedicated DSPs add zero-overhead loops, circular addressing and several MAC units (VLIW) -- today often replaced by Cortex-M4/M7 or vector extensions
+	\ite neural networks run in 8 bit integers (INT8 quantisation): SIMD and vector units, or a separate NPU
 \ei
 \os{\newpage}
 \end{description}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Application Processors and Selection}
+\section{Manufacturers and their Product Lines}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\nsl{Processor cores and chips usually come from different companies. IP
+vendors such as Arm, SiFive, Andes or Cadence design cores and license them.
+Semiconductor manufacturers combine licensed or own cores with memories,
+peripherals and analog circuits and sell the chips. The market has been
+consolidated by acquisitions: Microchip bought Atmel (2016), NXP merged with
+Freescale (2015), Infineon bought Cypress (2020), Renesas bought Dialog
+(2021). Because the cores are similar, the manufacturers differ mainly in
+their peripherals, in their focus markets, in their software tools and in
+how long they deliver a chip.}
+
+\begin{description}
+\item[{\rot\bf Who makes what}]~\\[-\lblskip]
+\bi
+	\ite \textbf{IP vendors} design cores and license them, they sell no chips
+	\bi
+		\ite Arm (Cortex-M/R/A): license fee plus royalty per chip
+		\ite RISC-V IP: SiFive, Andes, Codasip, Nuclei; free cores from OpenHW, lowRISC, Raspberry Pi (Hazard3)
+		\ite Cadence (Xtensa), Synopsys (ARC), CEVA (DSPs)
+	\ei
+	\ite \textbf{semiconductor manufacturers} build MCUs and SoCs from licensed or own cores
+	\ite \textbf{foundries} manufacture the chips for companies without own fabs (TSMC, Samsung, GlobalFoundries, UMC)
+	\bi
+		\ite MCUs mostly in mature processes (90--22\,nm) with embedded flash; application processors in 16--3\,nm
+		\ite chip shortage 2021--2023: delivery times of more than a year $\Rightarrow$ second source and availability became selection criteria
+	\ei
+\ei
+\os{\newpage}
+
+\item[{\rot\bf Semiconductor manufacturers (1): the broad-line vendors}]~\\[-\lblskip]
+\begin{center}
+{\footnotesize
+\begin{tabularx}{\linewidth}{|>{\raggedright}p{24mm}|L|L|>{\raggedright\arraybackslash}p{27mm}|}
+\hline
+\textbf{vendor} & \textbf{families} & \textbf{particularities} & \textbf{tools} \\
+\hline
+STMicro\-electronics & STM32 (Cortex-M0+ \ldots M55), STM32MP (Cortex-A) & broadest Cortex-M portfolio, pin-compatible families, large community, cheap Nucleo boards & STM32CubeMX/IDE, HAL/LL drivers \\
+\hline
+NXP & LPC/Kinetis $\rightarrow$ MCX, i.MX RT (crossover), i.MX 8/9 (Cortex-A), S32 (automotive) & industrial and automotive, strong in application processors, long-term supply programme (10--15 years) & MCUXpresso, Yocto BSPs \\
+\hline
+Infineon & AURIX (TriCore), TRAVEO, XMC, PSoC (from Cypress) & automotive leader, safety (ASIL\,D), power electronics, security chips; PSoC with programmable analog/digital blocks & ModusToolbox, AURIX Dev.\ Studio \\
+\hline
+Renesas & RA (Cortex-M), RX (own CISC), RL78 (16 bit), RH850 (automotive), RZ (Cortex-A) & strong in Japanese automotive and industry; first MCU with Cortex-M85 (RA8) & e$^2$ studio, FSP \\
+\hline
+Microchip & AVR, PIC (8/16/32 bit), SAM (Cortex-M), PolarFire FPGAs & widest 8 bit portfolio, 5\,V parts, very long availability (decades) & MPLAB X, Harmony, MCC \\
+\hline
+Texas Instruments & MSP430, MSPM0 (Cortex-M0+), C2000, Sitara AM6x (Cortex-A/R), Jacinto & ultra low power, motor control and power conversion, analog front ends & Code Composer Studio, SysConfig \\
+\hline
+\end{tabularx}}
+\end{center}
+\os{\newpage}
+
+\item[{\rot\bf Semiconductor manufacturers (2): specialists}]~\\[-\lblskip]
+\begin{center}
+{\footnotesize
+\begin{tabularx}{\linewidth}{|>{\raggedright}p{24mm}|L|L|>{\raggedright\arraybackslash}p{27mm}|}
+\hline
+\textbf{vendor} & \textbf{families} & \textbf{particularities} & \textbf{tools} \\
+\hline
+Espressif & ESP32, ESP32-S3 (Xtensa); ESP32-C/H/P series (RISC-V) & Wi-Fi + Bluetooth for 1--3\,\texteuro{}, huge maker community, Rust supported by the vendor & ESP-IDF, Arduino, esp-hal (Rust) \\
+\hline
+Nordic Semi\-conductor & nRF52 (M4F), nRF53 (2 $\times$ M33), nRF54 (M33 + RISC-V), nRF91 (LTE-M/NB-IoT) & Bluetooth LE leader, very low power radios, cellular IoT & nRF Connect SDK (Zephyr) \\
+\hline
+Silicon Labs & EFR32 (Cortex-M33) & Zigbee, Thread, Matter, Bluetooth & Simplicity Studio \\
+\hline
+Raspberry Pi & RP2040, RP2350 & cheap, excellent documentation, PIO state machines, ARM or RISC-V selectable (RP2350) & Pico SDK, MicroPython, rp-hal, Embassy \\
+\hline
+WCH, GigaDevice and other Chinese vendors & CH32V (RISC-V), GD32 (ARM and RISC-V) & very low price (CH32V003 about 0.10\,\$), peripherals similar to STM32 & MounRiver, open-source tools \\
+\hline
+AMD (Xilinx), Altera, Lattice, Microchip & FPGAs and SoC-FPGAs & see section ``Microcontroller or FPGA?'' & Vivado, Quartus, Radiant, Libero \\
+\hline
+\end{tabularx}}
+\end{center}
+\os{\newpage}
+
+\item[{\rot\bf Example: one vendor, one family -- STM32}]~\\[-\lblskip]
+\begin{center}
+{\footnotesize
+\begin{tabularx}{\linewidth}{|l|>{\raggedright}p{33mm}|>{\raggedright}p{33mm}|L|}
+\hline
+\textbf{series} & \textbf{core, clock} & \textbf{focus} & \textbf{example features} \\
+\hline
+STM32C0 / G0 & Cortex-M0+, 48--64\,MHz & cost (from about 0.25\,\$) & replaces 8 bit MCUs \\
+STM32F1 / F4 & Cortex-M3 / M4F, 72--180\,MHz & classic mainstream & the ``Blue Pill'', huge amount of example code \\
+STM32G4 & Cortex-M4F, 170\,MHz & motor control, power conversion & high-resolution timers (184\,ps), fast ADCs, math accelerators \\
+STM32U5 & Cortex-M33, 160\,MHz & ultra low power + security & TrustZone, under 20\,$\mu$A/MHz \\
+STM32H7 & Cortex-M7 (+ M4), up to 600\,MHz & high performance & caches, TCM, dual-core variants, Ethernet, graphics \\
+STM32WB / WBA & Cortex-M4 / M33 + radio & wireless & Bluetooth LE, Thread, Zigbee \\
+STM32N6 & Cortex-M55, 800\,MHz & edge AI & Neural-ART NPU, image signal processor, 4.2\,MB SRAM \\
+STM32MP2 & 2 $\times$ Cortex-A35 + M33 & Linux + real time & NPU, Yocto Linux and an RTOS on one chip \\
+\hline
+\end{tabularx}}
+\end{center}
+\bi
+	\ite same tools (STM32CubeMX), same HAL API and often the same pinout across series $\Rightarrow$ easy migration; NXP (MCX, i.MX RT) and Renesas (RA) follow the same idea
+\ei
+\os{\newpage}
+
+\item[{\rot\bf Example: automotive and wireless}]~\\[-\lblskip]
+\bi
+	\ite \textbf{Infineon AURIX TC3xx / TC4x} (engine, brakes, steering, battery management)
+	\bi
+		\ite up to 6 TriCore cores at 300--500\,MHz, several of them in lock-step, ECC on all memories
+		\ite hardware security module (HSM) for secure boot and secure communication, CAN FD, Ethernet
+		\ite TC4x adds a parallel processing unit (vector DSP) for sensor fusion and AI; certified up to ASIL\,D
+	\ei
+	\ite \textbf{NXP S32K3}: Cortex-M7 in lock-step for body and zone controllers; \textbf{S32Z/E}: Cortex-R52 for real-time domain controllers
+	\ite \textbf{Espressif ESP32-C6}: RISC-V 160\,MHz + low-power RISC-V core, Wi-Fi 6, Bluetooth LE, Thread/Zigbee -- for a few euros
+	\ite \textbf{Nordic nRF54L15}: Cortex-M33 at 128\,MHz, RISC-V coprocessor for software-defined peripherals, Bluetooth LE 6.0, about half the current of the nRF52
+	\ite lesson: in these markets the chip is chosen for its radio, its certification and its software stack -- the CPU core comes second
+\ei
+\os{\newpage}
+
+\item[{\rot\bf Software ecosystem}]~\\[-\lblskip]
+\bi
+	\ite every vendor offers its own IDE, code generator and hardware abstraction layer (HAL) $\Rightarrow$ vendor lock-in
+	\ite \textbf{vendor-neutral layers}
+	\bi
+		\ite CMSIS (Arm): core access, CMSIS-DSP, CMSIS-NN for all Cortex-M chips
+		\ite Zephyr RTOS (Linux Foundation): one API and device tree for hundreds of boards; Nordic, NXP, ST, Infineon, Espressif contribute
+		\ite FreeRTOS (Amazon), Eclipse ThreadX, NuttX
+	\ei
+	\ite \textbf{Rust}: embedded-hal traits, Embassy (async), probe-rs; Espressif and Infineon support Rust officially, Ferrocene offers a certified Rust compiler
+	\ite \textbf{build and debug}: GCC and LLVM for all architectures; CMake, PlatformIO; debug probes via SWD/JTAG (J-Link, ST-Link, CMSIS-DAP)
+	\ite in practice: quality of the documentation, errata sheet and examples decide how fast a product is finished
+\ei
+\os{\newpage}
+\end{description}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Application Processors and Heterogeneous SoCs}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \nsl{When an application needs a graphical user interface, a camera, a lot
 of memory or complex network software, a microcontroller is no longer enough.
 Application processors run an operating system with virtual memory such as
-Linux. The last part of this chapter summarises their features and gives a
-checklist for choosing a processor.}
+Linux. Most of them are heterogeneous systems on chip: next to the
+application cores they contain microcontroller cores for real-time tasks,
+graphics and video units and, more and more, accelerators for neural
+networks.}
 
 \begin{description}
 \item[{\rot\bf Application processors}]~\\[-\lblskip]
@@ -385,22 +955,175 @@ checklist for choosing a processor.}
 	\ite ARM Cortex-A (and RISC-V application cores) with
 	\bi
 		\ite \textbf{MMU}: virtual memory, every process has its own protected address space -- required by Linux
-		\ite several cores, GHz clock rates, multi-level caches, out-of-order execution in larger cores
-		\ite external DRAM (hundreds of MB to several GB), storage on eMMC or SD card
+		\ite several cores, GHz clock rates, multi-level caches (L1 per core, shared L2/L3), out-of-order execution in larger cores
+		\ite external DRAM (hundreds of MB to several GB), storage on eMMC, SD card or NVMe
 	\ei
-	\ite examples: Raspberry Pi 5 (4 $\times$ Cortex-A76, 2.4\,GHz), NXP i.MX\,8/9, TI AM62x, STM32MP1/MP2 (Cortex-A + Cortex-M on one chip)
-	\ite often with GPU, video codecs and neural network accelerators (NPU)
-	\ite non-deterministic timing (caches, DRAM, branch prediction) $\Rightarrow$ hard real time on a separate core or MCU
+	\ite examples: Raspberry Pi 5 (4 $\times$ Cortex-A76, 2.4\,GHz), NXP i.MX\,93/95, TI AM62x, STM32MP2, Rockchip RK3588
+	\ite RISC-V application cores are arriving: SiFive, T-Head, SpacemiT; Linux distributions target the RVA23 profile
+	\ite often with GPU, video codecs, image signal processor and neural network accelerators (NPU)
+	\ite non-deterministic timing (caches, DRAM, branch prediction, OS) $\Rightarrow$ hard real time on a separate core or MCU
 \ei
 \os{\newpage}
 
+\item[{\rot\bf Heterogeneous SoC: Linux and real time on one chip}]~\\[-\lblskip]
+\begin{figure}[!hbtp]
+\begin{center}
+\resizebox{0.85\textwidth}{!}{%
+\begin{tikzpicture}[font=\sffamily\small,>=Stealth,
+	b/.style={draw,thick,minimum height=9mm,align=center}]
+	\node[b,fill=rwucyan!15,minimum width=40mm] (a) at (0,2.2) {Cortex-A cluster\\Linux (Yocto)};
+	\node[b,fill=rwucyan!5,minimum width=40mm] (l2) at (0,0.9) {L1/L2 caches};
+	\node[b,fill=rwuviolet!20,minimum width=34mm] (m) at (6,2.2) {Cortex-M core\\RTOS / bare metal};
+	\node[b,fill=rwuviolet!5,minimum width=34mm] (tcm) at (6,0.9) {TCM / SRAM};
+	\node[b,fill=orange!20,minimum width=26mm] (npu) at (11,2.2) {NPU, GPU,\\video, ISP};
+	\node[b,fill=green!15,minimum width=24mm] (mb) at (3,3.6) {mailbox (IPC)};
+	\draw[<->,thick] (a.north) |- (mb.west); \draw[<->,thick] (m.north) |- (mb.east);
+	\draw[very thick] (-2.5,-0.3) -- (12.5,-0.3) node[right]{interconnect};
+	\foreach \n in {l2,tcm,npu} \draw[<->,thick] (\n.south) -- (\n.south |- 0,-0.3);
+	\node[b,fill=gray!15,minimum width=28mm] (ddr) at (1,-1.5) {DRAM};
+	\node[b,fill=gray!15,minimum width=28mm] (per) at (7,-1.5) {peripherals\\(CAN, ADC, PWM)};
+	\foreach \n in {ddr,per} \draw[<->,thick] (\n.north) -- (\n.north |- 0,-0.3);
+\end{tikzpicture}}
+\caption{Asymmetric multiprocessing (AMP), e.g.\ STM32MP2, i.MX 8M/93/95, TI AM62x}
+\end{center}
+\end{figure}
+\bi
+	\ite Linux starts and stops the firmware of the M core (\texttt{remoteproc}) and exchanges messages over shared memory (\texttt{RPMsg}, OpenAMP)
+	\ite the M core keeps control loops running even while Linux boots or crashes
+\ei
+\os{\newpage}
+
+\item[{\rot\bf Accelerators for AI at the edge}]~\\[-\lblskip]
+\bi
+	\ite neural network inference = mostly multiply-accumulate on INT8 $\Rightarrow$ dedicated NPUs with hundreds to thousands of MAC units
+	\ite key figure: \textbf{TOPS} (tera operations per second) and TOPS/W -- a peak value, real models reach only a part of it
+	\ite microcontroller class (mW, kB--MB models): Arm Ethos-U55/U65/U85 next to Cortex-M55/M85 (e.g.\ Alif Ensemble, Infineon PSoC Edge), STM32N6 (Neural-ART, about 0.6 TOPS), NXP MCX N (eIQ Neutron)
+	\ite application processor class (W, models with millions of parameters): i.MX 8M Plus (2.3 TOPS), i.MX 95, Rockchip RK3588 (6 TOPS), Raspberry Pi AI HAT+ (Hailo, 13--26 TOPS)
+	\ite software: model trained in PyTorch or TensorFlow, quantised to INT8, compiled for the target (LiteRT for Microcontrollers, CMSIS-NN, vendor tools such as STM32Cube.AI or eIQ)
+	\ite more about AI in embedded systems in the introduction chapter
+\ei
+\os{\newpage}
+\end{description}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Excursion: Microcontroller or FPGA?}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\nsl{A processor executes instructions one after the other; even a
+superscalar core does only a few things at the same time. A field
+programmable gate array (FPGA) contains no fixed processor, but thousands of
+small configurable logic blocks and a configurable network between them. The
+algorithm is turned into a circuit, and all parts of this circuit work in
+parallel in every clock cycle. This section compares the two approaches and
+shows where they meet.}
+
+\begin{description}
+\item[{\rot\bf What is inside an FPGA}]~\\[-\lblskip]
+\begin{figure}[!hbtp]
+\begin{center}
+\resizebox{0.75\textwidth}{!}{%
+\begin{tikzpicture}[font=\sffamily\small,>=Stealth,
+	b/.style={draw,thick,minimum height=12mm,align=center}]
+	\foreach \i in {0,...,3} \draw[->,thick] (-1.2,1.05-\i*0.3) -- (0,1.05-\i*0.3);
+	\node[left,font=\sffamily\scriptsize] at (-1.2,0.6) {inputs};
+	\node[b,fill=rwucyan!20,minimum width=22mm,minimum height=16mm] (lut) at (1.1,0.6) {LUT\\(16 $\times$ 1 bit\\memory)};
+	\node[b,fill=rwuviolet!20,minimum width=14mm] (ff) at (4,0.9) {D flip-\\flop};
+	\node[draw,thick,trapezium,trapezium angle=70,shape border rotate=270,minimum width=6mm,minimum height=14mm,fill=gray!10] (mux) at (6,0.6) {};
+	\draw[->,thick] (lut.east) -- ++(0.5,0) |- (ff.west);
+	\draw[->,thick] (lut.east) -- ++(0.5,0) |- ([yshift=-3mm]mux.west);
+	\draw[->,thick] (ff.east) -- ([yshift=3mm]mux.west);
+	\draw[->,thick] (mux.east) -- ++(1,0) node[right,font=\sffamily\scriptsize]{to routing};
+	\node[font=\sffamily\scriptsize] at (4,-0.3) {clock};
+	\draw[->,thick] (4,-0.15) -- (ff.south);
+\end{tikzpicture}}
+\caption{Basic logic element: look-up table, flip-flop, multiplexer}
+\end{center}
+\end{figure}
+\bi
+	\ite a 4- or 6-input \textbf{look-up table} (LUT) realises any logic function of its inputs; thousands to millions of them
+	\ite programmable routing, \textbf{block RAM}, \textbf{DSP slices} (hardware multipliers), clock managers (PLL), fast transceivers
+	\ite the configuration is loaded from flash at power-up (SRAM-based FPGAs) or stored on chip (flash-based, e.g.\ Microchip PolarFire)
+\ei
+\os{\newpage}
+
+\item[{\rot\bf Sequential versus parallel}]~\\[-\lstskip]
+\begin{lstlisting}[language=C]
+// microcontroller: the CPU does one thing after the other
+while (1) {
+    cnt++;
+    gpio_put(LED, (cnt >> 23) & 1);
+}
+\end{lstlisting}
+\begin{lstlisting}[language=Verilog]
+// FPGA: describes a circuit - a 24 bit counter register and a wire
+module blink(input clk, output led);
+  reg [23:0] cnt = 0;
+  always @(posedge clk) cnt <= cnt + 1;
+  assign led = cnt[23];
+endmodule
+\end{lstlisting}
+\bi
+	\ite 100 such counters on the MCU: 100 times slower; on the FPGA: 100 copies of the circuit, all at full speed
+	\ite the Verilog (or VHDL) code is synthesised into LUTs and flip-flops -- it is a hardware description, not a program
+\ei
+\os{\newpage}
+
+\item[{\rot\bf Microcontroller and FPGA compared}]~\\[-\lblskip]
+\begin{center}
+{\footnotesize
+\begin{tabularx}{\linewidth}{|l|L|L|}
+\hline
+ & \textbf{microcontroller} & \textbf{FPGA} \\
+\hline
+execution & sequential instructions & parallel circuits \\
+timing & $\mu$s, interrupt latency and jitter & ns, cycle-exact and deterministic \\
+throughput & limited by the clock and the core & scales with the chip size (parallelism) \\
+languages & C, C++, Rust, MicroPython & VHDL, Verilog, SystemVerilog; HLS from C++; Chisel, Amaranth \\
+development time & short; debugging with breakpoints & long; simulation, timing closure, synthesis takes minutes to hours \\
+power & $\mu$W in sleep & static power, usually mW to W; no deep sleep (exceptions: iCE40, Lattice CrossLink) \\
+price & from 0.10\,\texteuro{} & from a few euros; large devices hundreds to thousands of euros \\
+change after delivery & firmware update & reconfiguration (also a firmware update) \\
+\hline
+\end{tabularx}}
+\end{center}
+\bi
+	\ite FPGA where the MCU is too slow or too irregular: image processing at line rate, high-speed ADC interfaces, many parallel PWM or encoder channels, protocol bridges, real-time Ethernet (TSN, EtherCAT)
+	\ite and as a prototype for an ASIC
+\ei
+\os{\newpage}
+
+\item[{\rot\bf Where microcontroller and FPGA meet}]~\\[-\lblskip]
+\bi
+	\ite \textbf{programmable I/O in MCUs}: RP2040/RP2350 PIO -- small state machines that bit-bang protocols (VGA, WS2812, DShot) cycle-exactly; also configurable logic cells (CCL in AVR, CLB in some PIC and TI C2000)
+	\ite \textbf{soft cores}: a processor built from FPGA logic
+	\bi
+		\ite AMD MicroBlaze V and Altera Nios V -- both RISC-V since 2023; open source: VexRiscv, NEORV32, PicoRV32
+	\ei
+	\ite \textbf{SoC-FPGAs}: hard processor cores plus FPGA fabric on one chip
+	\bi
+		\ite AMD Zynq-7000 (2 $\times$ Cortex-A9), Zynq UltraScale+ MPSoC (Cortex-A53 + R5F), Versal (with AI engines)
+		\ite Altera Agilex 5 and Cyclone V SoC, Microchip PolarFire SoC (5 RISC-V cores, Linux-capable)
+	\ei
+	\ite \textbf{small FPGAs with open toolchains}: Lattice iCE40/ECP5 and Gowin with Yosys + nextpnr -- easy start for students
+	\ite rule of thumb: start with an MCU; use an FPGA (or PIO) only for the part that the MCU cannot do in time
+\ei
+\os{\newpage}
+\end{description}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Choosing a Processor}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\nsl{The last part of this chapter summarises the selection criteria in a
+checklist and gives exercises that use the examples of this chapter.}
+
+\begin{description}
 \item[{\rot\bf Choosing a processor: checklist}]~\\[-\lblskip]
 \bi
 	\ite \textbf{function}: required peripherals (number of UARTs, ADC resolution, CAN, USB, Ethernet, radio)
-	\ite \textbf{performance}: computing power, FPU or DSP needed? Real-time requirements?
+	\ite \textbf{performance}: computing power, FPU or DSP needed? Real-time requirements, interrupt latency, determinism?
 	\ite \textbf{memory}: flash and RAM with reserve for later updates (rule of thumb: start with 50\,\% usage at most)
 	\ite \textbf{energy}: battery or mains? Sleep current, wake-up time
 	\ite \textbf{environment}: temperature range, automotive or industrial qualification, safety certification
+	\ite \textbf{security}: secure boot, TrustZone, crypto accelerators, update capability (Cyber Resilience Act)
 	\ite \textbf{software}: compilers, SDK, RTOS and Rust support, example code, community
 	\ite \textbf{business}: price at the planned quantity, availability for 10+ years, second source
 	\ite in practice the software ecosystem and the availability decide more often than the core itself
@@ -411,8 +1134,10 @@ checklist for choosing a processor.}
 \bi
 	\ite Compile \texttt{sum.c} on \url{https://godbolt.org} for the Cortex-M0+ with \texttt{-O0}, \texttt{-Os} and \texttt{-O2}. Compare the number of instructions in the loop.
 	\ite Change the type of \texttt{s} to \texttt{uint16\_t}. Which processor profits most, and why?
-	\ite Change \texttt{a} to \texttt{const float *} and \texttt{s} to \texttt{float}. Which instructions does the compiler generate for the Cortex-M0+, the Cortex-M4 (\texttt{-mfloat-abi=hard -mfpu=fpv4-sp-d16}) and the ESP32-C3?
+	\ite Compile \texttt{dot.c} for the Cortex-M55 with and without \texttt{-ffast-math}. Why does the result of \texttt{dot\_f32} possibly change in the last bits?
+	\ite Rewrite \texttt{dot\_q15} with the CMSIS intrinsic \texttt{\_\_SMLAD} so that two products are computed per instruction on the Cortex-M4. What must be true for the arrays?
+	\ite A data cache has 32\,KB, 4 ways and 64 byte lines. How many sets does it have, and how many bits are used for tag, index and offset of a 32 bit address?
 	\ite Estimate the battery lifetime of a sensor that wakes up every minute for 50\,ms at 20\,mA and sleeps at 5\,$\mu$A (battery 1000\,mAh).
-	\ite Choose a microcontroller for a battery-powered weather station that sends data via Wi-Fi every 15 minutes. Justify your choice with the checklist.
+	\ite Choose a processor (MCU, MPU or FPGA) for: (a) a battery-powered weather station with Wi-Fi, (b) a 3-phase motor inverter with 20\,kHz PWM, (c) a camera with person detection, (d) a 64-channel ultrasound front end sampling at 40\,MHz. Justify your choice with the checklist.
 \ei
 \end{description}
