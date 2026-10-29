@@ -9,7 +9,11 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Spezielle Defs f"ur Folien
 
-\renewcommand{\nsl}[1]{}
+% script-only text is not typeset on slides, but written with its PDF page
+% number to \jobname.notes; tools/pdf2pptx.py puts it into the PPTX notes
+\newwrite\nslnotes
+\immediate\openout\nslnotes=\jobname.notes
+\renewcommand{\nsl}[1]{\write\nslnotes{\the\ReadonlyShipoutCounter|\detokenize{#1}}}
 \renewcommand{\nl}{\\ \bigskip {\color{rwucyan} \rule{40mm}{0.5mm}}\\ \bigskip}
 %\renewcommand{\ind}[1]{\color{red}\bfseries #1}
 \renewcommand{\bff}{\bfseries\color{rwuviolet}  } % auf Folien bold und violett
