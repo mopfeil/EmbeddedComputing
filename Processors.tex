@@ -16,8 +16,10 @@ applications and the figures used to compare them. It then explains the
 architecture concepts that decide how fast and how predictably code runs:
 pipelines, caches and the instruction set. After that it looks at the
 important architectures (AVR, ARM Cortex-M/R/A, RISC-V, Xtensa and others)
-with assembly examples, at the inside of a microcontroller and at the
-semiconductor manufacturers. Application processors with accelerators, a
+with assembly examples, at the inside of a microcontroller, at the
+peripherals and accelerators around the core (interfaces, signal and image
+processing, AI, security) and at the semiconductor manufacturers.
+Application processors, a
 short comparison of microcontrollers and FPGAs and a decision guide complete
 the chapter.
 \newpage}
@@ -968,6 +970,326 @@ be predicted and how long a battery lasts.}
 \end{description}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Peripherals and Accelerators on the Chip}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\nsl{When a processor is chosen, the core is often less important than what
+is built around it: the interfaces to the outside world, analog circuits,
+accelerators for signal processing, camera and display units, neural network
+accelerators and security functions. These blocks work in parallel with the
+CPU and are connected to it through the bus matrix, DMA and interrupts. This
+section gives an overview from the point of view of processor selection;
+how GPIO, timers, ADC, UART, I$^2$C and SPI are programmed is shown in
+chapter Peripherals and Interfaces.}
+
+\begin{description}
+\item[{\rot\bf What is built around the core}]~\\[-\lblskip]
+\begin{center}
+\adjustbox{max width=\linewidth,max totalheight=0.8\textheight}{%
+\begin{tikzpicture}[font=\sffamily\small,
+	g/.style={draw,thick,rounded corners,fill=#1,text width=46mm,align=left,inner sep=3pt}]
+	\node[draw,very thick,fill=gray!15,text width=38mm,align=center,minimum height=30mm] (c) at (0,0) {\textbf{CPU core(s)}\\[1mm] memories, DMA,\\ bus matrix, interrupts};
+	\node[g=rwucyan!12] (t) at (-6.4,2.9) {\textbf{timers}\\{\footnotesize PWM, capture, encoder, high-resolution timers, watchdog, RTC}};
+	\node[g=rwucyan!12] (a) at (-6.4,0) {\textbf{analog}\\{\footnotesize ADC (SAR, sigma-delta), DAC, comparators, op-amps, temperature sensor}};
+	\node[g=rwucyan!12] (k) at (-6.4,-2.9) {\textbf{communication}\\{\footnotesize UART, SPI, I$^2$C, I$^2$S, CAN FD, USB, Ethernet, SDIO, QSPI}};
+	\node[g=green!12] (d) at (6.4,2.9) {\textbf{signal processing}\\{\footnotesize FPU, DSP instructions, CORDIC, filter accelerators, DSP cores}};
+	\node[g=orange!15] (i) at (6.4,0) {\textbf{image and display}\\{\footnotesize camera interface, ISP, JPEG/H.264, 2D graphics, LCD/MIPI DSI}};
+	\node[g=orange!25] (n) at (6.4,-2.9) {\textbf{AI}\\{\footnotesize vector unit, NPU}};
+	\node[g=rwuviolet!12,text width=60mm,align=center] (w) at (0,3.7) {\textbf{wireless}: Wi-Fi, Bluetooth LE, 802.15.4, LTE-M};
+	\node[g=rwuviolet!12,text width=60mm,align=center] (s) at (0,-3.7) {\textbf{security}: crypto, TRNG, key storage, secure boot};
+	\foreach \n in {t,a,k,d,i,n,w,s} \draw[thick,gray] (c) -- (\n);
+\end{tikzpicture}}
+\end{center}
+\os{\newpage}
+
+\item[{\rot\bf Interfaces at a glance}]~\\[-\lblskip]
+\begin{center}
+{\footnotesize
+\begin{tabularx}{\linewidth}{|l|>{\raggedright}p{17mm}|>{\raggedright}p{30mm}|>{\raggedright}p{19mm}|L|}
+\hline
+\textbf{interface} & \textbf{wires} & \textbf{data rate} & \textbf{distance} & \textbf{typical use} \\
+\hline
+UART & 2 (TX, RX) & up to a few Mbit/s & board, RS-485: 1\,km & debug console, GPS, modems \\
+I$^2$C / I3C & 2 (SDA, SCL) & 0.1--1 / 12.5\,Mbit/s & board & sensors, EEPROMs, power management \\
+SPI, QSPI/OSPI & 4 / 6--11 & 10--100\,Mbit/s / up to 200\,MB/s & board & displays, ADCs, external flash and PSRAM \\
+I$^2$S / SAI & 3--4 & audio sample rates & board & microphones, audio codecs \\
+CAN FD / CAN XL & 2 (differential) & 5--8 / 10--20\,Mbit/s & 40\,m bus & vehicles, machines \\
+LIN & 1 & 20\,kbit/s & vehicle & window lifters, seats, mirrors \\
+USB FS / HS & 2 + supply & 12 / 480\,Mbit/s & 5\,m & PC connection, firmware update, audio \\
+Ethernet, 10BASE-T1S & 2--8 & 10\,Mbit/s--1\,Gbit/s & 15--100\,m & industry (EtherCAT, TSN), vehicles, gateways \\
+MIPI CSI-2 / DSI & 1--4 lanes & 1--2.5\,Gbit/s per lane & 30\,cm & cameras, displays \\
+PCIe & lanes & 8\,GT/s per lane (Gen 3) & board & NVMe, Wi-Fi modules, AI accelerators (application processors) \\
+\hline
+\end{tabularx}}
+\end{center}
+\os{\newpage}
+
+\item[{\rot\bf Which interfaces in which class?}]~\\[-\lblskip]
+\newcommand{\Y}{\tikz\fill[rwucyandark] (0,0) circle (1.1mm);}
+\newcommand{\M}{\tikz\draw[rwucyandark,thick] (0,0) circle (1.0mm);}
+\begin{center}
+{\small
+\begin{tabular}{|l|c|c|c|c|c|}
+\hline
+ & \textbf{8 bit MCU} & \textbf{Cortex-M0+} & \textbf{M4/M33} & \textbf{M7/M55} & \textbf{application} \\
+ & {\scriptsize ATmega328P} & {\scriptsize RP2040, STM32G0} & {\scriptsize STM32G4/U5, nRF54} & {\scriptsize STM32H7/N6, RT1170} & {\scriptsize i.MX 93, AM62x} \\
+\hline
+UART, SPI, I$^2$C & \Y & \Y & \Y & \Y & \Y \\
+USB full speed & -- & \Y & \Y & \Y & \Y \\
+CAN FD & -- & \M & \Y & \Y & \Y \\
+I$^2$S / SAI audio & -- & \M & \Y & \Y & \Y \\
+USB high speed, Ethernet & -- & -- & \M & \Y & \Y \\
+camera, display controller & -- & -- & \M & \Y & \Y \\
+MIPI CSI-2 / DSI, ISP & -- & -- & -- & \M & \Y \\
+external DRAM, PCIe & -- & -- & -- & -- & \Y \\
+\hline
+\end{tabular}}
+\end{center}
+\bi
+	\ite \Y\ usually present \quad \M\ in some families \quad -- not available
+	\ite missing interfaces can sometimes be emulated: RP2040 PIO (CAN, DVI video), bit banging -- or added with an external chip (e.g.\ Ethernet over SPI)
+\ei
+\os{\newpage}
+
+\item[{\rot\bf Pin multiplexing: many functions, few pins}]~\\[-\lblskip]
+\begin{center}
+\adjustbox{max width=\linewidth,max totalheight=0.5\textheight}{%
+\begin{tikzpicture}[font=\sffamily\small,>=Stealth]
+	\foreach \f/\n [count=\i from 0] in {F1/{SPI0 RX},F2/{UART0 TX},F3/{I2C0 SDA},F4/{PWM0 A},F5/{SIO (software GPIO)},F6/{PIO0},F7/{PIO1},F9/{USB overcurrent detect}} {
+		\node[draw,thick,fill=rwucyan!12,minimum width=40mm,minimum height=5.5mm,anchor=east] (s\i) at (0,-\i*0.62) {\n};
+		\node[anchor=east,font=\sffamily\scriptsize,text=gray] at (-4.2,-\i*0.62) {\f};
+		\draw[->,thick] (s\i.east) -- (1.2,-\i*0.62);
+	}
+	\draw[very thick,fill=gray!10] (1.2,0.3) -- (2.4,-0.6) -- (2.4,-3.8) -- (1.2,-4.7) -- cycle;
+	\node[rotate=90,font=\sffamily\scriptsize] at (1.8,-2.2) {multiplexer};
+	\draw[->,thick] (1.8,-5.4) node[below,font=\sffamily\scriptsize,align=center]{FUNCSEL field in\\GPIO0\_CTRL register} -- (1.8,-4.3);
+	\draw[very thick] (2.4,-2.2) -- (4.2,-2.2);
+	\node[draw,very thick,fill=rwuviolet!25,minimum width=16mm,minimum height=10mm] at (5.0,-2.2) {pin GPIO0};
+\end{tikzpicture}}
+\end{center}
+\bi
+	\ite a 48-pin package cannot bring out all signals of all peripherals $\Rightarrow$ every pin has several alternate functions (RP2040: up to 9)
+	\ite \textbf{pin planning} early in the design: STM32CubeMX, TI SysConfig, MCUXpresso Config Tools check conflicts -- a wrong pin choice means a new board
+\ei
+\os{\newpage}
+
+\item[{\rot\bf Analog and timers working together: motor control}]~\\[-\lblskip]
+\begin{center}
+\adjustbox{max width=\linewidth,max totalheight=0.55\textheight}{%
+\begin{tikzpicture}[font=\sffamily\small,>=Stealth,
+	b/.style={draw,thick,rounded corners,fill=#1,text width=32mm,align=center,minimum height=12mm}]
+	\draw[thick,dashed,rwucyandark,rounded corners] (-2.2,-2.9) rectangle (7.4,3.0);
+	\node[anchor=north west,text=rwucyandark,font=\sffamily\scriptsize] at (-2.1,2.95) {on the MCU (e.g.\ STM32G4, TI C2000)};
+	\node[b=green!15] (cpu) at (0,1.5) {control loop (FOC)\\{\scriptsize CPU + CORDIC/FMAC}};
+	\node[b=rwucyan!20] (tim) at (5.2,1.5) {timer\\{\scriptsize centre-aligned PWM}};
+	\node[b=gray!10] (drv) at (10.6,1.5) {gate driver,\\power stage};
+	\node[b=gray!10] (mot) at (10.6,-1.5) {motor +\\current shunt};
+	\node[b=rwucyan!20] (op) at (5.2,-1.5) {op-amp\\{\scriptsize on chip}};
+	\node[b=rwucyan!20] (adc) at (0,-1.5) {ADC\\{\scriptsize sample + convert}};
+	\draw[->,thick] (cpu) -- node[above,font=\sffamily\scriptsize]{duty cycle} (tim);
+	\draw[->,thick] (tim) -- node[above,font=\sffamily\scriptsize]{PWM} (drv);
+	\draw[->,thick] (drv) -- (mot);
+	\draw[->,thick] (mot) -- node[above,font=\sffamily\scriptsize]{shunt voltage} (op);
+	\draw[->,thick] (op) -- (adc);
+	\draw[->,thick] (adc) -- node[left,font=\sffamily\scriptsize]{DMA, interrupt} (cpu);
+	\draw[->,thick,dashed,red!70!black] (tim) -- node[right,pos=0.35,font=\sffamily\scriptsize,text=red!70!black]{trigger at PWM centre} (adc);
+\end{tikzpicture}}
+\end{center}
+\bi
+	\ite the timer starts the ADC exactly in the middle of the PWM period (no switching noise) -- no software involved
+	\ite the CPU only computes the next duty cycle: 20\,kHz loop $\Rightarrow$ 50\,$\mu$s per cycle
+	\ite ADC types: \textbf{SAR} (12--16 bit, up to several Msps, control) and \textbf{sigma-delta} (16--24 bit, slow, sensors, audio)
+\ei
+\os{\newpage}
+
+\item[{\rot\bf How signal processing is integrated}]~\\[-\lblskip]
+\begin{center}
+\adjustbox{max width=\linewidth,max totalheight=0.78\textheight}{%
+\begin{tikzpicture}[font=\sffamily\small,
+	h/.style={draw,thick,fill=#1,text width=48mm,inner sep=2mm,minimum height=9mm,font=\sffamily\bfseries\small,align=center},
+	t/.style={draw,thick,text width=48mm,align=left,inner sep=2mm,minimum height=44mm,anchor=north}]
+	\node[h=green!20] at (0,0) {DSP instructions};
+	\node[h=green!30] at (5.6,0) {hardware accelerator};
+	\node[h=green!45] at (11.2,0) {separate DSP core};
+	\node[t] at (0,-0.45) {\textbf{examples}\\ MAC, SIMD, saturation in Cortex-M4/M7/M33; Helium in M55/M85; ESP32-S3 vector instructions; RISC-V P (draft)\\[2mm] \textbf{programming}\\ C with CMSIS-DSP, intrinsics\\[2mm] \textbf{for} filters, FFT, control loops};
+	\node[t] at (5.6,-0.45) {\textbf{examples}\\ STM32G4/H7: CORDIC (sin, cos, atan) and FMAC (FIR/IIR filter); TI C2000: TMU, CLA\\[2mm] \textbf{programming}\\ configure registers, feed via DMA\\[2mm] \textbf{for} motor control, power conversion -- runs in parallel to the CPU};
+	\node[t] at (11.2,-0.45) {\textbf{examples}\\ Cadence HiFi 4 in i.MX RT600 and i.MX 8M Plus; TI C7x in AM62A/TDA4\\[2mm] \textbf{programming}\\ own toolchain, firmware loaded by the main core\\[2mm] \textbf{for} audio (voice, noise cancelling), radar, vision};
+\end{tikzpicture}}
+\end{center}
+\os{\newpage}
+
+\item[{\rot\bf Data flow for audio processing: double buffering}]~\\[-\lblskip]
+\begin{center}
+\adjustbox{max width=\linewidth,max totalheight=0.5\textheight}{%
+\begin{tikzpicture}[font=\sffamily\small,>=Stealth,
+	b/.style={draw,thick,rounded corners,fill=#1,align=center,minimum height=10mm,text width=22mm}]
+	\node[b=gray!10] (mic) at (0,0) {microphone,\\codec};
+	\node[b=rwucyan!20] (i2s) at (3,0) {I$^2$S / SAI\\receiver};
+	\node[b=rwucyan!10,text width=17mm] (A) at (6.2,0.7) {buffer A};
+	\node[b=rwucyan!10,text width=17mm] (B) at (6.2,-0.7) {buffer B};
+	\node[b=green!15] (cpu) at (9.4,0) {CPU: filter\\(CMSIS-DSP)};
+	\node[b=rwucyan!20] (out) at (12.6,0) {I$^2$S out,\\amplifier};
+	\draw[->,thick] (mic) -- (i2s);
+	\draw[->,thick] (i2s) -- node[above,font=\sffamily\scriptsize,pos=0.4]{DMA} (A.west);
+	\draw[->,thick] (i2s) -- (B.west);
+	\draw[->,thick] (A.east) -- (cpu); \draw[->,thick] (B.east) -- (cpu);
+	\draw[->,thick] (cpu) -- node[above,font=\sffamily\scriptsize]{DMA} (out);
+	% timeline
+	\foreach \x/\a/\b in {0/A/B,3/B/A,6/A/B,9/B/A} {
+		\node[draw,fill=rwucyan!15,minimum width=30mm,minimum height=6mm,anchor=west,font=\sffamily\scriptsize] at (\x,-2.1) {DMA fills \a};
+		\node[draw,fill=green!15,minimum width=30mm,minimum height=6mm,anchor=west,font=\sffamily\scriptsize] at (\x,-2.8) {CPU processes \b};
+	}
+	\draw[->,thick,gray] (0,-3.35) -- (12.6,-3.35) node[right,text=black]{t};
+\end{tikzpicture}}
+\end{center}
+\bi
+	\ite DMA fills one buffer while the CPU processes the other; the half-transfer interrupt says when to switch
+	\ite deadline: one block of $N$ samples must be processed in $N/f_s$ -- e.g.\ 256 samples at 48\,kHz $\Rightarrow$ 5.3\,ms
+	\ite larger blocks give more time per block, but more latency
+\ei
+\os{\newpage}
+
+\item[{\rot\bf Image processing: the pipeline}]~\\[-\lblskip]
+\begin{center}
+\adjustbox{max width=\linewidth,max totalheight=0.5\textheight}{%
+\begin{tikzpicture}[font=\sffamily\small,>=Stealth,
+	b/.style={draw,thick,rounded corners,fill=#1,align=center,minimum height=12mm,text width=24mm}]
+	\node[b=gray!10] (s) at (0,0) {image sensor\\{\scriptsize raw Bayer data}};
+	\node[b=rwucyan!20] (if) at (3.4,0) {camera interface\\{\scriptsize DCMI or MIPI CSI-2}};
+	\node[b=orange!20] (isp) at (6.8,0) {ISP\\{\scriptsize debayer, white balance, denoise, HDR}};
+	\node[b=gray!15] (fb) at (10.2,0) {frame buffer\\{\scriptsize SRAM or DRAM}};
+	\node[b=orange!35] (npu) at (14,1.6) {NPU\\{\scriptsize object detection}};
+	\node[b=rwuviolet!20] (enc) at (14,0) {encoder\\{\scriptsize JPEG, H.264}};
+	\node[b=rwucyan!20] (dsp) at (14,-1.6) {display controller\\{\scriptsize LCD-TFT, MIPI DSI}};
+	\draw[->,thick] (s) -- (if); \draw[->,thick] (if) -- (isp); \draw[->,thick] (isp) -- node[above,font=\sffamily\scriptsize]{DMA} (fb);
+	\draw[->,thick] (fb) -- (npu.west); \draw[->,thick] (fb) -- (enc); \draw[->,thick] (fb) -- (dsp.west);
+	\node[anchor=west,font=\sffamily\scriptsize] at (15.4,1.6) {result};
+	\node[anchor=west,font=\sffamily\scriptsize] at (15.4,0) {network};
+	\node[anchor=west,font=\sffamily\scriptsize] at (15.4,-1.6) {screen};
+\end{tikzpicture}}
+\end{center}
+\bi
+	\ite data rates: QVGA 320 $\times$ 240 $\times$ 2\,B $\times$ 15\,fps = 2.3\,MB/s; 1080p30 = 1920 $\times$ 1080 $\times$ 2\,B $\times$ 30 = 124\,MB/s
+	\ite the CPU does not touch the pixels: interface, ISP, DMA and accelerators move and process them; the CPU configures and reacts to the results
+\ei
+\os{\newpage}
+
+\item[{\rot\bf Image processing: which processor?}]~\\[-\lblskip]
+\begin{center}
+{\footnotesize
+\begin{tabularx}{\linewidth}{|>{\raggedright}p{30mm}|L|L|L|}
+\hline
+\textbf{class} & \textbf{examples} & \textbf{what it can do} & \textbf{use case} \\
+\hline
+MCU with camera interface & ESP32-S3 + OV2640, OpenMV (STM32H7) & QVGA/VGA, JPEG, simple vision in software & doorbell, QR code reader, line follower \\
+MCU with ISP + NPU & STM32N6, ESP32-P4 & MIPI CSI-2, ISP, H.264, neural networks & smart sensor, people counting \\
+application processor & i.MX 8M Plus, RK3588, Raspberry Pi 5 & several cameras up to 4K, GPU, OpenCV, Linux & industrial inspection, robotics \\
+FPGA / SoC-FPGA & Zynq UltraScale+, Lattice CrossLink & line-rate processing with fixed latency, sensor bridging & machine vision, medical imaging \\
+\hline
+\end{tabularx}}
+\end{center}
+\bi
+	\ite the bottleneck is usually memory bandwidth and size, not the CPU: a single 1080p frame needs about 4\,MB
+\ei
+\os{\newpage}
+
+\item[{\rot\bf AI: where does the inference run?}]~\\[-\lblskip]
+\begin{center}
+\adjustbox{max width=\linewidth,max totalheight=0.55\textheight}{%
+\begin{tikzpicture}[font=\sffamily\small,
+	c/.style={ellipse,draw,thick,align=center,inner sep=1pt,fill=#1}]
+	\draw[->,thick,gray] (0,0) -- (17,0) node[midway,below=2mm,text=black]{power (mW $\rightarrow$ W)};
+	\draw[->,thick,gray] (0,0) -- (0,6.8) node[midway,above=2mm,rotate=90,text=black]{inference throughput};
+	\node[c=rwucyan!12] at (1.9,0.8) {Cortex-M4\\{\scriptsize CMSIS-NN, SIMD}};
+	\node[c=rwucyan!25] at (4.2,1.7) {Cortex-M55\\{\scriptsize Helium vectors}};
+	\node[c=orange!20] at (7.4,2.7) {MCU + NPU\\{\scriptsize Ethos-U55, Neural-ART,}\\{\scriptsize eIQ Neutron}};
+	\node[c=orange!35] at (11.9,4.4) {application proc.\ + NPU\\{\scriptsize i.MX 8M Plus 2.3 TOPS}};
+	\node[c=rwuviolet!25] at (14.4,5.8) {accelerator via PCIe\\{\scriptsize Hailo, 13--26 TOPS}};
+\end{tikzpicture}}
+\end{center}
+\bi
+	\ite inference = mostly INT8 multiply-accumulate; an NPU has hundreds to thousands of MAC units
+	\ite figures of merit \textbf{TOPS} and TOPS/W are peak values -- real models reach a fraction, memory often limits first
+	\ite \textbf{use cases}: keyword spotting or vibration monitoring at a few mW on a Cortex-M; person detection with an MCU NPU; multi-camera robotics on an application processor
+\ei
+\os{\newpage}
+
+\item[{\rot\bf How an NPU is integrated}]~\\[-\lblskip]
+\begin{center}
+\adjustbox{max width=\linewidth,max totalheight=0.5\textheight}{%
+\begin{tikzpicture}[font=\sffamily\small,>=Stealth,
+	b/.style={draw,very thick,rounded corners,fill=#1,align=center,minimum height=14mm,text width=38mm}]
+	\node[b=rwucyan!20] (cpu) at (0,1.8) {Cortex-M55\\{\scriptsize runtime (LiteRT Micro), operators the NPU cannot do}};
+	\node[b=orange!25] (npu) at (7.4,1.8) {Ethos-U55 NPU\\{\scriptsize 32--256 MACs per cycle}};
+	\node[b=gray!15] (ram) at (0,-1.2) {SRAM\\{\scriptsize tensor arena: activations}};
+	\node[b=gray!15] (fl) at (7.4,-1.2) {flash / xSPI\\{\scriptsize model and weights}};
+	\draw[very thick] (-2.4,0.3) -- (9.8,0.3) node[right]{AXI bus};
+	\foreach \n in {cpu,npu} \draw[<->,thick] (\n.south) -- (\n.south |- 0,0.3);
+	\foreach \n in {ram,fl} \draw[<->,thick] (\n.north) -- (\n.north |- 0,0.3);
+	\draw[->,thick,rwuviolet] ([yshift=3mm]cpu.east) -- node[above,font=\sffamily\scriptsize]{2: start command stream} ([yshift=3mm]npu.west);
+	\draw[->,thick,red!70!black] ([yshift=-3mm]npu.west) -- node[below,font=\sffamily\scriptsize]{4: interrupt when done} ([yshift=-3mm]cpu.east);
+	\node[draw,thick,dashed,rounded corners,fill=green!8,text width=40mm,align=left,font=\sffamily\scriptsize] at (13.6,1.8) {1 (offline): the Vela compiler turns the INT8 model into a command stream for the NPU};
+	\node[draw,thick,dashed,rounded corners,fill=green!8,text width=40mm,align=left,font=\sffamily\scriptsize] at (13.6,-1.2) {3: the NPU reads weights and activations itself via the bus};
+\end{tikzpicture}}
+\end{center}
+\bi
+	\ite the NPU is a bus master like a DMA controller; the CPU is free (or sleeps) during the inference
+	\ite selection: does the model fit into SRAM (activations) and flash (weights)? which operators does the NPU support?
+\ei
+\os{\newpage}
+
+\item[{\rot\bf AI on the MCU: from model to device}]~\\[-\lblskip]
+\begin{center}
+\adjustbox{max width=\linewidth,max totalheight=0.3\textheight}{%
+\begin{tikzpicture}[font=\sffamily\small,>=Stealth,
+	s/.style={draw,very thick,rounded corners,fill=#1,text width=30mm,minimum height=15mm,align=center}]
+	\node[s=gray!10] (t) at (0,0) {\textbf{train}\\{\scriptsize PyTorch, TensorFlow (float, PC/GPU)}};
+	\node[s=rwucyan!15] (q) at (4.3,0) {\textbf{quantise}\\{\scriptsize float $\rightarrow$ INT8, check accuracy}};
+	\node[s=rwuviolet!15] (c) at (8.6,0) {\textbf{compile}\\{\scriptsize LiteRT Micro, CMSIS-NN, STM32Cube.AI, eIQ}};
+	\node[s=orange!15] (r) at (12.9,0) {\textbf{run}\\{\scriptsize CPU, vector unit or NPU}};
+	\draw[->,very thick] (t) -- (q); \draw[->,very thick] (q) -- (c); \draw[->,very thick] (c) -- (r);
+\end{tikzpicture}}
+\end{center}
+\begin{center}
+{\footnotesize
+\begin{tabularx}{\linewidth}{|l|L|L|L|}
+\hline
+\textbf{example} & \textbf{input and preprocessing} & \textbf{model} & \textbf{typical platform} \\
+\hline
+keyword spotting & 1\,s audio at 16\,kHz $\rightarrow$ spectrogram (FFT with CMSIS-DSP) & small CNN, about 20\,KB INT8 & Cortex-M4/M33, a few mW \\
+person detection & 96 $\times$ 96 grey image from the camera & MobileNet, about 250\,KB INT8 & Cortex-M7, ESP32-S3, MCU with NPU \\
+\hline
+\end{tabularx}}
+\end{center}
+\bi
+	\ite both are standard examples of LiteRT for Microcontrollers -- DSP, camera interface and NPU work together
+\ei
+\os{\newpage}
+
+\item[{\rot\bf Security peripherals: secure boot as an example}]~\\[-\lblskip]
+\begin{center}
+\adjustbox{max width=\linewidth,max totalheight=0.42\textheight}{%
+\begin{tikzpicture}[font=\sffamily\small,>=Stealth,
+	b/.style={draw,very thick,rounded corners,fill=#1,align=center,text width=28mm,minimum height=14mm}]
+	\node[b=gray!15] (rom) at (0,0) {boot ROM\\{\scriptsize immutable}};
+	\node[b=rwucyan!15] (bl) at (5.2,0) {boot loader\\{\scriptsize in flash}};
+	\node[b=green!15] (app) at (10.4,0) {application\\{\scriptsize in flash}};
+	\node[b=rwuviolet!20] (key) at (2.6,-2.4) {public key hash\\{\scriptsize in OTP fuses}};
+	\node[b=rwuviolet!20] (pka) at (7.8,-2.4) {crypto accelerator\\{\scriptsize SHA-256, ECDSA}};
+	\draw[->,very thick] (rom) -- node[above,font=\sffamily\scriptsize]{verify signature} (bl);
+	\draw[->,very thick] (bl) -- node[above,font=\sffamily\scriptsize]{verify signature} (app);
+	\draw[->,thick,dashed] (key) -- (rom); \draw[->,thick,dashed] (key) -- (bl);
+	\draw[->,thick,dashed] (pka) -- (bl); \draw[->,thick,dashed] (pka) -- (app);
+	\node[anchor=west,font=\sffamily\scriptsize,text=red!70!black,text width=30mm] at (12.2,0) {signature wrong:\\do not start, recovery mode};
+\end{tikzpicture}}
+\end{center}
+\bi
+	\ite further blocks: true random number generator (TRNG), AES accelerator, key storage / PUF, tamper detection, debug port lock
+	\ite examples: RP2350 (OTP, glitch detectors, secure boot), ESP32 (flash encryption, secure boot), STM32U5/H5 (TrustZone, PKA); dedicated secure elements (e.g.\ OPTIGA, ATECC) as external chips
+\ei
+\os{\newpage}
+\end{description}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Manufacturers and their Product Lines}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \nsl{Processor cores and chips usually come from different companies. IP
@@ -1136,25 +1458,6 @@ networks.}
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Accelerators for AI at the edge}]~\\[-\lblskip]
-\begin{center}
-\adjustbox{max width=\linewidth,max totalheight=0.32\textheight}{%
-\begin{tikzpicture}[font=\sffamily\small,>=Stealth,
-	s/.style={draw,very thick,rounded corners,fill=#1,text width=30mm,minimum height=15mm,align=center}]
-	\node[s=gray!10] (t) at (0,0) {\textbf{train}\\{\scriptsize PyTorch, TensorFlow (float, PC/GPU)}};
-	\node[s=rwucyan!15] (q) at (4.3,0) {\textbf{quantise}\\{\scriptsize float $\rightarrow$ INT8, check accuracy}};
-	\node[s=rwuviolet!15] (c) at (8.6,0) {\textbf{compile}\\{\scriptsize LiteRT Micro, CMSIS-NN, STM32Cube.AI, eIQ}};
-	\node[s=orange!15] (r) at (12.9,0) {\textbf{run}\\{\scriptsize CPU, vector unit or NPU}};
-	\draw[->,very thick] (t) -- (q); \draw[->,very thick] (q) -- (c); \draw[->,very thick] (c) -- (r);
-\end{tikzpicture}}
-\end{center}
-\bi
-	\ite inference = mostly INT8 multiply-accumulate $\Rightarrow$ NPUs with hundreds to thousands of MAC units; figure of merit \textbf{TOPS} and TOPS/W (peak values)
-	\ite \textbf{MCU class} (mW, models of kB--MB): Arm Ethos-U55/U85 next to Cortex-M55/M85 (Alif Ensemble, Infineon PSoC Edge), STM32N6 (about 0.6 TOPS), NXP MCX N
-	\ite \textbf{application class} (W): i.MX 8M Plus (2.3 TOPS), RK3588 (6 TOPS), Raspberry Pi AI HAT+ (13--26 TOPS)
-	\ite \textbf{use case}: keyword spotting on a Cortex-M55 at a few mW; person detection in a camera with an NPU
-\ei
-\os{\newpage}
 \end{description}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1331,6 +1634,8 @@ chapter.}
 	\ite Rewrite \texttt{dot\_q15} with the CMSIS intrinsic \texttt{\_\_SMLAD} so that two products are computed per instruction on the Cortex-M4. What must be true for the arrays?
 	\ite A data cache has 32\,KB, 4 ways and 64 byte lines. How many sets does it have, and how many bits are used for tag, index and offset? Continue the cache example table with the addresses 0x44 and 0x00.
 	\ite Estimate the battery lifetime of a sensor that wakes up every minute for 50\,ms at 20\,mA and sleeps at 5\,$\mu$A (battery 1000\,mAh).
+	\ite A camera delivers 640 $\times$ 480 pixels with 2 bytes at 30\,fps. Which data rate does this need, how much RAM does one frame need, and which of the processors of this lecture could handle it?
+	\ite Plan the pins of an RP2040 for one UART, one I$^2$C bus, one SPI bus and four PWM outputs (use the GPIO function table of the datasheet).
 	\ite Use the decision tree for: (a) a weather station with Wi-Fi, (b) a 3-phase inverter with 20\,kHz PWM, (c) a camera with person detection, (d) a 64-channel ultrasound front end. Justify with the checklist.
 \ei
 \end{description}
