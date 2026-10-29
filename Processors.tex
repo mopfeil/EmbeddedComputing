@@ -121,6 +121,19 @@ FPGA / SoC-FPGA & Lattice iCE40, AMD Zynq & 50--500\,MHz & block RAM, DRAM & mW-
 		\ite application benchmarks: ULPMark (energy), MLPerf Tiny (neural networks), own code on an evaluation board
 	\ei
 \ei
+\nsl{\emph{CPI} (cycles per instruction) is the average number of clock
+cycles per executed instruction. For cores that can finish more than one
+instruction per cycle the inverse, \emph{IPC} (instructions per cycle), is
+more common. Both depend on the program: a loop full of loads from slow
+memory has a much higher CPI than one that only works on registers.
+\emph{Dhrystone} is a small synthetic program from 1984. Its result is
+given in DMIPS, Dhrystone MIPS relative to a VAX~11/780, which reached 1757
+Dhrystone loops per second. Because the program is tiny and spends much time
+in string functions that compilers can optimise away, the numbers are hard
+to compare. \emph{CoreMark} (EEMBC, 2009) runs list processing, matrix
+operations, a state machine and a CRC. Its rules prevent the compiler from
+computing results in advance, and every published score must state the
+compiler and its options.}
 \os{\newpage}
 
 \item[{\rot\bf Key figures: CoreMark of real chips}]~\\[-\lblskip]
@@ -146,6 +159,13 @@ FPGA / SoC-FPGA & Lattice iCE40, AMD Zynq & 50--500\,MHz & block RAM, DRAM & mW-
 	\ite CoreMark = CoreMark/MHz (published by Arm, ideal memory) $\times$ clock -- in a real chip wait states and caches cost a part of it
 	\ite an 8 bit AVR reaches well below one CoreMark/MHz
 \ei
+\nsl{A \emph{wait state} is an extra clock cycle in which the core waits for
+a slow memory. A read from embedded flash takes about 30\,ns, but at
+168\,MHz one clock cycle is only 6\,ns, so the STM32F407 must insert five
+wait states. A prefetch unit that reads 128 bits at once and a small
+instruction cache (ST calls the combination ART accelerator) hide most of
+them for straight-line code. Every jump to an address that is not in the
+cache still costs the full access time.}
 \os{\newpage}
 
 \item[{\rot\bf Key figures: everything else that matters}]~\\[-\lblskip]
@@ -166,6 +186,19 @@ FPGA / SoC-FPGA & Lattice iCE40, AMD Zynq & 50--500\,MHz & block RAM, DRAM & mW-
 	}
 \end{tikzpicture}}
 \end{center}
+\nsl{\emph{Jitter} is the variation of a time, for example of the delay
+between an interrupt request and the first instruction of the handler. A
+control loop tolerates a long but constant delay better than a short delay
+that varies. \emph{AEC-Q100} is the qualification standard of the
+automotive industry for integrated circuits: stress tests for temperature,
+humidity and ageing, with temperature grades such as grade~1 for
+$-40$ to 125\,\textdegree C. \emph{ASIL} (Automotive Safety Integrity
+Level, ISO~26262, levels A to D) and \emph{SIL} (IEC~61508, levels 1 to 4)
+classify how dangerous a failure of a function would be. The higher the
+level, the more hardware measures (lock-step cores, ECC, self-tests) and
+the more development process are required. A \emph{second source} is a
+pin-compatible chip from another manufacturer that can replace the first
+one when it is not available.}
 \os{\newpage}
 
 \item[{\rot\bf Processors of this lecture (all simulated in Wokwi)}]~\\[-\lblskip]
@@ -285,6 +318,21 @@ str  r0, [r1]       @ store
 	\ite almost all embedded architectures are RISC; Renesas RX is a CISC exception
 	\ite for embedded systems, \textbf{code density} matters more than the label: Thumb-2 and RISC-V ``C'' mix 16 and 32 bit instructions
 \ei
+\nsl{The original ARM instruction set uses 32 bit instructions only.
+\emph{Thumb} (1994) added a second instruction set of 16 bit instructions
+for the most frequent operations. To fit into 16 bits, most of them can only
+use the registers r0--r7, have two operands instead of three and accept only
+small constants. Programs became about 30\,\% smaller but also slower, and
+the processor had to switch between the two instruction sets.
+\emph{Thumb-2} (2003) mixes 16 and 32 bit instructions in one instruction
+stream: the first halfword tells the decoder whether a second halfword
+follows. The compiler takes the short form where it is enough and the long
+form for everything else. The result is almost as compact as Thumb and
+almost as fast as the 32 bit instruction set. Cortex-M cores execute only
+Thumb-2; the Cortex-M0/M0+ support the 16 bit instructions and only a few
+32 bit ones (for example \texttt{bl}). The ``C'' extension of RISC-V works the
+same way: frequently used 32 bit instructions have a 16 bit short form, and
+the two lowest bits of an instruction tell its length.}
 \os{\newpage}
 
 \item[{\rot\bf Byte order and alignment}]~\\[-\lblskip]
@@ -369,6 +417,22 @@ str  r0, [r1]       @ store
 	\ite \textbf{structural hazard}: two instructions need the same unit, e.g.\ one memory port $\Rightarrow$ Harvard buses
 	\ite good compilers reorder instructions to fill these slots
 \ei
+\nsl{\emph{Forwarding} (also called bypassing) passes a result from the
+output of the ALU or of the memory access directly to the input of the
+next instruction, before it has been written into the register file.
+Without forwarding every dependent instruction would have to wait until the
+result is written back. A loaded value is only available at the end of the
+memory access, so an instruction that uses it immediately must still wait
+one cycle (load-use stall). \emph{Branch prediction} guesses the outcome of
+a branch already in the fetch stage, either by a simple rule (``backward
+branches are taken'', which fits loops) or from a table of recent outcomes.
+A correct guess costs nothing, a wrong one the full branch penalty. A
+\emph{zero-overhead loop} is a loop counter in hardware: the program tells
+the core once where the loop starts and ends and how often it runs, and the
+core jumps back by itself without executing compare and branch instructions.
+An \texttt{IT} block (if-then) makes up to four following instructions
+conditional, so that a short \texttt{if}/\texttt{else} needs no branch at
+all.}
 \os{\newpage}
 
 \item[{\rot\bf Superscalar and out-of-order execution}]~\\[-\lblskip]
@@ -393,6 +457,27 @@ str  r0, [r1]       @ store
 	\ite microcontrollers stay \textbf{in-order}: small, efficient, and the WCET can be analysed
 	\ite speculation opened security holes (Spectre, Meltdown) -- another reason for simple cores in security-critical devices
 \ei
+\nsl{A \emph{dual-issue} core has two decoders and several execution units.
+In every cycle it checks whether the next two instructions are independent
+of each other and whether a free unit exists for each of them, for example
+one load and one addition. If so, both start in the same cycle; otherwise
+only the first one starts. A \emph{superscalar} core is the general case
+with two or more instructions per cycle. These cores still execute in
+program order. An \emph{out-of-order} core goes further: it fetches far
+ahead into a buffer of more than a hundred instructions and starts every
+instruction whose operands are ready, in any order. \emph{Register renaming}
+maps the few registers the program sees onto many physical registers, so
+that two independent uses of the same register name do not have to wait for
+each other. \emph{Speculative execution} runs instructions behind a
+predicted branch before the branch is decided and throws the results away if
+the prediction was wrong. Results become visible in program order, so the
+program behaves as if it ran sequentially, but its timing depends on the
+whole history of the core. This makes the \emph{worst-case execution time}
+(WCET), the longest time a piece of code can take, very hard to bound.
+Hard real-time systems need such a bound, and for simple in-order pipelines
+tools can compute it. \emph{Spectre} and \emph{Meltdown} (2018) showed that
+discarded speculative instructions still leave traces in the cache, from
+which an attacker can read secret data by measuring access times.}
 \os{\newpage}
 
 \item[{\rot\bf Memory hierarchy}]~\\[-\lblskip]
@@ -424,6 +509,13 @@ str  r0, [r1]       @ store
 	\ite the CPU is faster than the memory: a 480\,MHz core without caches would mostly wait
 	\ite caches exploit \textbf{locality}: the same addresses again soon (temporal), neighbouring addresses (spatial)
 \ei
+\nsl{A \emph{tightly coupled memory} (TCM) is a small SRAM that is connected
+to the core over its own port, not through the bus matrix and not through a
+cache. Every access takes exactly one cycle, and DMA or other bus masters
+cannot slow it down. Code and data in TCM therefore have a fixed, known
+timing, which is why interrupt handlers, control loops and their data are
+placed there on the Cortex-M7 and Cortex-R. Unlike a cache, the TCM does
+not fill itself: the linker script decides what is in it.}
 \os{\newpage}
 
 \item[{\rot\bf How a cache works: one load step by step}]~\\[-\lblskip]
@@ -452,6 +544,20 @@ str  r0, [r1]       @ store
 	\node[anchor=west,font=\sffamily\scriptsize,text width=50mm] at (10.6,2.0) {16\,KB, 4-way, 32 byte lines\\$\Rightarrow$ 128 sets (Cortex-M7 data cache)};
 \end{tikzpicture}}
 \end{center}
+\nsl{A cache stores copies of memory in \emph{lines} of typically 32 or
+64 bytes. The \emph{index} bits of the address select a \emph{set}; in an
+$n$-way \emph{set-associative} cache each set has $n$ places (ways) for
+lines. A direct-mapped cache has one way per set, a fully associative one
+consists of a single set. The \emph{tag} stored with each line holds the
+remaining upper address bits, so that the cache can tell which memory
+address a line belongs to; a \emph{valid} bit marks lines that hold data.
+When all ways of a set are used, the replacement policy chooses the line to
+throw out, for example the least recently used one (\emph{LRU}) or a random
+one. For stores there are two policies. \emph{Write-through} writes every
+store into memory as well. \emph{Write-back} only changes the line in the
+cache and marks it \emph{dirty}; it is written to memory when it is thrown
+out. Write-back saves bus cycles, but for a while the memory holds old data
+-- the reason for the DMA problem on the next slide.}
 \os{\newpage}
 
 \item[{\rot\bf Cache example: hits, misses, conflicts}]~\\[-\lblskip]
@@ -563,6 +669,20 @@ C2000, SHARC & 32 & TI, ADI & DSP features, fast control loops & motor control, 
 	\node[t] at (11.2,-0.45) {\textbf{features}\\ 64 bit, MMU for Linux\\ multi-level caches, NEON/SVE\\ big.LITTLE (A76 + A55)\\ out-of-order (large cores)\\[2mm] \textbf{used in}\\ smartphones, Raspberry Pi, infotainment, gateways, ADAS};
 \end{tikzpicture}}
 \end{center}
+\nsl{In a \emph{lock-step} system two identical cores execute the same
+program, the second one a few cycles later. A comparator checks their
+outputs in every cycle and signals an error at the first difference. This
+detects random hardware faults, for example a bit flipped by radiation,
+which a single core would silently pass on. \emph{ECC} (error-correcting
+code) adds check bits to every memory word, for example 7 bits to 32 data
+bits: a single wrong bit is corrected, two wrong bits are detected. An
+\emph{MMU} (memory management unit) translates the virtual addresses of a
+program into physical addresses with page tables, so that every process has
+its own protected address space; Linux needs it. \emph{big.LITTLE} combines
+fast, large cores with small, efficient cores of the same instruction set
+on one chip; the operating system moves each thread to the type of core that
+fits its load. \emph{NEON} and \emph{SVE} are the vector (SIMD) extensions
+of the Cortex-A cores.}
 \os{\newpage}
 
 \item[{\rot\bf ARM Cortex-M family}]~\\[-\lblskip]
@@ -585,6 +705,21 @@ Cortex-M52/M55/M85 & ARMv8.1-M & + Helium vectors (MVE) for DSP and ML & STM32N6
 	\ite common to all: NVIC, SysTick, vector table, SWD debug; upward compatible (M0+ code runs everywhere)
 	\ite most used today: M0+ (cheap), M4 (DSP + FPU), M33 (security); M55/M85 for edge AI
 \ei
+\nsl{ARMv6-M, ARMv7-M and ARMv8-M are versions of the \emph{architecture},
+i.e.\ of the instruction set and the programmer's model; Cortex-M0, M3 or
+M33 are \emph{cores} that implement one of them. The \emph{NVIC} (nested
+vectored interrupt controller) is part of every Cortex-M core. Each
+interrupt has its own entry in the vector table (vectored) and its own
+priority, and an interrupt with higher priority can interrupt a running
+handler (nested). \emph{SysTick} is a simple 24 bit down counter in the
+core that every RTOS uses for its periodic tick, so the RTOS does not depend
+on a vendor-specific timer. \emph{SWD} (serial wire debug) is the two-wire
+debug interface of all Cortex-M cores. \emph{Helium}, the M-profile Vector
+Extension (MVE), adds eight 128 bit vector registers. Each holds, for
+example, sixteen 8 bit, eight 16 bit or four 32 bit values, and one
+instruction processes all of them. Small cores like the Cortex-M55 handle a
+vector instruction in several steps of 32 or 64 bits, but overlap
+consecutive instructions, so the throughput stays high.}
 \os{\newpage}
 
 \item[{\rot\bf Cortex-M instruction set particularities}]~\\[-\lstskip]
@@ -603,6 +738,24 @@ Cortex-M52/M55/M85 & ARMv8.1-M & + Helium vectors (MVE) for DSP and ML & STM32N6
 	\ite exception entry in hardware: \texttt{r0}--\texttt{r3}, \texttt{r12}, \texttt{lr}, \texttt{pc}, \texttt{xpsr} are stacked $\Rightarrow$ handlers are normal C functions
 	\ite AAPCS: arguments in \texttt{r0}--\texttt{r3}, result in \texttt{r0}, \texttt{r4}--\texttt{r11} preserved
 \ei
+\nsl{\emph{MAC} (multiply-accumulate) computes $s \leftarrow s + a \cdot b$ in
+one instruction, the core operation of filters, FFTs and neural networks.
+\emph{SIMD} (single instruction, multiple data) treats a 32 bit register as
+two 16 bit or four 8 bit values: \texttt{smlad} computes two products and
+adds both to the sum. \emph{Saturating} arithmetic clamps the result at the
+largest or smallest value instead of wrapping around: $32767 + 1$ stays
+$32767$ instead of becoming $-32768$. In audio processing a wrap-around is
+a loud click, in a motor controller a sudden reversal of the torque.
+\emph{Low-overhead loops} (\texttt{dls}/\texttt{le}) are the ARM version of
+the zero-overhead loop explained under pipeline hazards. \emph{PACBTI}
+protects against attacks that overwrite return addresses on the stack
+(return-oriented programming): \emph{pointer authentication} adds a
+cryptographic signature to the return address and checks it before the
+return, and \emph{branch target identification} allows indirect jumps only
+to instructions marked as valid targets. The \emph{AAPCS} (Arm Architecture
+Procedure Call Standard) defines how functions pass arguments and which
+registers they must preserve. Code from different compilers, libraries and
+assembly files can call each other because all of them follow it.}
 \os{\newpage}
 
 \item[{\rot\bf TrustZone for Cortex-M (ARMv8-M)}]~\\[-\lblskip]
@@ -621,6 +774,19 @@ Cortex-M52/M55/M85 & ARMv8.1-M & + Helium vectors (MVE) for DSP and ML & STM32N6
 	\ite \textbf{use case}: a smart lock -- even if the Bluetooth stack has a bug, the key stays in the secure world
 	\ite basis for PSA Certified and the EU Cyber Resilience Act; in M23, M33, M55, M85 (RP2350, STM32U5, nRF54L, LPC55)
 \ei
+\nsl{With TrustZone the processor has two security states, secure and
+non-secure. Every address is marked as secure, non-secure or
+\emph{non-secure callable}. The \emph{IDAU} (implementation defined
+attribution unit) gives a fixed marking chosen by the chip vendor, the
+\emph{SAU} (security attribution unit) is programmed by the secure firmware
+at boot. Non-secure code that accesses a secure address causes a
+SecureFault. It can enter the secure world only at an \texttt{sg} (secure
+gateway) instruction in a non-secure callable region. The compiler creates
+these entry points for functions with the attribute
+\texttt{cmse\_nonsecure\_entry}. Peripherals and
+interrupts are assigned to one of the two worlds as well. The switch takes
+only a few cycles, because no monitor software is involved as in TrustZone
+for Cortex-A.}
 \os{\newpage}
 
 \item[{\rot\bf RISC-V: a modular ISA}]~\\[-\lblskip]
@@ -646,6 +812,17 @@ Cortex-M52/M55/M85 & ARMv8.1-M & + Helium vectors (MVE) for DSP and ML & STM32N6
 	\ite privilege modes M (machine), S (supervisor, Linux), U (user); embedded: M + U with PMP as memory protection
 	\ite profiles (e.g.\ RVA23) bundle extensions, so that operating systems know what to expect
 \ei
+\nsl{The name of a RISC-V core lists its extensions: RV32IMAC means 32 bit,
+base integer instructions (I), multiplication (M), atomic instructions (A)
+and compressed 16 bit instructions (C). G stands for IMAFD together with two
+small extensions. Names starting with Z (Zba, Zbb, Zicsr, \ldots) are
+smaller extensions that can be chosen one by one. The \emph{privilege
+modes} control what code may do: machine mode (M) has access to
+everything, supervisor mode (S) is for an operating system kernel with
+virtual memory, user mode (U) for applications. \emph{PMP} (physical memory
+protection) is the RISC-V counterpart of the ARM MPU: machine mode sets up
+a few address ranges with read, write and execute rights, and code in user
+mode is restricted to them.}
 \os{\newpage}
 
 \item[{\rot\bf RISC-V: chances and challenges}]~\\[-\lblskip]
@@ -665,6 +842,16 @@ Cortex-M52/M55/M85 & ARMv8.1-M & + Helium vectors (MVE) for DSP and ML & STM32N6
 		$-$ every vendor must verify its core against the ISA};
 \end{tikzpicture}}
 \end{center}
+\nsl{The \emph{CLINT} (core-local interruptor) only provides the timer
+interrupt, a software interrupt and a single line for all external
+interrupts, without priorities or vectors per source. The \emph{PLIC}
+(platform-level interrupt controller) collects many external interrupts,
+gives them priorities and distributes them to the cores. Software must read
+(``claim'') the number of the interrupt and confirm (``complete'') it at the
+end; this is common in Linux SoCs. The \emph{CLIC} (core-local interrupt
+controller) adds a vector, a level and preemption for each interrupt, much
+like the NVIC. In all three cases the registers are usually saved by
+software, unless the vendor adds its own hardware for it.}
 \os{\newpage}
 
 \item[{\rot\bf Xtensa and other architectures}]~\\[-\lblskip]
@@ -680,6 +867,16 @@ Cortex-M52/M55/M85 & ARMv8.1-M & + Helium vectors (MVE) for DSP and ML & STM32N6
 	\ite \textbf{Synopsys ARC}: configurable, hidden inside SoCs (sensor hubs, SSD controllers)
 	\ite \textbf{PIC}, \textbf{8051}, \textbf{MSP430}: 8/16 bit, cost-sensitive mass products
 \ei
+\nsl{With \emph{register windows} a program sees 16 registers out of a
+larger set of 64. On a function call the instruction \texttt{entry} moves
+the window on, so the called function gets fresh registers without saving
+anything to the stack; \texttt{retw} moves it back. Only when all windows
+are used does an exception store the oldest ones to memory. The
+\emph{HSM} (hardware security module) of the AURIX is a separate core with
+its own memory for keys and cryptography that the application cores cannot
+read. The \emph{CLA} (control law accelerator) of the C2000 is an
+independent floating point core that runs control loops in parallel to the
+main CPU and is started directly by ADC or PWM events.}
 \os{\newpage}
 
 \item[{\rot\bf Assembly: the same C function on four processors}]~\\[-\lstskip]
@@ -884,6 +1081,18 @@ be predicted and how long a battery lasts.}
 	\ite \textbf{MRAM, RRAM, FRAM}: byte-writable non-volatile memories in recent MCUs (22\,nm and below, where embedded flash is hard to build)
 	\ite \textbf{MPU}: protects memory regions (stack overflow!); an MMU with virtual memory only on application processors
 \ei
+\nsl{\emph{XIP} (execute in place) means that code runs directly from flash
+without being copied into RAM. With external QSPI flash the chip maps the
+flash into the address space; on a read the flash controller sends a
+command and the address over four data lines and receives the data. Because
+this takes far longer than an internal access, a cache keeps the most
+recently used lines (16\,KB on the RP2040). An \emph{MPU} (memory protection
+unit) divides the address space into a few regions (8 or 16 on Cortex-M)
+with access rights such as read-only, no-execute or privileged only. An
+access that violates them causes a fault. A typical use is a small
+forbidden region below each stack: a stack overflow then stops the program
+at once instead of silently destroying other data. Unlike an MMU, an MPU does
+not translate addresses.}
 \os{\newpage}
 
 \item[{\rot\bf Memory map of the RP2040}]~\\[-\lblskip]
@@ -936,6 +1145,18 @@ be predicted and how long a battery lasts.}
 	\ite \textbf{faults} (HardFault, BusFault, \ldots): log the error, then reset
 	\ite RISC-V: interrupt controller depends on the core (CLINT, CLIC, PLIC); CLIC gives NVIC-like nesting
 \ei
+\nsl{On an interrupt the Cortex-M core saves eight registers onto the stack:
+\texttt{r0}--\texttt{r3}, \texttt{r12}, \texttt{lr}, \texttt{pc} and
+\texttt{xpsr}. These are exactly the registers that a C function may change
+according to the calling convention AAPCS, so a handler can be compiled like
+any other function. The link register receives the special value
+\texttt{EXC\_RETURN}; a normal return to it tells the core to restore the
+registers. If another interrupt is pending when a handler ends, the core
+skips the restore and the save and starts the next handler directly
+(\emph{tail chaining}). If an interrupt with higher priority arrives while
+the registers are still being saved, the core starts that handler first
+(\emph{late arrival}). With an FPU the floating point registers are only
+saved if the handler actually uses them (\emph{lazy stacking}).}
 \os{\newpage}
 
 \item[{\rot\bf Clock and power: a battery sensor}]~\\[-\lblskip]
@@ -956,6 +1177,18 @@ be predicted and how long a battery lasts.}
 	\ite the active phase dominates: shorter radio time helps more than a lower sleep current
 	\ite dynamic power $P \approx C \cdot U^2 \cdot f$; clock gating; ``race to sleep''
 \ei
+\nsl{\emph{Dynamic power} is used when transistors switch: every switching
+charges a small capacitance. It grows with the clock frequency and with the
+square of the supply voltage, so lowering the voltage saves the most.
+Many application processors therefore change voltage and frequency together
+with the load (\emph{DVFS}, dynamic voltage and frequency scaling).
+\emph{Clock gating} switches off the clock of blocks that are not in use,
+which is why on most MCUs the clock of every peripheral must be enabled
+before it can be used. \emph{Race to sleep} means: finish the work as fast
+as possible and go to deep sleep early. While the chip is awake, regulators,
+oscillators and leakage draw current independent of the clock, so a short
+active phase at a high clock often needs less energy than a long one at a
+low clock.}
 \os{\newpage}
 
 \item[{\rot\bf Arithmetic: integer, fixed point, floating point}]~\\[-\lblskip]
@@ -966,6 +1199,14 @@ be predicted and how long a battery lasts.}
 	\ite DSP features: single-cycle MAC, saturation, SIMD; dedicated DSPs add circular addressing and several MAC units
 	\ite neural networks run in INT8: SIMD and vector units, or a separate NPU
 \ei
+\nsl{In \emph{fixed point} the programmer decides where the binary point is.
+In Q15 a 16 bit integer $q$ stands for $q / 2^{15}$, so the range is $-1$ to
+just below $+1$ in steps of about $3 \cdot 10^{-5}$. A Q15 times Q15 product
+is a Q30 value in 32 bits and has to be shifted right by 15 to become Q15
+again. \emph{Circular addressing} lets an address register wrap around
+automatically at the end of a buffer. The delay line of a filter then needs
+neither copying nor index checks. Dedicated DSPs have it in hardware; on
+Cortex-M the library code does this in software.}
 \os{\newpage}
 \end{description}
 
@@ -1099,6 +1340,25 @@ external DRAM, PCIe & -- & -- & -- & -- & \Y \\
 	\ite the CPU only computes the next duty cycle: 20\,kHz loop $\Rightarrow$ 50\,$\mu$s per cycle
 	\ite ADC types: \textbf{SAR} (12--16 bit, up to several Msps, control) and \textbf{sigma-delta} (16--24 bit, slow, sensors, audio)
 \ei
+\nsl{\emph{Field-oriented control} (FOC) is the standard method for
+brushless motors. The controller transforms the three measured phase
+currents into a coordinate system that rotates with the rotor (Clarke and
+Park transformation). There the current that produces torque and the
+current that produces magnetic flux become two slowly changing values,
+which two PI controllers regulate. The transformation needs the sine and
+cosine of the rotor angle in every cycle. A \emph{CORDIC} unit computes
+them, and also arctangent and square roots, iteratively with shifts and
+additions only, faster than a software library and in parallel with the
+CPU. The \emph{FMAC} (filter math accelerator) of the STM32G4 computes FIR
+and IIR filters on its own from a local buffer. With
+\emph{centre-aligned} PWM the timer counts up and down, so all switching
+edges lie symmetrically around the middle of the period. That middle is the
+quietest moment for a current measurement. A \emph{SAR} ADC (successive
+approximation register) finds the result by binary search: it compares the
+input with an internal DAC voltage and decides one bit per step. A
+\emph{sigma-delta} ADC samples very often with a 1 bit converter and
+computes a slow, very precise result from this bit stream with a digital
+filter.}
 \os{\newpage}
 
 \item[{\rot\bf How signal processing is integrated}]~\\[-\lblskip]
@@ -1171,6 +1431,14 @@ external DRAM, PCIe & -- & -- & -- & -- & \Y \\
 	\ite data rates: QVGA 320 $\times$ 240 $\times$ 2\,B $\times$ 15\,fps = 2.3\,MB/s; 1080p30 = 1920 $\times$ 1080 $\times$ 2\,B $\times$ 30 = 124\,MB/s
 	\ite the CPU does not touch the pixels: interface, ISP, DMA and accelerators move and process them; the CPU configures and reacts to the results
 \ei
+\nsl{An image sensor measures only brightness. A colour filter on each pixel
+lets only red, green or blue pass, arranged in the \emph{Bayer pattern}:
+two green, one red and one blue pixel in each 2 $\times$ 2 square.
+\emph{Debayering} computes the two missing colours of every pixel from its
+neighbours. The \emph{ISP} (image signal processor) does this together with
+white balance, noise reduction, lens correction and the combination of
+several exposures (HDR) in hardware, at the speed at which the pixels arrive.
+In software these steps would load even a fast CPU completely.}
 \os{\newpage}
 
 \item[{\rot\bf Image processing: which processor?}]~\\[-\lblskip]
@@ -1211,6 +1479,16 @@ FPGA / SoC-FPGA & Zynq UltraScale+, Lattice CrossLink & line-rate processing wit
 	\ite figures of merit \textbf{TOPS} and TOPS/W are peak values -- real models reach a fraction, memory often limits first
 	\ite \textbf{use cases}: keyword spotting or vibration monitoring at a few mW on a Cortex-M; person detection with an MCU NPU; multi-camera robotics on an application processor
 \ei
+\nsl{\emph{TOPS} means tera ($10^{12}$) operations per second, where one
+multiply-accumulate counts as two operations. An NPU with 256 MAC units at
+1\,GHz therefore has a peak of 0.5\,TOPS. Neural networks are trained with
+32 bit floating point numbers. For the device they are \emph{quantised}:
+weights and activations are stored as 8 bit integers $q$ together with a
+scale factor $S$ and a zero point $Z$ per tensor or per channel, so that the
+real value is $S \cdot (q - Z)$. The model becomes four times smaller,
+integer MACs need much less chip area and energy than floating point MACs,
+and the accuracy usually drops only slightly. Whether this is acceptable is
+checked with test data after the quantisation.}
 \os{\newpage}
 
 \item[{\rot\bf How an NPU is integrated}]~\\[-\lblskip]
@@ -1235,6 +1513,13 @@ FPGA / SoC-FPGA & Zynq UltraScale+, Lattice CrossLink & line-rate processing wit
 	\ite the NPU is a bus master like a DMA controller; the CPU is free (or sleeps) during the inference
 	\ite selection: does the model fit into SRAM (activations) and flash (weights)? which operators does the NPU support?
 \ei
+\nsl{The \emph{tensor arena} is a memory block in SRAM that the runtime
+reserves at start-up for all intermediate results (activations) of the
+network; its size is fixed, so no dynamic memory allocation is needed
+during inference. The weights are constant and stay in flash. The Vela
+compiler assigns each layer either to the NPU or, if the NPU does not
+support the operator, to the CPU. Layers that fall back to the CPU often
+decide the total inference time.}
 \os{\newpage}
 
 \item[{\rot\bf AI on the MCU: from model to device}]~\\[-\lblskip]
@@ -1286,6 +1571,18 @@ person detection & 96 $\times$ 96 grey image from the camera & MobileNet, about 
 	\ite further blocks: true random number generator (TRNG), AES accelerator, key storage / PUF, tamper detection, debug port lock
 	\ite examples: RP2350 (OTP, glitch detectors, secure boot), ESP32 (flash encryption, secure boot), STM32U5/H5 (TrustZone, PKA); dedicated secure elements (e.g.\ OPTIGA, ATECC) as external chips
 \ei
+\nsl{\emph{OTP} (one-time programmable) memory consists of fuses that can be
+set exactly once. It holds the hash of the public key and settings such as
+``secure boot on'' or ``debug port locked''. Because they can never be
+changed back, a mistake makes the chip useless. A \emph{PUF} (physically
+unclonable function) derives a key unique to each chip from tiny
+manufacturing differences, for example from the random start-up values of
+an SRAM block. The key is computed again at every start and never stored, so
+it cannot be read out of the chip. A \emph{TRNG} (true random number
+generator) uses physical noise as its source and is needed for keys and
+nonces. \emph{Glitch detectors} watch the supply voltage and the clock,
+because a short disturbance at the right moment can make the processor skip
+the instruction that checks the signature.}
 \os{\newpage}
 \end{description}
 
@@ -1456,6 +1753,16 @@ networks.}
 	\ite Linux loads and starts the M-core firmware (\texttt{remoteproc}) and talks to it over shared memory (\texttt{RPMsg}, OpenAMP)
 	\ite the M core keeps control loops running even while Linux boots or crashes
 \ei
+\nsl{In \emph{asymmetric multiprocessing} (AMP) each core runs its own
+software: Linux on the Cortex-A cores, an RTOS or bare-metal firmware on the
+Cortex-M core. In \emph{symmetric multiprocessing} (SMP), in contrast, one
+operating system distributes its threads over several identical cores.
+\emph{remoteproc} is the Linux framework that loads the ELF file of the
+firmware into the memory of the M core, releases the core from reset and
+stops it again. \emph{RPMsg} is a message protocol on top of it. Both sides
+exchange messages through ring buffers in shared memory, and the mailbox
+unit triggers an interrupt on the other side when a new message is
+there. OpenAMP is the library that implements RPMsg for the RTOS side.}
 \os{\newpage}
 
 \end{description}
@@ -1543,6 +1850,14 @@ change after delivery & firmware update & reconfiguration (also a firmware updat
 \bi
 	\ite \textbf{use cases for FPGAs}: image processing at line rate, high-speed ADC interfaces, many parallel PWM/encoder channels, protocol bridges, EtherCAT/TSN, ASIC prototypes
 \ei
+\nsl{\emph{Synthesis} turns the hardware description into a netlist of
+LUTs, flip-flops and RAM blocks. \emph{Place and route} then chooses a
+position on the chip for each of them and connects them through the routing
+network. \emph{Timing closure} is reached when every signal path between
+two flip-flops is shorter than one clock period; otherwise the design must
+be changed, for example by adding pipeline registers. \emph{HLS}
+(high-level synthesis) generates the hardware description from C++ code,
+but the result depends strongly on how the code is written.}
 \os{\newpage}
 
 \item[{\rot\bf Decision: MCU, PIO or FPGA?}]~\\[-\lblskip]
@@ -1579,6 +1894,15 @@ change after delivery & firmware update & reconfiguration (also a firmware updat
 	\ite \textbf{small FPGAs with open toolchains}: Lattice iCE40/ECP5, Gowin with Yosys + nextpnr
 	\ite rule of thumb: start with an MCU; use an FPGA (or PIO) only for the part the MCU cannot do in time
 \ei
+\nsl{The \emph{PIO} (programmable I/O) of the RP2040 consists of two blocks,
+each with four small state machines that share a memory for 32
+instructions. There are only nine instructions (\texttt{jmp},
+\texttt{wait}, \texttt{in}, \texttt{out}, \texttt{push}, \texttt{pull},
+\texttt{mov}, \texttt{irq}, \texttt{set}), and each takes exactly one cycle
+plus an optional delay. Shift registers and FIFOs connect a state machine
+to the CPU or to the DMA. Because the timing is exact to the clock cycle and
+independent of the CPU, the PIO can generate or read protocols that no
+built-in peripheral supports, such as WS2812 LEDs, VGA or DShot.}
 \os{\newpage}
 \end{description}
 
