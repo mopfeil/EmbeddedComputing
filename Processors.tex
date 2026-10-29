@@ -11,32 +11,38 @@
 microcontrollers that cost a few cents to multi-core application processors
 that run Linux. The choice depends on the computing power needed, on the
 memory, on the peripherals, on the energy budget and, in large series, on
-the price. This chapter first describes the classes of processors and the
-figures used to compare them. It then explains the architecture concepts
-that decide how fast and how predictably code runs: pipelines, caches and
-the instruction set. After that it looks at the important architectures
-(AVR, ARM Cortex-M/R/A, RISC-V, Xtensa and others) with assembly examples,
-at the inside of a microcontroller and at the semiconductor manufacturers
-and their product lines. Application processors with accelerators and a
-short comparison of microcontrollers and FPGAs complete the chapter.
+the price. This chapter first describes the classes of processors, typical
+applications and the figures used to compare them. It then explains the
+architecture concepts that decide how fast and how predictably code runs:
+pipelines, caches and the instruction set. After that it looks at the
+important architectures (AVR, ARM Cortex-M/R/A, RISC-V, Xtensa and others)
+with assembly examples, at the inside of a microcontroller and at the
+semiconductor manufacturers. Application processors with accelerators, a
+short comparison of microcontrollers and FPGAs and a decision guide complete
+the chapter.
 \newpage}
 
 \begin{description}
 \item[{\rot\bf Classes of processors}]~\\[-\lblskip]
+\begin{center}
+\adjustbox{max width=\linewidth,max totalheight=0.6\textheight}{%
+\begin{tikzpicture}[font=\sffamily\small,
+	c/.style={ellipse,draw,thick,align=center,inner sep=1pt}]
+	\draw[->,thick,gray] (0,0) -- (13.5,0) node[midway,below=2mm,text=black]{computing power (logarithmic)};
+	\draw[->,thick,gray] (0,0) -- (0,6) node[midway,above=2mm,rotate=90,text=black]{power and price (logarithmic)};
+	\node[c,fill=rwucyan!10] at (1.6,0.8) {8 bit MCU\\{\scriptsize $\mu$W--mW, cents}};
+	\node[c,fill=rwucyan!25] at (4.0,1.7) {32 bit MCU\\{\scriptsize mW, $<$\,5\,\texteuro{}}};
+	\node[c,fill=rwucyan!45] at (6.6,2.7) {high-end MCU\\{\scriptsize 0.1--1\,W}};
+	\node[c,fill=rwuviolet!25] at (8.9,3.7) {real-time\\processor};
+	\node[c,fill=rwuviolet!45] at (11.4,4.9) {application\\processor};
+	\node[c,fill=orange!25] at (7.6,1.0) {DSP};
+	\node[draw,thick,dashed,rounded corners,fill=green!10,align=center] at (11.6,2.2) {FPGA\\{\scriptsize parallel logic,}\\{\scriptsize mW to tens of W}};
+\end{tikzpicture}}
+\end{center}
 \bi
-	\ite \textbf{microcontroller} (MCU): CPU, flash, RAM and peripherals on one chip
-	\bi
-		\ite runs without an operating system or with an RTOS; starts in milliseconds; consumes milliwatts or less
-		\ite 8 bit (AVR, PIC, 8051) for very simple, cheap devices; 32 bit (ARM Cortex-M, RISC-V) for almost everything else
-	\ei
-	\ite \textbf{application processor} (MPU): fast cores with memory management unit, external DRAM, usually Linux or Android
-	\bi
-		\ite ARM Cortex-A (smartphones, Raspberry Pi), increasingly RISC-V application cores
-	\ei
-	\ite \textbf{real-time processor}: MCU-like determinism at high clock rates with safety features (ARM Cortex-R, Infineon TriCore)
-	\ite \textbf{digital signal processor} (DSP): optimised for filter and transformation algorithms (audio, radio, motor control)
-	\ite \textbf{FPGA}: configurable logic, for highly parallel or very fast functions; often combined with processor cores (system on chip)
-	\ite modern chips combine several of these: e.g.\ Cortex-A cores for Linux plus a Cortex-M core for real time and an NPU for neural networks on the same die
+	\ite \textbf{MCU}: CPU, flash, RAM and peripherals on one chip; bare metal or RTOS
+	\ite \textbf{application processor}: MMU, external DRAM, Linux; \textbf{real-time processor}: determinism at high clock rates (Cortex-R, TriCore)
+	\ite modern chips combine several classes on one die (Cortex-A + Cortex-M + NPU)
 \ei
 \os{\newpage}
 
@@ -57,73 +63,112 @@ FPGA / SoC-FPGA & Lattice iCE40, AMD Zynq & 50--500\,MHz & block RAM, DRAM & mW-
 \hline
 \end{tabularx}}
 \end{center}
+\os{\newpage}
+
+\item[{\rot\bf Use cases: which processor where?}]~\\[-\lblskip]
+\begin{center}
+\adjustbox{max width=\linewidth,max totalheight=0.75\textheight}{%
+\begin{tikzpicture}[font=\sffamily\footnotesize,
+	card/.style={draw,thick,rounded corners,fill=#1,text width=40mm,minimum height=28mm,align=left,inner sep=4pt}]
+	\node[card=rwucyan!8]  at (0,0)    {\textbf{remote control, smoke detector}\\[1mm] 8 bit MCU (PIC, AVR, 8051)\\ cents; years on a coin cell};
+	\node[card=rwucyan!8]  at (4.8,0)  {\textbf{smart plug, thermostat}\\[1mm] Wi-Fi SoC, RISC-V\\ (ESP32-C3/C6)\\ Matter, cloud connection};
+	\node[card=rwucyan!8]  at (9.6,0)  {\textbf{fitness tracker, hearing aid}\\[1mm] Bluetooth LE MCU, Cortex-M33 (nRF54, EFR32)\\ average current in $\mu$A};
+	\node[card=rwucyan!20] at (14.4,0) {\textbf{e-bike, drone motor}\\[1mm] Cortex-M4F (STM32G4), TI C2000\\ field-oriented control at 20\,kHz};
+	\node[card=rwuviolet!15] at (0,-3.4)   {\textbf{brake, steering, airbag}\\[1mm] AURIX TriCore, Cortex-R52 in lock-step\\ ISO\,26262 ASIL\,D};
+	\node[card=rwuviolet!15] at (4.8,-3.4) {\textbf{SSD controller, 5G modem}\\[1mm] Cortex-R, ARC, RISC-V\\ real time at GHz};
+	\node[card=orange!15] at (9.6,-3.4)  {\textbf{industrial HMI, gateway}\\[1mm] Cortex-A + Linux\\ (i.MX 93, AM62x, STM32MP2)};
+	\node[card=orange!15] at (14.4,-3.4) {\textbf{smart camera}\\[1mm] Cortex-A + NPU (i.MX 8M Plus) or Cortex-M55 + NPU (STM32N6)};
+	\node[anchor=west,font=\sffamily\scriptsize] at (-2.1,-5.3) {\textcolor{rwucyan}{\rule{2mm}{2mm}} microcontroller \quad \textcolor{rwuviolet!60}{\rule{2mm}{2mm}} real-time processor \quad \textcolor{orange!60}{\rule{2mm}{2mm}} application processor};
+\end{tikzpicture}}
+\end{center}
+\os{\newpage}
+
+\item[{\rot\bf Use case: processors in a car}]~\\[-\lblskip]
+\begin{center}
+\adjustbox{max width=\linewidth,max totalheight=0.62\textheight}{%
+\begin{tikzpicture}[font=\sffamily\footnotesize,>=Stealth,
+	ecu/.style={draw,thick,rounded corners,fill=#1,text width=40mm,align=left,inner sep=3pt}]
+	\draw[thick,fill=gray!8] (4,0.6) -- (4,1.8) -- (5.8,2.1) -- (7.2,3.4) -- (10.8,3.4) -- (12.2,2.1) -- (14,1.8) -- (14,0.6) -- cycle;
+	\draw[thick,fill=white] (6,0.6) circle (0.55); \draw[thick,fill=white] (12,0.6) circle (0.55);
+	\foreach \p in {(9,2.8),(8.2,2.2),(6.5,1.4),(11.3,2.6),(10,1.5),(12.8,1.3)} \fill[rwuviolet] \p circle (0.09);
+	\node[ecu=orange!15] (info) at (0,4.4) {\textbf{infotainment, cockpit}\\ Cortex-A, Linux/Android, GPU};
+	\node[ecu=orange!15] (adas) at (0,2.2) {\textbf{ADAS domain controller}\\ Cortex-A + NPU + Cortex-R};
+	\node[ecu=rwucyan!12] (bms)  at (0,0)   {\textbf{battery management}\\ TriCore or Cortex-M + analog front end};
+	\node[ecu=rwuviolet!15] (brk) at (18,4.4) {\textbf{brake, steering, airbag}\\ TriCore / Cortex-R, lock-step, ASIL\,D};
+	\node[ecu=rwucyan!12] (zone) at (18,2.2) {\textbf{body / zone controller}\\ Cortex-M7 lock-step (S32K3)};
+	\node[ecu=rwucyan!12] (mot)  at (18,0)   {\textbf{window, seat, mirror}\\ small Cortex-M0+ or 16 bit MCU on LIN};
+	\draw[thick,gray] (info.east) -- (9,2.8); \draw[thick,gray] (adas.east) -- (8.2,2.2); \draw[thick,gray] (bms.east) -- (6.5,1.4);
+	\draw[thick,gray] (brk.west) -- (11.3,2.6); \draw[thick,gray] (zone.west) -- (10,1.5); \draw[thick,gray] (mot.west) -- (12.8,1.3);
+\end{tikzpicture}}
+\end{center}
 \bi
-	\ite the borders blur: high-end MCUs reach the performance of older application processors, and many chips are heterogeneous
+	\ite a modern car contains about 70--150 control units with very different processors
+	\ite trend: \textbf{zonal architecture} -- a few central high-performance computers plus zone controllers instead of one ECU per function
 \ei
 \os{\newpage}
 
 \item[{\rot\bf Key figures: performance}]~\\[-\lblskip]
 \bi
 	\ite execution time of a program:
-	\[ T = N_{\text{instr}} \cdot \text{CPI} \cdot \frac{1}{f_{\text{clk}}} \]
-	\bi
-		\ite $N_{\text{instr}}$: number of executed instructions -- depends on the instruction set and the compiler
-		\ite CPI: cycles per instruction (or IPC = 1/CPI) -- depends on the microarchitecture (pipeline, caches, wait states)
-		\ite $f_{\text{clk}}$: clock frequency -- depends on the technology and on the pipeline depth
-	\ei
+	\[ T = \underbrace{N_{\text{instr}}}_{\text{ISA, compiler}} \cdot \underbrace{\text{CPI}}_{\text{microarchitecture, memory}} \cdot \underbrace{\frac{1}{f_{\text{clk}}}}_{\text{technology, pipeline depth}} \]
 	\ite the clock alone says little: a 200\,MHz Cortex-M7 can be faster than a 400\,MHz Cortex-M0+
 	\ite benchmarks normalised to the clock:
 	\bi
 		\ite \textbf{DMIPS/MHz} (Dhrystone): old and easy to fool with compiler tricks
-		\ite \textbf{CoreMark/MHz} (EEMBC): list processing, matrix, state machine, CRC -- today's standard figure for MCU cores
-		\ite application benchmarks: EEMBC ULPMark (energy), MLPerf Tiny (neural networks), own code on an evaluation board
+		\ite \textbf{CoreMark/MHz} (EEMBC): today's standard figure for MCU cores
+		\ite application benchmarks: ULPMark (energy), MLPerf Tiny (neural networks), own code on an evaluation board
 	\ei
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Key figures: CoreMark of ARM Cortex-M cores}]~\\[-\lblskip]
+\item[{\rot\bf Key figures: CoreMark of real chips}]~\\[-\lblskip]
 \begin{center}
-\resizebox{0.95\textwidth}{!}{%
-\begin{tabular}{|l|c|c|l|}
-\hline
-\textbf{core} & \textbf{pipeline} & \textbf{CoreMark/MHz} & \textbf{example: chip, clock $\Rightarrow$ CoreMark} \\
-\hline
-Cortex-M0+ & 2 stages & 2.46 & RP2040, 133\,MHz $\Rightarrow$ $\approx$\,330 \\
-Cortex-M3 & 3 stages & 3.34 & STM32F103, 72\,MHz $\Rightarrow$ $\approx$\,240 \\
-Cortex-M4 & 3 stages & 3.42 & STM32F407, 168\,MHz $\Rightarrow$ $\approx$\,570 \\
-Cortex-M33 & 3 stages & 4.02 & RP2350, 150\,MHz $\Rightarrow$ $\approx$\,600 \\
-Cortex-M55 & 4 stages & 4.2 & STM32N6, 800\,MHz $\Rightarrow$ $\approx$\,3400 \\
-Cortex-M7 & 6 stages, dual issue & 5.01 & STM32H743, 480\,MHz $\Rightarrow$ $\approx$\,2400 \\
-Cortex-M85 & dual issue & 6.28 & Renesas RA8M1, 480\,MHz $\Rightarrow$ $\approx$\,3000 \\
-\hline
-\end{tabular}}
+\adjustbox{max width=\linewidth,max totalheight=0.6\textheight}{%
+\begin{tikzpicture}[font=\sffamily\small]
+	\foreach \n/\v/\r [count=\i] in {
+		{STM32N6, Cortex-M55, 800\,MHz}/3360/4.2,
+		{Renesas RA8M1, Cortex-M85, 480\,MHz}/3010/6.28,
+		{STM32H743, Cortex-M7, 480\,MHz}/2400/5.01,
+		{RP2350, Cortex-M33, 150\,MHz}/600/4.02,
+		{STM32F407, Cortex-M4, 168\,MHz}/570/3.42,
+		{RP2040, Cortex-M0+, 133\,MHz}/330/2.46,
+		{STM32F103, Cortex-M3, 72\,MHz}/240/3.34} {
+		\fill[rwucyan,rounded corners=1pt] (0,-\i*0.7) rectangle ++(\v*0.0028,0.45);
+		\node[left] at (0,-\i*0.7+0.22) {\n};
+		\node[right,text=black!70] at (\v*0.0028,-\i*0.7+0.22) {$\approx$\,\v\ \ (\r/MHz)};
+	}
+	\draw[gray,thick] (0,-5.15) -- (0,-0.1);
+\end{tikzpicture}}
 \end{center}
 \bi
-	\ite figures published by Arm, measured under ideal conditions (code and data in zero wait state memory, best compiler)
-	\ite in a real chip, flash wait states, caches and the bus system can cost a large part of this
-	\ite an 8 bit AVR reaches well below one CoreMark/MHz -- 32 bit arithmetic costs several instructions
+	\ite CoreMark = CoreMark/MHz (published by Arm, ideal memory) $\times$ clock -- in a real chip wait states and caches cost a part of it
+	\ite an 8 bit AVR reaches well below one CoreMark/MHz
 \ei
 \os{\newpage}
 
 \item[{\rot\bf Key figures: everything else that matters}]~\\[-\lblskip]
-\bi
-	\ite \textbf{determinism}: interrupt latency (cycles from the event to the first instruction of the handler), jitter, worst-case execution time (WCET)
-	\ite \textbf{memory}: flash and RAM size, memory speed (wait states), code density of the instruction set
-	\ite \textbf{energy}:
-	\bi
-		\ite active current per MHz (low-power MCUs today: about 15--100\,$\mu$A/MHz)
-		\ite sleep current with RTC running (0.1--5\,$\mu$A), wake-up time ($\mu$s to ms), energy per operation
-	\ei
-	\ite \textbf{peripherals}: ADC/DAC, timers, communication interfaces, radio, security (crypto, secure boot, TrustZone)
-	\ite \textbf{environment}: temperature range (consumer 0--70\,\textdegree C, industrial $-$40--85\,\textdegree C, automotive up to 125/150\,\textdegree C), AEC-Q100 qualification
-	\ite \textbf{functional safety}: certified for ISO\,26262 (ASIL), IEC\,61508 (SIL): lock-step cores, ECC on memories, self tests
-	\ite \textbf{business}: price, long-term availability (many vendors guarantee 10--15 years), second source, software ecosystem
-\ei
+\begin{center}
+\adjustbox{max width=\linewidth,max totalheight=0.78\textheight}{%
+\begin{tikzpicture}[font=\sffamily\small,
+	k/.style={draw,thick,rounded corners,fill=rwucyan!10,text width=40mm,align=center,inner sep=4pt}]
+	\node[circle,draw,thick,fill=rwuviolet!20,align=center,minimum size=24mm] (c) at (0,0) {\textbf{which}\\\textbf{processor?}};
+	\foreach \a/\t/\d in {
+		90/determinism/{interrupt latency, jitter, worst-case execution time},
+		30/memory/{flash, RAM, wait states, code density},
+		-30/energy/{$\mu$A/MHz active, sleep current, wake-up time},
+		-90/{peripherals, security}/{ADC, timers, radio, crypto, secure boot, TrustZone},
+		-150/{environment, safety}/{$-40$\ldots$125$\,\textdegree C, AEC-Q100, ASIL/SIL, lock-step, ECC},
+		150/business/{price, 10--15 years supply, second source, ecosystem}} {
+		\node[k] (n) at (\a:6.2 and 3.0) {\textbf{\t}\\{\footnotesize\d}};
+		\draw[thick,gray] (c) -- (n);
+	}
+\end{tikzpicture}}
+\end{center}
 \os{\newpage}
 
 \item[{\rot\bf Processors of this lecture (all simulated in Wokwi)}]~\\[-\lblskip]
 \begin{center}
-\resizebox{\textwidth}{!}{%
+\resizebox{\linewidth}{!}{%
 \begin{tabular}{|l|c|c|c|c|}
 \hline
  & \textbf{ATmega328P} & \textbf{RP2040} & \textbf{ESP32-C3} & \textbf{STM32F103} \\
@@ -159,19 +204,29 @@ hierarchy with its caches.}
 
 \begin{description}
 \item[{\rot\bf Instruction set and microarchitecture}]~\\[-\lblskip]
+\begin{center}
+\adjustbox{max width=\linewidth,max totalheight=0.62\textheight}{%
+\begin{tikzpicture}[font=\sffamily\small,>=Stealth,
+	b/.style={draw,thick,rounded corners,align=center,minimum height=10mm,fill=#1}]
+	\node[b=gray!10,minimum width=140mm] (src) at (5.75,3) {C / C++ / Rust source $\rightarrow$ compiler (GCC, LLVM) $\rightarrow$ machine code};
+	\node[b=rwuviolet!25,minimum width=55mm] (arm) at (1.7,1.4) {ISA: ARMv7-M (Thumb-2)};
+	\node[b=rwuviolet!25,minimum width=55mm] (rv)  at (9.8,1.4) {ISA: RV32I + extensions};
+	\node[b=rwucyan!15,text width=18mm] (m3) at (-0.9,-0.4) {Cortex-M3\\{\scriptsize 3 stages}};
+	\node[b=rwucyan!15,text width=18mm] (m4) at (1.7,-0.4) {Cortex-M4\\{\scriptsize + DSP, FPU}};
+	\node[b=rwucyan!15,text width=18mm] (m7) at (4.3,-0.4) {Cortex-M7\\{\scriptsize 6 stages, dual issue}};
+	\node[b=rwucyan!15,text width=18mm] (c3) at (7.2,-0.4) {ESP32-C3\\{\scriptsize RV32IMC}};
+	\node[b=rwucyan!15,text width=18mm] (h3) at (9.8,-0.4) {Hazard3\\{\scriptsize RV32IMAC + B}};
+	\node[b=rwucyan!15,text width=18mm] (sf) at (12.4,-0.4) {SiFive E\\{\scriptsize configurable}};
+	\draw[->,thick] (src) -- (arm); \draw[->,thick] (src) -- (rv);
+	\foreach \n in {m3,m4,m7} \draw[->,thick] (arm) -- (\n);
+	\foreach \n in {c3,h3,sf} \draw[->,thick] (rv) -- (\n);
+	\node[anchor=west,font=\sffamily\scriptsize,text=rwuviolet] at (13.8,1.4) {contract: what the compiler sees};
+	\node[anchor=west,font=\sffamily\scriptsize,text=rwucyandark] at (13.8,-0.4) {implementation: CPI, clock, timing};
+\end{tikzpicture}}
+\end{center}
 \bi
-	\ite \textbf{ISA} (instruction set architecture): what the programmer and the compiler see
-	\bi
-		\ite registers, instructions and their encoding, data types, addressing modes, exceptions and privilege levels
-		\ite examples: ARMv6-M, ARMv7-M, ARMv8-M, RV32IMC, AVR, Xtensa LX
-	\ei
-	\ite \textbf{microarchitecture}: how the ISA is built in hardware
-	\bi
-		\ite pipeline depth, number of execution units, caches, branch prediction, bus interfaces
-		\ite examples: Cortex-M3 and Cortex-M4 (both ARMv7-M), Hazard3 and ESP32-C3 core (both RV32)
-	\ei
-	\ite the same binary code runs on all cores of an ISA -- only faster or slower
-	\ite ISA properties that matter in embedded systems: code density, interrupt model, deterministic timing, availability of compilers, debuggers and RTOS ports
+	\ite the same binary runs on all cores of an ISA -- only faster or slower
+	\ite embedded-relevant ISA properties: code density, interrupt model, determinism, tool support
 \ei
 \os{\newpage}
 
@@ -204,49 +259,68 @@ hierarchy with its caches.}
 \ei
 \os{\newpage}
 
-\item[{\rot\bf RISC and CISC}]~\\[-\lblskip]
+\item[{\rot\bf RISC and CISC: the same operation}]~\\[-\lstskip]
+\begin{minipage}[t]{0.46\linewidth}
+\begin{lstlisting}[language={}]
+; CISC (x86): counter++
+add dword [counter], 1
+; memory operand: read, add,
+; write in ONE instruction
+\end{lstlisting}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.5\linewidth}
+\begin{lstlisting}[language={}]
+@ RISC (Cortex-M): counter++
+ldr  r1, =counter   @ address
+ldr  r0, [r1]       @ load
+adds r0, r0, #1     @ add in register
+str  r0, [r1]       @ store
+\end{lstlisting}
+\end{minipage}
 \bi
-	\ite \textbf{CISC} (complex instruction set computer, e.g.\ x86, Renesas RX): many instructions, memory operands in arithmetic instructions, variable length
-	\ite \textbf{RISC} (reduced instruction set computer): almost all embedded architectures today
-	\bi
-		\ite \textbf{load/store architecture}: arithmetic only on registers; memory accessed only with load and store
-		\ite many general purpose registers (AVR 32 $\times$ 8 bit, Cortex-M 13 $\times$ 32 bit + SP, LR, PC, RISC-V 31 $\times$ 32 bit + zero register)
-		\ite simple, mostly fixed length instructions $\Rightarrow$ easy to decode and to pipeline
-		\ite compressed instruction sets for small code: ARM Thumb (16 bit), RISC-V ``C'' extension
-	\ei
-	\ite the difference has become smaller: x86 processors translate their instructions internally into RISC-like micro-operations, and ``RISC'' ISAs have gained DSP, vector and crypto instructions
-	\ite for embedded systems, \textbf{code density} matters more than the label: flash costs chip area and money
+	\ite \textbf{RISC} = load/store architecture: arithmetic only on registers, simple instructions of (mostly) fixed length $\Rightarrow$ easy to decode and to pipeline
+	\ite many registers: AVR 32 $\times$ 8 bit, Cortex-M 13 $\times$ 32 bit + SP, LR, PC, RISC-V 31 $\times$ 32 bit + \texttt{zero}
+	\ite almost all embedded architectures are RISC; Renesas RX is a CISC exception
+	\ite for embedded systems, \textbf{code density} matters more than the label: Thumb-2 and RISC-V ``C'' mix 16 and 32 bit instructions
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Data width, alignment and byte order}]~\\[-\lblskip]
+\item[{\rot\bf Byte order and alignment}]~\\[-\lblskip]
+\begin{center}
+\adjustbox{max width=\linewidth,max totalheight=0.5\textheight}{%
+\begin{tikzpicture}[font=\sffamily\small,
+	by/.style={draw,thick,minimum width=12mm,minimum height=7mm,fill=#1}]
+	\node[anchor=west] at (-0.6,1.2) {\texttt{uint32\_t x = 0x12345678;} at address 0x100};
+	\foreach \a [count=\i from 0] in {100,101,102,103} \node[font=\sffamily\scriptsize] at (2.2+\i*1.2,0.55) {0x\a};
+	\node[anchor=east] at (1.5,0) {little endian}; \node[anchor=east] at (1.5,-0.8) {big endian};
+	\foreach \b [count=\i from 0] in {78,56,34,12} \node[by=rwucyan!15] at (2.2+\i*1.2,0) {\b};
+	\foreach \b [count=\i from 0] in {12,34,56,78} \node[by=rwuviolet!15] at (2.2+\i*1.2,-0.8) {\b};
+	\node[anchor=west,font=\sffamily\scriptsize,text width=40mm] at (7.2,0) {ARM, RISC-V, x86 -- almost all MCUs};
+	\node[anchor=west,font=\sffamily\scriptsize,text width=40mm] at (7.2,-0.8) {network byte order: \texttt{htonl}, \texttt{ntohs}};
+	% alignment
+	\foreach \i in {0,...,7} \node[by=gray!5,minimum width=9mm] (a\i) at (2.2+\i*0.9,-2.3) {};
+	\foreach \i in {0,...,7} \node[font=\sffamily\scriptsize] at (2.2+\i*0.9,-1.75) {+\i};
+	\draw[very thick,green!50!black,rounded corners] ([xshift=-1pt,yshift=-1pt]a0.south west) rectangle ([xshift=1pt,yshift=1pt]a3.north east);
+	\draw[very thick,red!70!black,dashed,rounded corners] ([yshift=-4pt]a2.south west) rectangle ([yshift=4pt]a5.north east);
+	\node[anchor=east] at (1.5,-2.3) {alignment};
+	\node[anchor=west,font=\sffamily\scriptsize,text width=50mm] at (9.4,-2.3) {\textcolor{green!50!black}{aligned: one access}\\\textcolor{red!70!black}{unaligned: fault (M0+) or extra cycles (M4)}};
+\end{tikzpicture}}
+\end{center}
 \bi
-	\ite the \textbf{word width} is the width of registers and ALU: 8, 16, 32 or 64 bit
-	\bi
-		\ite C: \texttt{int} is 16 bit on AVR and MSP430, 32 bit on ARM and RISC-V $\Rightarrow$ use the types of \texttt{stdint.h}: \texttt{uint16\_t}, \texttt{int32\_t}
-		\ite address width decides the address space: 16 bit = 64\,KB, 32 bit = 4\,GB
-	\ei
-	\ite \textbf{alignment}: a 32 bit value at an address divisible by 4
-	\bi
-		\ite Cortex-M0+ and many RISC-V cores: unaligned access causes a fault (or a slow trap)
-		\ite Cortex-M3/M4/M7: unaligned single loads work, but cost extra cycles
-		\ite matters for communication buffers and structures declared as \texttt{packed}
-	\ei
-	\ite \textbf{byte order} (endianness): almost all MCUs today are little endian, network protocols are big endian (\texttt{htons}, \texttt{ntohl})
+	\ite word width: \texttt{int} is 16 bit on AVR and MSP430, 32 bit on ARM and RISC-V $\Rightarrow$ use \texttt{uint16\_t}, \texttt{int32\_t}
+	\ite care with communication buffers, casts of byte pointers and \texttt{packed} structures
 \ei
 \os{\newpage}
 
 \item[{\rot\bf Pipeline}]~\\[-\lblskip]
-\begin{figure}[!hbtp]
 \begin{center}
-\resizebox{0.7\textwidth}{!}{%
+\adjustbox{max width=\linewidth,max totalheight=0.55\textheight}{%
 \begin{tikzpicture}[font=\sffamily\small,
 	s/.style={draw,thick,minimum width=10mm,minimum height=6mm},
 	F/.style={s,fill=rwucyan!20},D/.style={s,fill=rwuviolet!20},E/.style={s,fill=green!20},
 	X/.style={s,fill=gray!15,text=gray}]
 	\foreach \c in {1,...,8} \node at (\c,0.8) {\c};
 	\node[anchor=east] at (0.3,0.8) {clock cycle};
-	% instr, start, label
 	\foreach \i/\t/\n in {1/1/{ldr r1,[r0]},2/2/{add r2,r2,r1},3/3/{cmp r3,r4},4/4/{bne loop}} {
 		\node[anchor=east] at (0.3,-\i*0.7) {\texttt{\n}};
 		\node[F] at (\t,-\i*0.7) {F};
@@ -259,115 +333,171 @@ hierarchy with its caches.}
 	\node[F] at (7,-4.2) {F}; \node[D] at (8,-4.2) {D};
 	\draw[thick,red!70!black,->] (6.6,-2.8) -- (6.6,-3.9);
 	\node[red!70!black,anchor=west,font=\sffamily\scriptsize] at (6.7,-3.2) {branch taken: flush};
+	\node[F,minimum width=6mm] at (9.6,-0.7) {}; \node[anchor=west,font=\sffamily\scriptsize] at (9.95,-0.7) {fetch};
+	\node[D,minimum width=6mm] at (9.6,-1.4) {}; \node[anchor=west,font=\sffamily\scriptsize] at (9.95,-1.4) {decode};
+	\node[E,minimum width=6mm] at (9.6,-2.1) {}; \node[anchor=west,font=\sffamily\scriptsize] at (9.95,-2.1) {execute};
 \end{tikzpicture}}
-\caption{Three-stage pipeline (fetch, decode, execute) as in the Cortex-M3/M4}
 \end{center}
-\end{figure}
 \bi
-	\ite the stages work in parallel on consecutive instructions $\Rightarrow$ ideally one instruction per clock (CPI = 1)
-	\ite a taken branch is only known in the execute stage: the instructions fetched behind it are thrown away (\textbf{branch penalty})
-	\ite deeper pipelines allow higher clock rates, but make branches and dependencies more expensive
+	\ite stages work in parallel on consecutive instructions $\Rightarrow$ ideally CPI = 1
+	\ite a taken branch is known only in execute: the instructions behind it are thrown away (\textbf{branch penalty})
+	\ite pipeline depth: AVR 2, Cortex-M0+ 2, M3/M4/M33 3, M7 6 stages
 \ei
 \os{\newpage}
 
 \item[{\rot\bf Pipeline hazards}]~\\[-\lblskip]
+\begin{center}
+\adjustbox{max width=\linewidth,max totalheight=0.4\textheight}{%
+\begin{tikzpicture}[font=\sffamily\small,>=Stealth,
+	s/.style={draw,thick,minimum width=14mm,minimum height=6mm},
+	F/.style={s,fill=rwucyan!20},D/.style={s,fill=rwuviolet!20},E/.style={s,fill=green!20},
+	B/.style={s,fill=red!10,text=red!70!black}]
+	\foreach \c in {1,...,6} \node at (\c*1.5,0.7) {\c};
+	\node[anchor=east] at (0.6,0.7) {cycle};
+	\node[anchor=east] at (0.6,0) {\texttt{ldr r1,[r0]}};
+	\node[F] at (1.5,0) {F}; \node[D] at (3,0) {D}; \node[E] at (4.5,0) {E addr}; \node[E] (mem) at (6,0) {E data};
+	\node[anchor=east] at (0.6,-0.8) {\texttt{add r2,r2,r1}};
+	\node[F] at (3,-0.8) {F}; \node[D] at (4.5,-0.8) {D}; \node[B] at (6,-0.8) {stall}; \node[E] (use) at (7.5,-0.8) {E};
+	\draw[->,very thick,rwuviolet] (mem.east) to[out=0,in=110] node[above right,font=\sffamily\scriptsize]{forwarding} (use.north);
+\end{tikzpicture}}
+\end{center}
 \bi
-	\ite \textbf{data hazard}: an instruction needs the result of the previous one
-	\bi
-		\ite \textbf{forwarding} passes the result directly from the ALU output to the next instruction
-		\ite a load followed by its use often still costs one stall cycle (load-use hazard)
-	\ei
-	\ite \textbf{control hazard}: branches
-	\bi
-		\ite Cortex-M0+: a taken branch costs 2 cycles instead of 1; Cortex-M4: 1 + 1\ldots3 cycles refill
-		\ite \textbf{branch prediction} guesses the direction (static: ``backwards = taken'', dynamic: history tables); Cortex-M7 and application cores predict dynamically
-		\ite compilers help: loop unrolling, conditional execution (ARM \texttt{IT} blocks), \textbf{zero-overhead loops} in DSPs, Xtensa (\texttt{loop}) and ARMv8.1-M (\texttt{dls}/\texttt{le})
-	\ei
-	\ite \textbf{structural hazard}: two instructions need the same unit, e.g.\ one memory port for instruction fetch and data $\Rightarrow$ reason for Harvard buses
-	\ite for real time: a simple pipeline makes the cycle count of a code section easy to predict
+	\ite \textbf{data hazard}: \texttt{add} needs \texttt{r1}, which arrives from memory one cycle late $\Rightarrow$ stall; forwarding avoids waiting for the register write
+	\ite \textbf{control hazard}: branches; remedies are branch prediction (Cortex-M7, Cortex-A), loop unrolling, \texttt{IT} blocks and \textbf{zero-overhead loops} (DSPs, Xtensa, ARMv8.1-M)
+	\ite \textbf{structural hazard}: two instructions need the same unit, e.g.\ one memory port $\Rightarrow$ Harvard buses
+	\ite good compilers reorder instructions to fill these slots
 \ei
 \os{\newpage}
 
 \item[{\rot\bf Superscalar and out-of-order execution}]~\\[-\lblskip]
+\begin{center}
+\adjustbox{max width=\linewidth,max totalheight=0.38\textheight}{%
+\begin{tikzpicture}[font=\sffamily\small,
+	i/.style={draw,thick,minimum width=12mm,minimum height=6mm,fill=#1}]
+	\foreach \c in {1,...,6} \node at (\c*1.4,0.7) {\c};
+	\node[anchor=east] at (0.5,0.7) {cycle};
+	\node[anchor=east] at (0.5,0) {single issue};
+	\foreach \c in {1,...,6} \node[i=rwucyan!20] at (\c*1.4,0) {I\c};
+	\node[anchor=east] at (0.5,-1.2) {dual issue};
+	\node[i=rwuviolet!20] at (1.4,-0.9) {I1}; \node[i=rwuviolet!20] at (1.4,-1.5) {I2};
+	\node[i=rwuviolet!20] at (2.8,-0.9) {I3}; \node[i=rwuviolet!20] at (2.8,-1.5) {I4};
+	\node[i=rwuviolet!20] at (4.2,-0.9) {I5}; \node[i=rwuviolet!20] at (5.6,-0.9) {I6};
+	\node[anchor=west,font=\sffamily\scriptsize] at (6.4,-1.2) {I6 needs the result of I5 $\Rightarrow$ 4 instead of 6 cycles};
+\end{tikzpicture}}
+\end{center}
 \bi
-	\ite \textbf{superscalar} (dual issue): two instructions start in the same cycle if they are independent
-	\bi
-		\ite Cortex-M7, Cortex-M85, Cortex-A53/A55, ESP32-P4 cores; IPC up to about 2
-	\ei
-	\ite \textbf{out-of-order}: the core reorders instructions to fill waiting slots, with register renaming and speculative execution
-	\bi
-		\ite larger Cortex-A cores (A72, A76 in the Raspberry Pi 5), x86
-		\ite much higher performance per MHz, but much more chip area and energy
-	\ei
-	\ite microcontrollers stay \textbf{in-order}:
-	\bi
-		\ite execution time depends far less on history $\Rightarrow$ WCET can be analysed
-		\ite small, cheap and energy-efficient
-	\ei
-	\ite speculative execution opened security holes (Spectre, Meltdown, 2018) -- another reason for simple cores in security-critical devices
+	\ite \textbf{superscalar}: Cortex-M7, M85, Cortex-A53/A55, ESP32-P4 -- IPC up to about 2
+	\ite \textbf{out-of-order}: large Cortex-A (A76 in the Raspberry Pi 5), x86 -- reorders, renames registers, executes speculatively
+	\ite microcontrollers stay \textbf{in-order}: small, efficient, and the WCET can be analysed
+	\ite speculation opened security holes (Spectre, Meltdown) -- another reason for simple cores in security-critical devices
 \ei
 \os{\newpage}
 
 \item[{\rot\bf Memory hierarchy}]~\\[-\lblskip]
 \begin{center}
-{\footnotesize
-\begin{tabularx}{\linewidth}{|l|l|L|}
-\hline
-\textbf{memory} & \textbf{typical access time} & \textbf{remark} \\
-\hline
-registers & 0 cycles (operand of the instruction) & 16--32 registers \\
-TCM (tightly coupled memory) & 1 cycle, always & Cortex-M7/M55/M85, Cortex-R: deterministic \\
-on-chip SRAM & 1--2 cycles & bus matrix: conflicts with DMA possible \\
-cache hit & 1 cycle & only if the cache is present and the data is in it \\
-internal flash & 0--7 wait states & e.g.\ STM32F407 at 168\,MHz: 5 wait states, hidden by prefetch/ART cache \\
-external QSPI flash (XIP), cache miss & 20--100+ cycles & RP2040, ESP32: code lives here \\
-external DRAM & 50--150\,ns & application processors \\
-\hline
-\end{tabularx}}
-\end{center}
-\bi
-	\ite the CPU is faster than the memory: without caches or wait-state hiding a 480\,MHz core would mostly wait
-	\ite \textbf{locality}: programs use the same addresses again soon (temporal) and neighbouring addresses (spatial) -- caches exploit both
-\ei
-\os{\newpage}
-
-\item[{\rot\bf How a cache works}]~\\[-\lblskip]
-\begin{figure}[!hbtp]
-\begin{center}
-\resizebox{0.8\textwidth}{!}{%
+\adjustbox{max width=\linewidth,max totalheight=0.62\textheight}{%
 \begin{tikzpicture}[font=\sffamily\small]
-	\node[draw,thick,fill=rwuviolet!20,minimum width=60mm,minimum height=7mm] (t) at (0,0) {tag (20 bit)};
-	\node[draw,thick,fill=rwucyan!20,minimum width=21mm,minimum height=7mm,right=0mm of t] (i) {index (7)};
-	\node[draw,thick,fill=green!20,minimum width=15mm,minimum height=7mm,right=0mm of i] (o) {offset (5)};
-	\node[anchor=south west,font=\sffamily\scriptsize] at (t.north west) {31};
-	\node[anchor=south east,font=\sffamily\scriptsize] at (o.north east) {0};
-	\node[align=left,anchor=north west,font=\sffamily\scriptsize] at (-3,-0.7) {selects one of 128 sets;\\each set has 4 ways (lines of 32 bytes);\\the tags of the 4 lines are compared in parallel};
-	\draw[->,thick] (i.south) -- ++(0,-0.4);
+	\def\h{0.8}
+	\foreach \n/\t/\s [count=\i from 0] in {
+		registers/0 cycles/{16--32 registers},
+		{TCM, L1 cache}/1 cycle/{4--64\,KB},
+		on-chip SRAM/1--2 cycles/{8\,KB--several MB},
+		internal flash/0--7 wait states/{32\,KB--2\,MB},
+		{QSPI flash (XIP), cache miss}/20--100+ cycles/{MBs},
+		external DRAM/50--150\,ns/{GBs}} {
+		\pgfmathsetmacro{\wt}{0.6+\i*1.5}
+		\pgfmathsetmacro{\wb}{0.6+(\i+1)*1.5}
+		\pgfmathsetmacro{\shade}{60-\i*9}
+		\fill[rwucyan!\shade,draw=white,thick] (-\wt,-\i*\h) -- (\wt,-\i*\h) -- (\wb,-\i*\h-\h) -- (-\wb,-\i*\h-\h) -- cycle;
+		\node at (0,-\i*\h-\h/2) {\n};
+		\node[anchor=west] at (6.8,-\i*\h-\h/2) {\t};
+		\node[anchor=east,text=black!60] at (-6.8,-\i*\h-\h/2) {\s};
+	}
+	\node[anchor=west,font=\sffamily\bfseries] at (6.8,0.4) {access time};
+	\node[anchor=east,font=\sffamily\bfseries] at (-6.8,0.4) {size};
+	\draw[->,thick,rwuviolet] (9.8,-0.2) -- (9.8,-4.6) node[midway,right,align=left,font=\sffamily\scriptsize]{bigger,\\cheaper,\\slower};
 \end{tikzpicture}}
-\caption{Address split of a 16\,KB, 4-way set-associative data cache with 32 byte lines (Cortex-M7)}
 \end{center}
-\end{figure}
 \bi
-	\ite a \textbf{cache line} (16--64 bytes) is loaded as a whole on a miss $\Rightarrow$ spatial locality
-	\ite \textbf{direct mapped} (1 way): simple, but two addresses with the same index throw each other out; \textbf{n-way set-associative}: a line can go into n places
-	\ite \textbf{write-through}: every write also goes to memory; \textbf{write-back}: only when the line is replaced (faster, but memory is temporarily out of date)
-	\ite Cortex-M7: instruction cache 2-way, data cache 4-way, 0--64\,KB each; RP2040: 16\,KB XIP cache for the external flash
+	\ite the CPU is faster than the memory: a 480\,MHz core without caches would mostly wait
+	\ite caches exploit \textbf{locality}: the same addresses again soon (temporal), neighbouring addresses (spatial)
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Caches in embedded practice}]~\\[-\lblskip]
+\item[{\rot\bf How a cache works: one load step by step}]~\\[-\lblskip]
+\begin{center}
+\adjustbox{max width=\linewidth,max totalheight=0.78\textheight}{%
+\begin{tikzpicture}[font=\sffamily\small,>=Stealth,node distance=6mm,
+	st/.style={draw,thick,rounded corners,fill=#1,align=center,text width=30mm,minimum height=12mm},
+	dec/.style={draw,thick,diamond,aspect=2,fill=yellow!15,align=center,inner sep=1pt}]
+	\node[st=gray!10] (a) at (0,0) {CPU: \texttt{ldr} from\\0x2000\,1234};
+	\node[st=gray!10] (b) at (4.2,0) {split address:\\tag 0x20001\\set 17, offset 20};
+	\node[st=gray!10] (c) at (8.4,0) {read set 17:\\4 tags (4 ways)};
+	\node[dec] (d) at (12.8,0) {tag equal\\and valid?};
+	\node[st=green!15] (hit) at (12.8,-3) {\textbf{hit}: word from the line, 1 cycle};
+	\node[st=red!10] (v) at (8.4,-3) {\textbf{miss}: choose victim way (LRU)};
+	\node[st=red!10] (wb) at (4.2,-3) {victim dirty?\\write it back};
+	\node[st=red!10] (r) at (0,-3) {load 32 byte line from memory};
+	\draw[->,thick] (a) -- (b); \draw[->,thick] (b) -- (c); \draw[->,thick] (c) -- (d);
+	\draw[->,thick] (d) -- node[right]{yes} (hit);
+	\draw[->,thick] (d.south west) to[out=-120,in=0] node[above,pos=0.6]{no} (v.east);
+	\draw[->,thick] (v) -- (wb); \draw[->,thick] (wb) -- (r);
+	\draw[->,thick] (r.south) -- ++(0,-0.6) -| node[below,pos=0.25]{store tag, deliver word (tens of cycles)} (hit.south);
+	% address split
+	\node[draw,thick,fill=rwuviolet!20,minimum width=50mm,minimum height=6mm] (t) at (2.5,2.0) {tag: bits 31--12};
+	\node[draw,thick,fill=rwucyan!20,minimum width=25mm,minimum height=6mm,right=0mm of t] (ix) {index: 11--5};
+	\node[draw,thick,fill=green!20,minimum width=22mm,minimum height=6mm,right=0mm of ix] (of) {offset: 4--0};
+	\node[anchor=west,font=\sffamily\scriptsize,text width=50mm] at (10.6,2.0) {16\,KB, 4-way, 32 byte lines\\$\Rightarrow$ 128 sets (Cortex-M7 data cache)};
+\end{tikzpicture}}
+\end{center}
+\os{\newpage}
+
+\item[{\rot\bf Cache example: hits, misses, conflicts}]~\\[-\lblskip]
+\begin{center}
+{\small
+\begin{tabular}{|c|c|c|l||c|l|}
+\hline
+ & \multicolumn{3}{c||}{\textbf{direct mapped} (4 sets $\times$ 1 way)} & \multicolumn{2}{c|}{\textbf{2-way} (2 sets $\times$ 2 ways)} \\
+\textbf{address} & \textbf{set} & \textbf{tag} & \textbf{result} & \textbf{set} & \textbf{result} \\
+\hline
+0x00 & 0 & 0 & \textcolor{red!70!black}{miss} (cold) & 0 & \textcolor{red!70!black}{miss} (cold) \\
+0x04 & 0 & 0 & \textcolor{green!50!black}{hit} (same line: spatial locality) & 0 & \textcolor{green!50!black}{hit} \\
+0x14 & 1 & 0 & \textcolor{red!70!black}{miss} (cold) & 1 & \textcolor{red!70!black}{miss} (cold) \\
+0x40 & 0 & 1 & \textcolor{red!70!black}{miss}, throws out 0x00--0x0F & 0 & \textcolor{red!70!black}{miss}, goes into way 2 \\
+0x08 & 0 & 0 & \textcolor{red!70!black}{miss} (\textbf{conflict}) & 0 & \textcolor{green!50!black}{hit} \\
+0x18 & 1 & 0 & \textcolor{green!50!black}{hit} & 1 & \textcolor{green!50!black}{hit} \\
+\hline
+\multicolumn{4}{|r||}{\textbf{hit rate 2/6}} & \multicolumn{2}{c|}{\textbf{hit rate 3/6}} \\
+\hline
+\end{tabular}}
+\end{center}
 \bi
-	\ite \textbf{DMA coherency}: DMA writes to RAM, the CPU still sees the old data in its cache (and vice versa)
-	\bi
-		\ite before DMA reads a buffer: clean the cache (\texttt{SCB\_CleanDCache\_by\_Addr}); after DMA wrote it: invalidate (\texttt{SCB\_InvalidateDCache\_by\_Addr})
-		\ite or mark the buffer as non-cacheable with the MPU -- a classic source of bugs when porting from a Cortex-M4 to an M7
-	\ei
-	\ite \textbf{timing}: the same code can take very different times depending on the cache content $\Rightarrow$ WCET analysis must assume misses
-	\bi
-		\ite put interrupt handlers and control loops into TCM or SRAM (\texttt{IRAM\_ATTR} on the ESP32, \texttt{\_\_not\_in\_flash\_func} on the RP2040)
-		\ite some cores allow cache locking: lines that are never replaced
-	\ei
-	\ite \textbf{multi-core}: application processors keep caches of several cores coherent in hardware; on MCUs with two cores (RP2040, RP2350, i.MX RT1170) shared data needs care
+	\ite tiny cache with 4 lines of 16 bytes; direct mapped: set = address bits 5--4, tag = bits 7--6; two arrays 64 bytes apart throw each other out
+	\ite associativity removes such conflicts; in real code: watch the layout of arrays that are used together
+\ei
+\os{\newpage}
+
+\item[{\rot\bf Caches and DMA: a classic bug}]~\\[-\lblskip]
+\begin{center}
+\adjustbox{max width=\linewidth,max totalheight=0.55\textheight}{%
+\begin{tikzpicture}[font=\sffamily\small,>=Stealth]
+	\foreach \x/\n/\c in {0/CPU/rwucyan,3.5/data cache/rwucyan,7/RAM/gray,10.5/DMA (ADC)/rwuviolet} {
+		\node[draw,thick,fill=\c!20,minimum width=24mm,minimum height=7mm] at (\x,0) {\n};
+		\draw[thick,dashed,gray] (\x,-0.35) -- (\x,-5.2);
+	}
+	\draw[->,thick] (0,-0.9) -- node[above,font=\sffamily\scriptsize]{1: read buf} (3.5,-0.9);
+	\draw[->,thick] (3.5,-1.2) -- node[above,font=\sffamily\scriptsize]{miss: load line} (7,-1.2);
+	\draw[->,thick] (7,-1.5) -- (3.5,-1.5); \draw[->,thick] (3.5,-1.7) -- node[below,font=\sffamily\scriptsize]{old samples} (0,-1.7);
+	\draw[->,thick,rwuviolet] (10.5,-2.6) -- node[above,font=\sffamily\scriptsize]{2: DMA writes new samples} (7,-2.6);
+	\draw[->,thick] (0,-3.6) -- node[above,font=\sffamily\scriptsize]{3: read buf again} (3.5,-3.6);
+	\draw[->,very thick,red!70!black] (3.5,-4.0) -- node[below,font=\sffamily\scriptsize]{hit: \textbf{old} data!} (0,-4.0);
+	\node[draw,thick,fill=green!10,rounded corners,align=left,font=\sffamily\scriptsize] at (7.2,-4.4) {fix before step 3:\\\texttt{SCB\_InvalidateDCache\_by\_Addr(buf, len)}};
+\end{tikzpicture}}
+\end{center}
+\bi
+	\ite the other direction: before DMA sends a buffer, \textbf{clean} the cache (write dirty lines back)
+	\ite alternatives: non-cacheable region via the MPU, or buffers in TCM / non-cached SRAM
+	\ite timing: the same code takes different times depending on cache content $\Rightarrow$ put interrupt handlers and control loops into TCM/SRAM (\texttt{IRAM\_ATTR} on the ESP32, \texttt{\_\_not\_in\_flash\_func} on the RP2040)
 \ei
 \os{\newpage}
 \end{description}
@@ -409,130 +539,144 @@ C2000, SHARC & 32 & TI, ADI & DSP features, fast control loops & motor control, 
 
 \item[{\rot\bf 8 bit AVR (ATmega328P)}]~\\[-\lblskip]
 \bi
-	\ite 32 registers of 8 bit, most instructions in one clock cycle, 16\,MHz on the Arduino Uno
-	\ite two-stage pipeline: the next instruction is fetched while the current one executes
-	\ite pure Harvard architecture: 32\,KB flash for code, 2\,KB SRAM for data, 1\,KB EEPROM
-	\ite 5\,V operation, robust I/O pins, very low sleep current (well below 1\,$\mu$A in power-down)
-	\ite interrupts: the hardware only saves the PC, the compiler saves the registers $\Rightarrow$ short handlers matter
-	\ite limits: 16 or 32 bit arithmetic needs several instructions, no hardware division, little RAM
-	\ite still used for simple control tasks; and it made embedded programming popular through Arduino
+	\ite 32 registers of 8 bit, two-stage pipeline, most instructions in one cycle, 16\,MHz on the Arduino Uno
+	\ite pure Harvard: 32\,KB flash, 2\,KB SRAM, 1\,KB EEPROM; 5\,V, robust pins, power-down well below 1\,$\mu$A
+	\ite interrupts: hardware saves only the PC, the compiler saves the registers $\Rightarrow$ keep handlers short
+	\ite limits: 16/32 bit arithmetic needs several instructions, no division, little RAM
+	\ite \textbf{use case}: a battery-powered room sensor or a toy -- simple control logic, 5\,V parts, very cheap; and the chip that made embedded programming popular through Arduino
 \ei
 \os{\newpage}
 
 \item[{\rot\bf ARM: three profiles}]~\\[-\lblskip]
-\bi
-	\ite \textbf{Cortex-A} (application): AArch64 (64 bit), MMU, multi-level caches, NEON/SVE vector units; Linux, Android
-	\bi
-		\ite big.LITTLE: fast cores (A76, A78) together with efficient cores (A53, A55) on one chip
-	\ei
-	\ite \textbf{Cortex-R} (real time): high clock rates \textbf{and} deterministic response
-	\bi
-		\ite TCM instead of (only) caches, ECC, \textbf{dual-core lock-step} (two cores compute the same, a comparator detects faults)
-		\ite Cortex-R5/R52: automotive (ASIL\,D), hard disk/SSD controllers, 4G/5G modems; R52 supports a hypervisor for mixed criticality
-	\ei
-	\ite \textbf{Cortex-M} (microcontroller): small, energy-efficient, easy to program completely in C or Rust
-	\bi
-		\ite vector table with addresses, hardware register saving, NVIC, SysTick, SWD debug -- the same on every Cortex-M chip
-	\ei
-	\ite Arm sells licenses: a core license (e.g.\ Cortex-M33) or an architecture license (own core, e.g.\ Apple, Qualcomm)
-\ei
+\begin{center}
+\adjustbox{max width=\linewidth,max totalheight=0.78\textheight}{%
+\begin{tikzpicture}[font=\sffamily\small,
+	h/.style={draw,thick,fill=#1,minimum width=52mm,minimum height=9mm,font=\sffamily\bfseries},
+	t/.style={draw,thick,text width=48mm,align=left,inner sep=2mm,minimum height=46mm,anchor=north}]
+	\node[h=rwucyan!30] at (0,0) {Cortex-M: microcontroller};
+	\node[h=rwuviolet!30] at (5.6,0) {Cortex-R: real time};
+	\node[h=orange!30] at (11.2,0) {Cortex-A: application};
+	\node[t] at (0,-0.45) {\textbf{features}\\ small and efficient\\ NVIC, hardware register saving\\ MPU, optional TrustZone\\ programmed fully in C/Rust\\[2mm] \textbf{used in}\\ sensors, motor control, wearables, IoT, everything with an RTOS};
+	\node[t] at (5.6,-0.45) {\textbf{features}\\ high clock \textbf{and} determinism\\ TCM, ECC on all memories\\ dual-core lock-step\\ R52: hypervisor\\[2mm] \textbf{used in}\\ brake and airbag ECUs, SSD and hard disk controllers, 4G/5G modems};
+	\node[t] at (11.2,-0.45) {\textbf{features}\\ 64 bit, MMU for Linux\\ multi-level caches, NEON/SVE\\ big.LITTLE (A76 + A55)\\ out-of-order (large cores)\\[2mm] \textbf{used in}\\ smartphones, Raspberry Pi, infotainment, gateways, ADAS};
+\end{tikzpicture}}
+\end{center}
 \os{\newpage}
 
 \item[{\rot\bf ARM Cortex-M family}]~\\[-\lblskip]
 \begin{center}
-\resizebox{\textwidth}{!}{%
-\begin{tabular}{|l|l|l|}
+{\footnotesize
+\begin{tabularx}{\linewidth}{|l|l|L|L|}
 \hline
-\textbf{core} & \textbf{architecture} & \textbf{features} \\
+\textbf{core} & \textbf{architecture} & \textbf{features} & \textbf{example chips} \\
 \hline
-Cortex-M0 / M0+ & ARMv6-M & smallest and most efficient; Thumb subset, no division instruction \\
-Cortex-M3 & ARMv7-M & full Thumb-2 instruction set, hardware division \\
-Cortex-M4 & ARMv7E-M & + DSP instructions (SIMD, MAC), optional single precision FPU \\
-Cortex-M7 & ARMv7E-M & superscalar, caches, TCM, optional double precision FPU, up to about 1\,GHz \\
-Cortex-M23 / M33 & ARMv8-M & + TrustZone security extension (M33 also DSP and FPU) \\
-Cortex-M52 / M55 / M85 & ARMv8.1-M & + Helium vector extension (MVE) for signal processing and machine learning \\
+Cortex-M0 / M0+ & ARMv6-M & smallest; Thumb subset, no division & RP2040, STM32G0, nRF51 \\
+Cortex-M3 & ARMv7-M & full Thumb-2, hardware division & STM32F1, LPC17xx \\
+Cortex-M4 & ARMv7E-M & + DSP (SIMD, MAC), optional single precision FPU & STM32F4/G4, nRF52 \\
+Cortex-M7 & ARMv7E-M & superscalar, caches, TCM, optional double FPU, up to 1\,GHz & STM32H7, i.MX RT1170, S32K3 \\
+Cortex-M23 / M33 & ARMv8-M & + TrustZone (M33 also DSP and FPU) & RP2350, STM32U5, nRF54L \\
+Cortex-M52/M55/M85 & ARMv8.1-M & + Helium vectors (MVE) for DSP and ML & STM32N6, RA8, Alif Ensemble \\
 \hline
-\end{tabular}}
+\end{tabularx}}
 \end{center}
 \bi
-	\ite common to all: NVIC interrupt controller, SysTick timer, vector table, debug via SWD
-	\ite upward compatible: code for the M0+ runs on all others
+	\ite common to all: NVIC, SysTick, vector table, SWD debug; upward compatible (M0+ code runs everywhere)
 	\ite most used today: M0+ (cheap), M4 (DSP + FPU), M33 (security); M55/M85 for edge AI
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Cortex-M instruction set particularities}]~\\[-\lblskip]
+\item[{\rot\bf Cortex-M instruction set particularities}]~\\[-\lstskip]
+\begin{lstlisting}[language={}]
+@ if (x >= 0) y = 1; else y = -1;   -- without a branch
+      cmp    r0, #0
+      ite    ge             @ if-then-else block: next 2 instructions conditional
+      movge  r1, #1
+      movlt  r1, #-1
+\end{lstlisting}
 \bi
-	\ite \textbf{Thumb-2}: 16 and 32 bit instructions mixed freely -- good code density at almost full ARM performance
-	\ite conditional execution with \texttt{IT} blocks (``if-then''): up to 4 instructions without a branch
-	\ite load/store multiple (\texttt{push \{r4-r7, lr\}}, \texttt{ldm}, \texttt{stm}), compare-and-branch-if-zero (\texttt{cbz})
-	\ite \textbf{DSP extension} (M4, M7, M33): single-cycle MAC (\texttt{smlabb}), SIMD on 2 $\times$ 16 or 4 $\times$ 8 bit (\texttt{sadd16}, \texttt{smlad}), saturation (\texttt{ssat}, \texttt{qadd})
-	\ite \textbf{ARMv8.1-M}: low-overhead loops (\texttt{dls}/\texttt{le}), Helium vectors on 128 bit registers (8 $\times$ 16 bit, 4 $\times$ float), pointer authentication against return-oriented programming (PACBTI, M85)
-	\ite exception entry in hardware: \texttt{r0}--\texttt{r3}, \texttt{r12}, \texttt{lr}, \texttt{pc}, \texttt{xpsr} are stacked automatically $\Rightarrow$ an interrupt handler is a normal C function
-	\ite calling convention (AAPCS): arguments in \texttt{r0}--\texttt{r3}, return value in \texttt{r0}, \texttt{r4}--\texttt{r11} must be preserved
+	\ite \textbf{Thumb-2}: 16 and 32 bit instructions mixed -- good code density
+	\ite \texttt{push \{r4-r7, lr\}}, \texttt{ldm}/\texttt{stm}, \texttt{cbz} (compare and branch if zero)
+	\ite \textbf{DSP extension} (M4, M7, M33): \texttt{smlabb} (MAC), \texttt{smlad} (2 MACs), saturation \texttt{qadd}, \texttt{ssat}
+	\ite \textbf{ARMv8.1-M}: low-overhead loops \texttt{dls}/\texttt{le}, Helium on 128 bit vectors, pointer authentication (PACBTI)
+	\ite exception entry in hardware: \texttt{r0}--\texttt{r3}, \texttt{r12}, \texttt{lr}, \texttt{pc}, \texttt{xpsr} are stacked $\Rightarrow$ handlers are normal C functions
+	\ite AAPCS: arguments in \texttt{r0}--\texttt{r3}, result in \texttt{r0}, \texttt{r4}--\texttt{r11} preserved
 \ei
 \os{\newpage}
 
 \item[{\rot\bf TrustZone for Cortex-M (ARMv8-M)}]~\\[-\lblskip]
+\begin{center}
+\adjustbox{max width=\linewidth,max totalheight=0.5\textheight}{%
+\begin{tikzpicture}[font=\sffamily\small,>=Stealth,
+	w/.style={draw,very thick,rounded corners,fill=#1,text width=52mm,minimum height=36mm,align=left,inner sep=3mm}]
+	\node[w=rwucyan!10] (ns) at (0,0) {\textbf{non-secure world}\\[1mm] application, RTOS, network stack, third-party libraries\\[1mm] {\scriptsize may be compromised}};
+	\node[w=rwuviolet!15] (s) at (9,0) {\textbf{secure world}\\[1mm] keys, crypto, secure boot, firmware update, attestation (Trusted Firmware-M)};
+	\draw[->,very thick] ([yshift=4mm]ns.east) -- node[above,font=\sffamily\scriptsize]{call via \texttt{sg} entry points only} ([yshift=4mm]s.west);
+	\draw[->,very thick,red!70!black] ([yshift=-6mm]ns.east) -- node[below,font=\sffamily\scriptsize]{direct access: SecureFault} ([yshift=-6mm]s.west);
+	\node[draw,thick,fill=gray!10,minimum width=142mm,minimum height=8mm] at (4.5,-2.6) {SAU/IDAU + security attributes of memory and peripherals};
+\end{tikzpicture}}
+\end{center}
 \bi
-	\ite the processor runs in a \textbf{secure} or a \textbf{non-secure} state; memory and peripherals are assigned to one of the states
-	\bi
-		\ite SAU/IDAU (security attribution unit) defines the regions; the switch to the secure state is only possible through defined entry points (\texttt{sg} instruction)
-	\ei
-	\ite the secure side holds keys, the secure boot loader, crypto and firmware update -- the application cannot read them even if it is compromised
-	\ite reference software: Trusted Firmware-M (TF-M), certification after PSA Certified
-	\ite important for the EU Cyber Resilience Act (CRA): products with digital elements must be secure by design and receive security updates
-	\ite available in Cortex-M23, M33, M35P, M52, M55, M85 (e.g.\ RP2350, STM32U5, nRF54L, LPC55)
+	\ite \textbf{use case}: a smart lock -- even if the Bluetooth stack has a bug, the key stays in the secure world
+	\ite basis for PSA Certified and the EU Cyber Resilience Act; in M23, M33, M55, M85 (RP2350, STM32U5, nRF54L, LPC55)
 \ei
 \os{\newpage}
 
-\item[{\rot\bf RISC-V}]~\\[-\lblskip]
+\item[{\rot\bf RISC-V: a modular ISA}]~\\[-\lblskip]
+\begin{center}
+\adjustbox{max width=\linewidth,max totalheight=0.55\textheight}{%
+\begin{tikzpicture}[font=\sffamily\small,
+	e/.style={draw,thick,fill=#1,minimum width=14mm,minimum height=9mm,align=center}]
+	\node[draw,thick,fill=gray!20,minimum width=98mm,minimum height=9mm] at (3.5,0) {\textbf{RV32I} base: 32 registers, about 40 instructions (\textbf{RV32E}: 16 registers)};
+	\node[e=rwucyan!25] at (-1.0,1.1) {\textbf{M}\\[-1mm]{\scriptsize mul, div}};
+	\node[e=rwucyan!25] at (0.5,1.1) {\textbf{A}\\[-1mm]{\scriptsize atomic}};
+	\node[e=rwucyan!25] at (2.0,1.1) {\textbf{F}\\[-1mm]{\scriptsize float}};
+	\node[e=rwucyan!25] at (3.5,1.1) {\textbf{D}\\[-1mm]{\scriptsize double}};
+	\node[e=rwucyan!25] at (5.0,1.1) {\textbf{C}\\[-1mm]{\scriptsize 16 bit}};
+	\node[e=rwucyan!25] at (6.5,1.1) {\textbf{B}\\[-1mm]{\scriptsize bit manip.}};
+	\node[e=rwucyan!25] at (8.0,1.1) {\textbf{V}\\[-1mm]{\scriptsize vector}};
+	\node[e=rwuviolet!20,minimum width=16mm] at (9.5,1.1) {\textbf{Zc*}\\[-1mm]{\scriptsize code size}};
+	\node[draw,thick,dashed,fill=orange!15,minimum width=98mm,minimum height=8mm] at (3.5,2.2) {custom extensions: DSP, AI, crypto -- allowed and documented};
+	\node[anchor=west,font=\sffamily\footnotesize,text width=55mm,align=left] at (11.3,1.1) {CH32V003: RV32EC\\ ESP32-C3: RV32IMC\\ Hazard3 (RP2350): RV32IMAC + B + Zc*\\ ESP32-P4: RV32IMAFC + custom AI/DSP\\ Linux SoCs: RVA23 profile (64 bit, V)};
+\end{tikzpicture}}
+\end{center}
 \bi
-	\ite open instruction set architecture (since 2010, UC Berkeley; today RISC-V International) -- no license fees
-	\ite modular: a small base set plus standard extensions
-	\bi
-		\ite \textbf{RV32I}: 32 bit integer base, 32 registers (\texttt{x0} is always 0); \textbf{RV32E}: only 16 registers for the smallest cores
-		\ite \textbf{M} multiplication/division, \textbf{A} atomic operations, \textbf{F}/\textbf{D} floating point, \textbf{C} compressed 16 bit instructions, \textbf{V} vectors, \textbf{B} bit manipulation
-		\ite \textbf{Zc*}: further compressed instructions for code size (e.g.\ \texttt{cm.push}/\texttt{cm.pop})
-		\ite ESP32-C3 = RV32IMC; Hazard3 in the RP2350 = RV32IMAC + bit manipulation + Zc*
-	\ei
-	\ite \textbf{profiles} bundle extensions: RVA23 for application processors (Linux distributions target it), smaller profiles for MCUs
-	\ite \textbf{privilege modes}: M (machine), S (supervisor, for Linux), U (user); embedded: M + U with PMP (physical memory protection) as MPU
-	\ite \textbf{custom instructions} are allowed and documented: e.g.\ DSP or AI instructions for a single application
+	\ite open ISA (UC Berkeley 2010, today RISC-V International) -- no license fees
+	\ite privilege modes M (machine), S (supervisor, Linux), U (user); embedded: M + U with PMP as memory protection
+	\ite profiles (e.g.\ RVA23) bundle extensions, so that operating systems know what to expect
 \ei
 \os{\newpage}
 
 \item[{\rot\bf RISC-V: chances and challenges}]~\\[-\lblskip]
-\bi
-	\ite \textbf{chances}
-	\bi
-		\ite no license fee and no dependence on one company -- strategically important (EU, China, India)
-		\ite many implementations: commercial IP (SiFive, Andes, Codasip, Nuclei), vendor cores (Espressif, WCH, Nordic), open source (Hazard3, Ibex in OpenTitan, CV32E40P from OpenHW, VexRiscv)
-		\ite the same compilers (GCC, LLVM), the same Rust targets, Zephyr and FreeRTOS ports as for ARM
-		\ite popular as small coprocessor next to an ARM core: nRF54 (VPR), ESP32-C6 (LP core), many SoCs for management and security tasks
-	\ei
-	\ite \textbf{challenges}
-	\bi
-		\ite fragmentation: which extensions, which custom instructions, which interrupt controller (CLINT, CLIC, PLIC or vendor-specific)?
-		\ite the ecosystem of debug probes, trace and certified safety tools is younger than for ARM
-		\ite verification: every vendor must prove that its core implements the ISA correctly
-	\ei
-\ei
+\begin{center}
+\adjustbox{max width=\linewidth,max totalheight=0.75\textheight}{%
+\begin{tikzpicture}[font=\sffamily\small,
+	p/.style={draw,very thick,rounded corners,fill=#1,text width=64mm,align=left,inner sep=3mm,anchor=north}]
+	\node[p=green!8] at (0,0) {\textbf{chances}\\[1mm]
+		$+$ no license fee, no dependence on one company (EU, China, India)\\[1mm]
+		$+$ many cores: SiFive, Andes, Codasip, Nuclei; Espressif, WCH, Nordic; open source: Hazard3, Ibex (OpenTitan), CV32E40P, VexRiscv\\[1mm]
+		$+$ same GCC/LLVM, Rust targets, Zephyr, FreeRTOS\\[1mm]
+		$+$ ideal small coprocessor: nRF54 (VPR), ESP32-C6 (LP core), management cores in SoCs};
+	\node[p=red!6] at (7.4,0) {\textbf{challenges}\\[1mm]
+		$-$ fragmentation: which extensions, which custom instructions?\\[1mm]
+		$-$ interrupt controllers differ (CLINT, CLIC, PLIC, vendor-specific)\\[1mm]
+		$-$ debug, trace and certified safety tools younger than for ARM\\[1mm]
+		$-$ every vendor must verify its core against the ISA};
+\end{tikzpicture}}
+\end{center}
 \os{\newpage}
 
 \item[{\rot\bf Xtensa and other architectures}]~\\[-\lblskip]
 \bi
-	\ite \textbf{Xtensa} (Cadence): configurable cores; the customer chooses options and adds own instructions
+	\ite \textbf{Xtensa} (Cadence): configurable cores with own instructions -- ESP32 (LX6), ESP32-S3 (LX7 with vector instructions), audio DSPs (HiFi)
 	\bi
-		\ite ESP32 (LX6), ESP32-S3 (LX7 with vector instructions for AI); Espressif's newer chips use RISC-V
-		\ite \textbf{register windows}: \texttt{entry}/\texttt{retw} rotate a window of 16 out of 64 registers -- fewer pushes and pops, but a window overflow causes an exception
-		\ite zero-overhead \texttt{loop}, MAC16 unit; also used in many audio DSPs (HiFi)
+		\ite \textbf{register windows}: \texttt{entry}/\texttt{retw} rotate a window of 16 out of 64 registers -- fewer pushes and pops
+		\ite zero-overhead \texttt{loop}, MAC16 unit
 	\ei
-	\ite \textbf{Infineon TriCore} (AURIX): RISC, MCU and DSP in one, up to 6 cores, lock-step, hardware security module -- leader in engine and chassis control units
-	\ite \textbf{Renesas RH850}: automotive MCUs; \textbf{Renesas RX}: 32 bit CISC with variable instruction length (1--8 bytes)
-	\ite \textbf{TI C2000}: DSP core C28x plus real-time control accelerators (CLA) for motor control and power electronics
-	\ite \textbf{Synopsys ARC}: configurable cores, often hidden inside SoCs (sensor hubs, SSD controllers)
-	\ite \textbf{PIC}, \textbf{8051}, \textbf{MSP430}: 8 and 16 bit, still common in cost-sensitive mass products
+	\ite \textbf{Infineon TriCore} (AURIX): MCU + DSP in one, up to 6 cores, lock-step, HSM -- engine and chassis ECUs
+	\ite \textbf{Renesas RH850} (automotive), \textbf{Renesas RX} (CISC, 1--8 byte instructions)
+	\ite \textbf{TI C2000}: DSP core C28x + control law accelerator -- inverters, motor drives, solar
+	\ite \textbf{Synopsys ARC}: configurable, hidden inside SoCs (sensor hubs, SSD controllers)
+	\ite \textbf{PIC}, \textbf{8051}, \textbf{MSP430}: 8/16 bit, cost-sensitive mass products
 \ei
 \os{\newpage}
 
@@ -606,7 +750,7 @@ RISC-V RV32IMC & 7 & 28 bytes & mix of 16 and 32 bit instructions \\
 \bi
 	\ite RISC-V has no status flags: compare and branch are one instruction (\texttt{blt})
 	\ite only one addressing mode (register + 12 bit offset) -- the address is computed with normal instructions
-	\ite register names of the calling convention: \texttt{a0}--\texttt{a7} arguments and return values, \texttt{s0}--\texttt{s11} preserved, \texttt{sp} stack pointer, \texttt{ra} return address, \texttt{zero} always 0
+	\ite calling convention: \texttt{a0}--\texttt{a7} arguments and results, \texttt{s0}--\texttt{s11} preserved, \texttt{sp}, \texttt{ra} return address, \texttt{zero}
 	\ite more about assembly programming in chapter Programming
 \ei
 \os{\newpage}
@@ -635,8 +779,8 @@ Xtensa LX7 (ESP32-S3) & 5 & zero-overhead \texttt{loop}, MAC16 \texttt{mula.aa.l
 \end{tabular}}
 \end{center}
 \bi
-	\ite DSP features = fewer instructions \textbf{and} no branch penalty per iteration
-	\ite the compiler finds MAC and loop instructions by itself; SIMD (\texttt{smlad}: two MACs at once) usually needs intrinsics or CMSIS-DSP
+	\ite \textbf{use case}: audio filter, motor current control, vibration analysis -- the inner loop is a MAC
+	\ite SIMD (\texttt{smlad}: two MACs at once) usually needs intrinsics or CMSIS-DSP
 \ei
 \os{\newpage}
 
@@ -681,8 +825,8 @@ Xtensa LX7 (ESP32-S3) & 5 & zero-overhead \texttt{loop}, MAC16 \texttt{mula.aa.l
       le        lr, .L14        @ low-overhead loop end
 \end{lstlisting}
 \bi
-	\ite without \texttt{-ffast-math} the M55 multiplies vectors, but adds the products one by one: float addition is not associative, and C requires the order of the source code
-	\ite ESP32-C3 (RV32IMC) calls \texttt{\_\_mulsf3}/\texttt{\_\_addsf3}; the ESP32-S3 has an FPU (\texttt{madd.s}); RP2040 has fast float routines in its boot ROM
+	\ite without \texttt{-ffast-math} the M55 adds the products one by one: float addition is not associative, and C requires the source order
+	\ite ESP32-C3 (RV32IMC) calls \texttt{\_\_mulsf3}/\texttt{\_\_addsf3}; ESP32-S3 has an FPU (\texttt{madd.s}); RP2040 has fast float routines in its boot ROM
 \ei
 \os{\newpage}
 \end{description}
@@ -731,78 +875,94 @@ be predicted and how long a battery lasts.}
 
 \item[{\rot\bf Memories}]~\\[-\lblskip]
 \bi
-	\ite \textbf{flash}: non-volatile program memory; erased in blocks, limited number of write cycles (typically 10\,000--100\,000)
-	\bi
-		\ite at high clock rates flash is too slow $\Rightarrow$ wait states, prefetch buffers or a cache
-		\ite RP2040 and ESP32 execute code directly from an external QSPI flash through a cache (``execute in place'', XIP) -- a cache miss costs many cycles
-	\ei
-	\ite \textbf{SRAM}: fast, volatile working memory for data, stack and time-critical code
-	\ite \textbf{EEPROM} or flash emulation: small, byte-wise changeable non-volatile data (settings, calibration)
-	\ite new non-volatile memories in recent MCUs: MRAM, RRAM, FRAM -- byte-writable, fast, many write cycles (e.g.\ in 22\,nm and smaller processes, where embedded flash is hard to build)
-	\ite \textbf{MPU} (memory protection unit): protects memory regions (e.g.\ catches stack overflows); an MMU with virtual memory exists only on application processors
+	\ite \textbf{flash}: program memory; erased in blocks, 10\,000--100\,000 write cycles; too slow for high clocks $\Rightarrow$ wait states, prefetch, cache
+	\ite \textbf{XIP}: RP2040 and ESP32 execute directly from external QSPI flash through a cache -- a miss costs many cycles
+	\ite \textbf{SRAM}: data, stack, time-critical code
+	\ite \textbf{EEPROM} or flash emulation: settings, calibration
+	\ite \textbf{MRAM, RRAM, FRAM}: byte-writable non-volatile memories in recent MCUs (22\,nm and below, where embedded flash is hard to build)
+	\ite \textbf{MPU}: protects memory regions (stack overflow!); an MMU with virtual memory only on application processors
 \ei
 \os{\newpage}
 
 \item[{\rot\bf Memory map of the RP2040}]~\\[-\lblskip]
 \begin{center}
-\resizebox{0.9\textwidth}{!}{%
-\begin{tabular}{|l|l|}
-\hline
-\textbf{address} & \textbf{content} \\
-\hline
-0x0000\,0000 & boot ROM (16\,KB) \\
-0x1000\,0000 & external flash via XIP cache (code, constants) \\
-0x2000\,0000 & SRAM (264\,KB: data, stack, heap) \\
-0x4000\,0000 & peripherals on the APB bus (UART, SPI, I2C, ADC, PWM, timer, \ldots) \\
-0x5000\,0000 & peripherals on the AHB bus (DMA, USB, PIO) \\
-0xd000\,0000 & SIO: single-cycle I/O (GPIO, hardware divider, spinlocks) \\
-0xe000\,0000 & Cortex-M0+ internal registers (NVIC, SysTick) \\
-\hline
-\end{tabular}}
+\adjustbox{max width=\linewidth,max totalheight=0.62\textheight}{%
+\begin{tikzpicture}[font=\sffamily\small,
+	r/.style={draw,thick,fill=#1,minimum width=40mm,minimum height=8mm}]
+	\foreach \a/\n/\d/\c [count=\i from 0] in {
+		0xe000\,0000/Cortex-M0+ registers/{NVIC, SysTick}/gray!20,
+		0xd000\,0000/SIO/{single-cycle GPIO, divider, spinlocks}/rwuviolet!30,
+		0x5000\,0000/AHB peripherals/{DMA, USB, PIO}/rwuviolet!20,
+		0x4000\,0000/APB peripherals/{UART, SPI, I2C, ADC, PWM, timer}/rwuviolet!10,
+		0x2000\,0000/SRAM 264\,KB/{data, stack, heap}/rwucyan!30,
+		0x1000\,0000/flash via XIP cache/{code, constants}/rwucyan!15,
+		0x0000\,0000/boot ROM 16\,KB/{boot loader, float routines}/gray!10} {
+		\node[r=\c] at (0,-\i*0.8) {\n};
+		\node[anchor=east,font=\ttfamily\small] at (-2.2,-\i*0.8) {\a};
+		\node[anchor=west,text=black!70] at (2.2,-\i*0.8) {\d};
+	}
+\end{tikzpicture}}
 \end{center}
 \bi
-	\ite one 32 bit address space for everything: memory-mapped I/O (see chapter Peripherals and Interfaces)
-	\ite the linker places code and data into these regions according to the linker script (\texttt{memory.x} in our Rust examples)
+	\ite one 32 bit address space for everything: memory-mapped I/O (chapter Peripherals and Interfaces)
+	\ite the linker script (\texttt{memory.x} in our Rust examples) places code and data into these regions
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Interrupts and exceptions}]~\\[-\lblskip]
+\item[{\rot\bf Interrupts: what happens in time}]~\\[-\lblskip]
+\begin{center}
+\adjustbox{max width=\linewidth,max totalheight=0.45\textheight}{%
+\begin{tikzpicture}[font=\sffamily\small,>=Stealth,
+	p/.style={draw,thick,fill=#1,minimum height=7mm,align=center,font=\sffamily\scriptsize}]
+	\draw[->,thick,gray] (0,0) -- (13.6,0) node[right,text=black]{t};
+	\node[anchor=east] at (-0.1,0.5) {thread}; \node[anchor=east] at (-0.1,1.6) {handler};
+	\node[p=gray!10,minimum width=20mm,anchor=south west] at (0,0.15) {main loop};
+	\node[p=gray!30,minimum width=16mm,anchor=south west] at (2,1.25) {stack 8 regs\\12 cycles};
+	\node[p=rwucyan!25,minimum width=24mm,anchor=south west] at (3.6,1.25) {handler A};
+	\node[p=gray!30,minimum width=14mm,anchor=south west] at (6,1.25) {tail chain\\6 cycles};
+	\node[p=rwuviolet!25,minimum width=22mm,anchor=south west] at (7.4,1.25) {handler B};
+	\node[p=gray!30,minimum width=14mm,anchor=south west] at (9.6,1.25) {unstack};
+	\node[p=gray!10,minimum width=25mm,anchor=south west] at (11,0.15) {main loop};
+	\draw[->,thick,red!70!black] (2,2.9) node[above]{IRQ A} -- (2,2.05);
+	\draw[->,thick,red!70!black] (4.8,2.9) node[above]{IRQ B (lower priority)} -- (4.8,2.05);
+	\draw[dashed,gray] (4.8,2.05) -- (6,2.05);
+\end{tikzpicture}}
+\end{center}
 \bi
-	\ite the \textbf{vector table} at the start of the program contains the initial stack pointer and the addresses of all handlers (reset, faults, interrupts)
-	\ite Cortex-M: the hardware saves 8 registers on the stack before the handler starts, so a handler is an ordinary C or Rust function
-	\ite interrupt latency: 15 clock cycles on the Cortex-M0+, 12 on the Cortex-M3/M4/M33
-	\ite \textbf{NVIC}: priorities, nesting, and \textbf{tail chaining} -- a pending interrupt starts directly after the current one without restoring and saving the registers again
-	\ite \textbf{faults} (HardFault, MemManage, BusFault, UsageFault): invalid memory accesses, undefined instructions, division by zero -- the fault handler is the place to log the error and reset
-	\ite RISC-V: similar concepts, but the interrupt controller depends on the implementation (CLINT, CLIC, PLIC or vendor-specific); with CLIC, vectored and nested interrupts similar to the NVIC
+	\ite vector table: initial stack pointer + addresses of all handlers; hardware stacking makes handlers ordinary C/Rust functions
+	\ite latency: 12 cycles on Cortex-M3/M4/M33, 15 on M0+; \textbf{tail chaining} skips unstacking and stacking between two handlers
+	\ite \textbf{faults} (HardFault, BusFault, \ldots): log the error, then reset
+	\ite RISC-V: interrupt controller depends on the core (CLINT, CLIC, PLIC); CLIC gives NVIC-like nesting
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Clock and power}]~\\[-\lblskip]
+\item[{\rot\bf Clock and power: a battery sensor}]~\\[-\lblskip]
+\begin{center}
+\adjustbox{max width=\linewidth,max totalheight=0.42\textheight}{%
+\begin{tikzpicture}[font=\sffamily\small,>=Stealth]
+	\draw[->,thick,gray] (0,0) -- (13,0) node[right,text=black]{t};
+	\draw[->,thick,gray] (0,0) -- (0,3.4) node[above,text=black]{current};
+	\fill[rwucyan!15] (0,0) -- (0,0.15) -- (1,0.15) -- (1,2.8) -- (1.5,2.8) -- (1.5,0.15) -- (6,0.15) -- (6,2.8) -- (6.5,2.8) -- (6.5,0.15) -- (11,0.15) -- (11,2.8) -- (11.5,2.8) -- (11.5,0.15) -- (12.5,0.15) -- (12.5,0) -- cycle;
+	\draw[very thick,rwucyandark] (0,0.15) -- (1,0.15) -- (1,2.8) -- (1.5,2.8) -- (1.5,0.15) -- (6,0.15) -- (6,2.8) -- (6.5,2.8) -- (6.5,0.15) -- (11,0.15) -- (11,2.8) -- (11.5,2.8) -- (11.5,0.15) -- (12.5,0.15);
+	\node[above,align=center,font=\sffamily\scriptsize] at (1.25,2.8) {1\,s, 100\,mA\\(measure + Wi-Fi)};
+	\draw[<->,thick] (1.5,0.6) -- node[above,font=\sffamily\scriptsize]{10\,min deep sleep at 10\,$\mu$A} (6,0.6);
+	\node[font=\sffamily\scriptsize,text=gray] at (9,1.6) {(not to scale)};
+\end{tikzpicture}}
+\end{center}
+\[ I_{\text{avg}} = \frac{100\,\text{mA} \cdot 1\,\text{s} + 0.01\,\text{mA} \cdot 599\,\text{s}}{600\,\text{s}} \approx 0.18\,\text{mA} \;\Rightarrow\; \frac{2000\,\text{mAh}}{0.18\,\text{mA}} \approx 15 \text{ months} \]
 \bi
-	\ite clock sources: internal RC oscillator (fast start, inaccurate), external crystal (accurate), PLL to multiply the frequency
-	\ite dynamic power $P \approx C \cdot U^2 \cdot f$: lower voltage and frequency save energy
-	\ite peripherals that are not used should have their clock switched off (clock gating)
-	\ite sleep modes: from ``CPU stopped, peripherals running'' to ``everything off except a wake-up timer''
-	\bi
-		\ite ESP32-C3 deep sleep: about 5\,$\mu$A; Wi-Fi transmission: well above 100\,mA
-		\ite a battery device spends most of its time sleeping: average current = sum of (current $\times$ time share)
-	\ei
-	\ite example: 2000\,mAh battery, 10\,$\mu$A sleep and 1 second at 100\,mA every 10 minutes $\Rightarrow$ average $\approx 0.18$\,mA $\Rightarrow$ about 15 months
-	\ite ``race to sleep'': a faster core that finishes earlier and sleeps longer often needs less energy than a slow one
+	\ite the active phase dominates: shorter radio time helps more than a lower sleep current
+	\ite dynamic power $P \approx C \cdot U^2 \cdot f$; clock gating; ``race to sleep''
 \ei
 \os{\newpage}
 
 \item[{\rot\bf Arithmetic: integer, fixed point, floating point}]~\\[-\lblskip]
 \bi
-	\ite without FPU (AVR, Cortex-M0+, ESP32-C3), floating point is done in software: tens to hundreds of cycles per operation
-	\ite \textbf{fixed point}: integers with an implied scale, e.g.\ Q15 = value $\times 2^{15}$ in 16 bit
-	\bi
-		\ite fast on every processor, but the programmer must watch range and rounding
-	\ei
-	\ite FPU (Cortex-M4F, M7, M33, ESP32-S3): single precision float in one or a few cycles -- \texttt{double} is still done in software if the FPU is single precision only
-	\ite \textbf{DSP features}: multiply-accumulate (MAC) in one cycle, saturating arithmetic, SIMD (two 16 bit or four 8 bit operations in one 32 bit instruction)
-	\ite dedicated DSPs add zero-overhead loops, circular addressing and several MAC units (VLIW) -- today often replaced by Cortex-M4/M7 or vector extensions
-	\ite neural networks run in 8 bit integers (INT8 quantisation): SIMD and vector units, or a separate NPU
+	\ite without FPU (AVR, Cortex-M0+, ESP32-C3), float is done in software: tens to hundreds of cycles
+	\ite \textbf{fixed point}: integers with an implied scale, e.g.\ Q15 = value $\times 2^{15}$ -- fast everywhere, but watch range and rounding
+	\ite FPU (Cortex-M4F, M7, M33, ESP32-S3): float in one or a few cycles; \texttt{double} stays in software on single-precision FPUs
+	\ite DSP features: single-cycle MAC, saturation, SIMD; dedicated DSPs add circular addressing and several MAC units
+	\ite neural networks run in INT8: SIMD and vector units, or a separate NPU
 \ei
 \os{\newpage}
 \end{description}
@@ -821,64 +981,62 @@ their peripherals, in their focus markets, in their software tools and in
 how long they deliver a chip.}
 
 \begin{description}
-\item[{\rot\bf Who makes what}]~\\[-\lblskip]
+\item[{\rot\bf From core to product}]~\\[-\lblskip]
+\begin{center}
+\adjustbox{max width=\linewidth,max totalheight=0.55\textheight}{%
+\begin{tikzpicture}[font=\sffamily\small,>=Stealth,
+	s/.style={draw,very thick,rounded corners,fill=#1,text width=34mm,minimum height=26mm,align=center}]
+	\node[s=rwuviolet!15] (ip) at (0,0) {\textbf{IP vendor}\\[1mm]{\footnotesize Arm, SiFive, Andes, Codasip, Cadence, Synopsys}};
+	\node[s=rwucyan!15] (chip) at (4.8,0) {\textbf{chip vendor}\\[1mm]{\footnotesize ST, NXP, Infineon, Renesas, Espressif, Raspberry Pi}};
+	\node[s=gray!15] (fab) at (9.6,0) {\textbf{foundry}\\[1mm]{\footnotesize TSMC, Samsung, GlobalFoundries -- or own fab (ST, TI, Infineon)}};
+	\node[s=green!12] (prod) at (14.4,0) {\textbf{product}\\[1mm]{\footnotesize your board, your firmware}};
+	\draw[->,very thick] (ip) -- node[above,font=\sffamily\scriptsize]{license} node[below,font=\sffamily\scriptsize]{+ royalty} (chip);
+	\draw[->,very thick] (chip) -- node[above,font=\sffamily\scriptsize]{wafer} node[below,font=\sffamily\scriptsize]{orders} (fab);
+	\draw[->,very thick] (fab) -- node[above,font=\sffamily\scriptsize]{chips} node[below,font=\sffamily\scriptsize]{(via vendor)} (prod);
+\end{tikzpicture}}
+\end{center}
 \bi
-	\ite \textbf{IP vendors} design cores and license them, they sell no chips
-	\bi
-		\ite Arm (Cortex-M/R/A): license fee plus royalty per chip
-		\ite RISC-V IP: SiFive, Andes, Codasip, Nuclei; free cores from OpenHW, lowRISC, Raspberry Pi (Hazard3)
-		\ite Cadence (Xtensa), Synopsys (ARC), CEVA (DSPs)
-	\ei
-	\ite \textbf{semiconductor manufacturers} build MCUs and SoCs from licensed or own cores
-	\ite \textbf{foundries} manufacture the chips for companies without own fabs (TSMC, Samsung, GlobalFoundries, UMC)
-	\bi
-		\ite MCUs mostly in mature processes (90--22\,nm) with embedded flash; application processors in 16--3\,nm
-		\ite chip shortage 2021--2023: delivery times of more than a year $\Rightarrow$ second source and availability became selection criteria
-	\ei
+	\ite MCUs mostly in mature processes (90--22\,nm) with embedded flash; application processors in 16--3\,nm
+	\ite chip shortage 2021--2023: more than a year delivery time $\Rightarrow$ second source and availability became selection criteria
 \ei
 \os{\newpage}
 
-\item[{\rot\bf Semiconductor manufacturers (1): the broad-line vendors}]~\\[-\lblskip]
+\item[{\rot\bf Who serves which market?}]~\\[-\lblskip]
 \begin{center}
-{\footnotesize
-\begin{tabularx}{\linewidth}{|>{\raggedright}p{24mm}|L|L|>{\raggedright\arraybackslash}p{27mm}|}
-\hline
-\textbf{vendor} & \textbf{families} & \textbf{particularities} & \textbf{tools} \\
-\hline
-STMicro\-electronics & STM32 (Cortex-M0+ \ldots M55), STM32MP (Cortex-A) & broadest Cortex-M portfolio, pin-compatible families, large community, cheap Nucleo boards & STM32CubeMX/IDE, HAL/LL drivers \\
-\hline
-NXP & LPC/Kinetis $\rightarrow$ MCX, i.MX RT (crossover), i.MX 8/9 (Cortex-A), S32 (automotive) & industrial and automotive, strong in application processors, long-term supply programme (10--15 years) & MCUXpresso, Yocto BSPs \\
-\hline
-Infineon & AURIX (TriCore), TRAVEO, XMC, PSoC (from Cypress) & automotive leader, safety (ASIL\,D), power electronics, security chips; PSoC with programmable analog/digital blocks & ModusToolbox, AURIX Dev.\ Studio \\
-\hline
-Renesas & RA (Cortex-M), RX (own CISC), RL78 (16 bit), RH850 (automotive), RZ (Cortex-A) & strong in Japanese automotive and industry; first MCU with Cortex-M85 (RA8) & e$^2$ studio, FSP \\
-\hline
-Microchip & AVR, PIC (8/16/32 bit), SAM (Cortex-M), PolarFire FPGAs & widest 8 bit portfolio, 5\,V parts, very long availability (decades) & MPLAB X, Harmony, MCC \\
-\hline
-Texas Instruments & MSP430, MSPM0 (Cortex-M0+), C2000, Sitara AM6x (Cortex-A/R), Jacinto & ultra low power, motor control and power conversion, analog front ends & Code Composer Studio, SysConfig \\
-\hline
-\end{tabularx}}
+\adjustbox{max width=\linewidth,max totalheight=0.8\textheight}{%
+\begin{tikzpicture}[font=\sffamily\small,
+	m/.style={draw,thick,fill=#1,minimum width=30mm,minimum height=10mm,align=center,font=\sffamily\bfseries\small},
+	v/.style={draw,rounded corners,fill=white,minimum width=28mm,minimum height=6mm,font=\sffamily\footnotesize}]
+	\foreach \x/\t/\c in {0/{IoT and\\wireless}/rwucyan!30, 3.3/{general-purpose\\MCU}/rwucyan!15, 6.6/{motor control,\\power}/green!20, 9.9/{automotive}/rwuviolet!25, 13.2/{Linux,\\application}/orange!25} {
+		\node[m=\c] at (\x,0) {\t};
+		\fill[\c,opacity=0.4] (\x-1.55,-0.6) rectangle (\x+1.55,-5.7);
+	}
+	\foreach \i/\n in {1/Espressif,2/Nordic,3/Silicon Labs,4/{ST (WB/WBA)},5/{Raspberry Pi (W)}} \node[v] at (0,-\i*0.9-0.1) {\n};
+	\foreach \i/\n in {1/ST (STM32),2/NXP (MCX),3/Microchip,4/Renesas (RA),5/{WCH, GigaDevice}} \node[v] at (3.3,-\i*0.9-0.1) {\n};
+	\foreach \i/\n in {1/TI (C2000),2/ST (STM32G4),3/Infineon (XMC),4/Microchip (dsPIC),5/Renesas (RX)} \node[v] at (6.6,-\i*0.9-0.1) {\n};
+	\foreach \i/\n in {1/Infineon (AURIX),2/NXP (S32),3/Renesas (RH850),4/ST (Stellar),5/TI (Jacinto)} \node[v] at (9.9,-\i*0.9-0.1) {\n};
+	\foreach \i/\n in {1/NXP (i.MX),2/TI (Sitara),3/ST (STM32MP),4/Rockchip,5/Broadcom (RPi)} \node[v] at (13.2,-\i*0.9-0.1) {\n};
+\end{tikzpicture}}
 \end{center}
 \os{\newpage}
 
-\item[{\rot\bf Semiconductor manufacturers (2): specialists}]~\\[-\lblskip]
+\item[{\rot\bf Semiconductor manufacturers: what they are known for}]~\\[-\lblskip]
 \begin{center}
 {\footnotesize
-\begin{tabularx}{\linewidth}{|>{\raggedright}p{24mm}|L|L|>{\raggedright\arraybackslash}p{27mm}|}
+\begin{tabularx}{\linewidth}{|>{\raggedright}p{24mm}|L|>{\raggedright\arraybackslash}p{36mm}|}
 \hline
-\textbf{vendor} & \textbf{families} & \textbf{particularities} & \textbf{tools} \\
+\textbf{vendor} & \textbf{known for} & \textbf{tools} \\
 \hline
-Espressif & ESP32, ESP32-S3 (Xtensa); ESP32-C/H/P series (RISC-V) & Wi-Fi + Bluetooth for 1--3\,\texteuro{}, huge maker community, Rust supported by the vendor & ESP-IDF, Arduino, esp-hal (Rust) \\
-\hline
-Nordic Semi\-conductor & nRF52 (M4F), nRF53 (2 $\times$ M33), nRF54 (M33 + RISC-V), nRF91 (LTE-M/NB-IoT) & Bluetooth LE leader, very low power radios, cellular IoT & nRF Connect SDK (Zephyr) \\
-\hline
-Silicon Labs & EFR32 (Cortex-M33) & Zigbee, Thread, Matter, Bluetooth & Simplicity Studio \\
-\hline
-Raspberry Pi & RP2040, RP2350 & cheap, excellent documentation, PIO state machines, ARM or RISC-V selectable (RP2350) & Pico SDK, MicroPython, rp-hal, Embassy \\
-\hline
-WCH, GigaDevice and other Chinese vendors & CH32V (RISC-V), GD32 (ARM and RISC-V) & very low price (CH32V003 about 0.10\,\$), peripherals similar to STM32 & MounRiver, open-source tools \\
-\hline
-AMD (Xilinx), Altera, Lattice, Microchip & FPGAs and SoC-FPGAs & see section ``Microcontroller or FPGA?'' & Vivado, Quartus, Radiant, Libero \\
+ST & broadest Cortex-M portfolio (STM32), pin-compatible families, cheap Nucleo boards & STM32CubeMX/IDE, HAL \\
+NXP & i.MX application processors, i.MX RT crossover MCUs, S32 automotive, 10--15 years supply & MCUXpresso, Yocto BSPs \\
+Infineon & AURIX automotive safety (ASIL\,D), power electronics, PSoC (from Cypress) & ModusToolbox \\
+Renesas & RA (Cortex-M, first M85), RX, RH850 automotive, RZ application processors & e$^2$ studio, FSP \\
+Microchip & widest 8 bit portfolio (AVR, PIC), 5\,V parts, decades of availability, FPGAs & MPLAB X, Harmony \\
+TI & MSP430/MSPM0 low power, C2000 motor control, Sitara, analog front ends & CCS, SysConfig \\
+Espressif & Wi-Fi + Bluetooth for 1--3\,\texteuro{}, maker community, Rust supported by the vendor & ESP-IDF, esp-hal \\
+Nordic & Bluetooth LE leader, cellular IoT (nRF91) & nRF Connect SDK (Zephyr) \\
+Raspberry Pi & cheap, excellent documentation, PIO, ARM or RISC-V selectable (RP2350) & Pico SDK, MicroPython \\
+WCH, GigaDevice & very low price (CH32V003 about 0.10\,\$), STM32-like peripherals & MounRiver, open tools \\
 \hline
 \end{tabularx}}
 \end{center}
@@ -886,54 +1044,43 @@ AMD (Xilinx), Altera, Lattice, Microchip & FPGAs and SoC-FPGAs & see section ``M
 
 \item[{\rot\bf Example: one vendor, one family -- STM32}]~\\[-\lblskip]
 \begin{center}
-{\footnotesize
-\begin{tabularx}{\linewidth}{|l|>{\raggedright}p{33mm}|>{\raggedright}p{33mm}|L|}
-\hline
-\textbf{series} & \textbf{core, clock} & \textbf{focus} & \textbf{example features} \\
-\hline
-STM32C0 / G0 & Cortex-M0+, 48--64\,MHz & cost (from about 0.25\,\$) & replaces 8 bit MCUs \\
-STM32F1 / F4 & Cortex-M3 / M4F, 72--180\,MHz & classic mainstream & the ``Blue Pill'', huge amount of example code \\
-STM32G4 & Cortex-M4F, 170\,MHz & motor control, power conversion & high-resolution timers (184\,ps), fast ADCs, math accelerators \\
-STM32U5 & Cortex-M33, 160\,MHz & ultra low power + security & TrustZone, under 20\,$\mu$A/MHz \\
-STM32H7 & Cortex-M7 (+ M4), up to 600\,MHz & high performance & caches, TCM, dual-core variants, Ethernet, graphics \\
-STM32WB / WBA & Cortex-M4 / M33 + radio & wireless & Bluetooth LE, Thread, Zigbee \\
-STM32N6 & Cortex-M55, 800\,MHz & edge AI & Neural-ART NPU, image signal processor, 4.2\,MB SRAM \\
-STM32MP2 & 2 $\times$ Cortex-A35 + M33 & Linux + real time & NPU, Yocto Linux and an RTOS on one chip \\
-\hline
-\end{tabularx}}
+\adjustbox{max width=\linewidth,max totalheight=0.62\textheight}{%
+\begin{tikzpicture}[font=\sffamily\small,
+	f/.style={draw,thick,rounded corners,fill=#1,text width=26mm,align=center,minimum height=13mm}]
+	\draw[->,thick,gray] (0,0) -- (16.5,0) node[below left,text=black]{performance};
+	\draw[->,thick,gray] (0,0) -- (0,6.4) node[above,text=black]{features};
+	\node[f=rwucyan!10] at (1.6,0.9) {\textbf{C0 / G0}\\{\scriptsize M0+, 64\,MHz\\from 0.25\,\$}};
+	\node[f=rwucyan!20] at (4.4,1.9) {\textbf{F1 / F4}\\{\scriptsize M3 / M4F, 72--180\,MHz}};
+	\node[f=green!20] at (4.4,4.3) {\textbf{G4}\\{\scriptsize M4F, 170\,MHz, motor control}};
+	\node[f=rwucyan!20] at (7.4,0.9) {\textbf{U5}\\{\scriptsize M33, low power, TrustZone}};
+	\node[f=rwucyan!30] at (7.4,3.1) {\textbf{WB / WBA}\\{\scriptsize + Bluetooth LE, Thread}};
+	\node[f=rwucyan!40] at (10.4,2.0) {\textbf{H7}\\{\scriptsize M7, up to 600\,MHz, caches, TCM}};
+	\node[f=rwuviolet!25] at (13.3,3.4) {\textbf{N6}\\{\scriptsize M55, 800\,MHz, NPU, camera ISP}};
+	\node[f=orange!25] at (13.3,5.5) {\textbf{MP2}\\{\scriptsize 2 $\times$ A35 + M33, Linux}};
+\end{tikzpicture}}
 \end{center}
 \bi
-	\ite same tools (STM32CubeMX), same HAL API and often the same pinout across series $\Rightarrow$ easy migration; NXP (MCX, i.MX RT) and Renesas (RA) follow the same idea
-\ei
-\os{\newpage}
-
-\item[{\rot\bf Example: automotive and wireless}]~\\[-\lblskip]
-\bi
-	\ite \textbf{Infineon AURIX TC3xx / TC4x} (engine, brakes, steering, battery management)
-	\bi
-		\ite up to 6 TriCore cores at 300--500\,MHz, several of them in lock-step, ECC on all memories
-		\ite hardware security module (HSM) for secure boot and secure communication, CAN FD, Ethernet
-		\ite TC4x adds a parallel processing unit (vector DSP) for sensor fusion and AI; certified up to ASIL\,D
-	\ei
-	\ite \textbf{NXP S32K3}: Cortex-M7 in lock-step for body and zone controllers; \textbf{S32Z/E}: Cortex-R52 for real-time domain controllers
-	\ite \textbf{Espressif ESP32-C6}: RISC-V 160\,MHz + low-power RISC-V core, Wi-Fi 6, Bluetooth LE, Thread/Zigbee -- for a few euros
-	\ite \textbf{Nordic nRF54L15}: Cortex-M33 at 128\,MHz, RISC-V coprocessor for software-defined peripherals, Bluetooth LE 6.0, about half the current of the nRF52
-	\ite lesson: in these markets the chip is chosen for its radio, its certification and its software stack -- the CPU core comes second
+	\ite same tools (CubeMX), same HAL API, often the same pinout $\Rightarrow$ easy migration up and down; NXP (MCX, i.MX RT) and Renesas (RA) follow the same idea
 \ei
 \os{\newpage}
 
 \item[{\rot\bf Software ecosystem}]~\\[-\lblskip]
+\begin{center}
+\adjustbox{max width=\linewidth,max totalheight=0.55\textheight}{%
+\begin{tikzpicture}[font=\sffamily\small,
+	l/.style={draw,thick,fill=#1,minimum height=9mm,align=center}]
+	\node[l=gray!10,minimum width=110mm] at (0,3.6) {application};
+	\node[l=rwuviolet!15,minimum width=110mm] at (0,2.7) {RTOS: Zephyr, FreeRTOS, ThreadX, Embassy (Rust)};
+	\node[l=rwucyan!20,text width=51mm,font=\sffamily\footnotesize] at (-2.75,1.8) {vendor HAL: STM32Cube, ESP-IDF, FSP};
+	\node[l=rwucyan!10,text width=51mm,font=\sffamily\footnotesize] at (2.75,1.8) {Rust embedded-hal, Zephyr};
+	\node[l=rwucyan!30,minimum width=110mm] at (0,0.9) {CMSIS (Arm): core access, CMSIS-DSP, CMSIS-NN};
+	\node[l=gray!25,minimum width=110mm] at (0,0) {hardware};
+	\node[draw,thick,fill=green!10,text width=32mm,align=center,minimum height=45mm] at (8.6,1.8) {GCC, LLVM, CMake, PlatformIO, probe-rs, J-Link, ST-Link, CMSIS-DAP};
+\end{tikzpicture}}
+\end{center}
 \bi
-	\ite every vendor offers its own IDE, code generator and hardware abstraction layer (HAL) $\Rightarrow$ vendor lock-in
-	\ite \textbf{vendor-neutral layers}
-	\bi
-		\ite CMSIS (Arm): core access, CMSIS-DSP, CMSIS-NN for all Cortex-M chips
-		\ite Zephyr RTOS (Linux Foundation): one API and device tree for hundreds of boards; Nordic, NXP, ST, Infineon, Espressif contribute
-		\ite FreeRTOS (Amazon), Eclipse ThreadX, NuttX
-	\ei
-	\ite \textbf{Rust}: embedded-hal traits, Embassy (async), probe-rs; Espressif and Infineon support Rust officially, Ferrocene offers a certified Rust compiler
-	\ite \textbf{build and debug}: GCC and LLVM for all architectures; CMake, PlatformIO; debug probes via SWD/JTAG (J-Link, ST-Link, CMSIS-DAP)
-	\ite in practice: quality of the documentation, errata sheet and examples decide how fast a product is finished
+	\ite each vendor has its own IDE and HAL $\Rightarrow$ lock-in; Zephyr and Rust's embedded-hal are vendor-neutral
+	\ite in practice the quality of documentation, errata and examples decides how fast a product is finished
 \ei
 \os{\newpage}
 \end{description}
@@ -952,16 +1099,12 @@ networks.}
 \begin{description}
 \item[{\rot\bf Application processors}]~\\[-\lblskip]
 \bi
-	\ite ARM Cortex-A (and RISC-V application cores) with
-	\bi
-		\ite \textbf{MMU}: virtual memory, every process has its own protected address space -- required by Linux
-		\ite several cores, GHz clock rates, multi-level caches (L1 per core, shared L2/L3), out-of-order execution in larger cores
-		\ite external DRAM (hundreds of MB to several GB), storage on eMMC, SD card or NVMe
-	\ei
+	\ite ARM Cortex-A (and RISC-V application cores) with \textbf{MMU} (virtual memory, required by Linux), several cores at GHz, L1/L2/L3 caches, external DRAM
 	\ite examples: Raspberry Pi 5 (4 $\times$ Cortex-A76, 2.4\,GHz), NXP i.MX\,93/95, TI AM62x, STM32MP2, Rockchip RK3588
-	\ite RISC-V application cores are arriving: SiFive, T-Head, SpacemiT; Linux distributions target the RVA23 profile
-	\ite often with GPU, video codecs, image signal processor and neural network accelerators (NPU)
-	\ite non-deterministic timing (caches, DRAM, branch prediction, OS) $\Rightarrow$ hard real time on a separate core or MCU
+	\ite RISC-V application cores arriving: SiFive, T-Head, SpacemiT; Linux distributions target RVA23
+	\ite GPU, video codecs, image signal processor, NPU on the same chip
+	\ite non-deterministic timing (caches, DRAM, OS) $\Rightarrow$ hard real time on a separate core or MCU
+	\ite \textbf{use case}: a machine HMI with touch display, web server and OPC UA -- Linux on Cortex-A, the drive control on a separate MCU core
 \ei
 \os{\newpage}
 
@@ -988,19 +1131,28 @@ networks.}
 \end{center}
 \end{figure}
 \bi
-	\ite Linux starts and stops the firmware of the M core (\texttt{remoteproc}) and exchanges messages over shared memory (\texttt{RPMsg}, OpenAMP)
+	\ite Linux loads and starts the M-core firmware (\texttt{remoteproc}) and talks to it over shared memory (\texttt{RPMsg}, OpenAMP)
 	\ite the M core keeps control loops running even while Linux boots or crashes
 \ei
 \os{\newpage}
 
 \item[{\rot\bf Accelerators for AI at the edge}]~\\[-\lblskip]
+\begin{center}
+\adjustbox{max width=\linewidth,max totalheight=0.32\textheight}{%
+\begin{tikzpicture}[font=\sffamily\small,>=Stealth,
+	s/.style={draw,very thick,rounded corners,fill=#1,text width=30mm,minimum height=15mm,align=center}]
+	\node[s=gray!10] (t) at (0,0) {\textbf{train}\\{\scriptsize PyTorch, TensorFlow (float, PC/GPU)}};
+	\node[s=rwucyan!15] (q) at (4.3,0) {\textbf{quantise}\\{\scriptsize float $\rightarrow$ INT8, check accuracy}};
+	\node[s=rwuviolet!15] (c) at (8.6,0) {\textbf{compile}\\{\scriptsize LiteRT Micro, CMSIS-NN, STM32Cube.AI, eIQ}};
+	\node[s=orange!15] (r) at (12.9,0) {\textbf{run}\\{\scriptsize CPU, vector unit or NPU}};
+	\draw[->,very thick] (t) -- (q); \draw[->,very thick] (q) -- (c); \draw[->,very thick] (c) -- (r);
+\end{tikzpicture}}
+\end{center}
 \bi
-	\ite neural network inference = mostly multiply-accumulate on INT8 $\Rightarrow$ dedicated NPUs with hundreds to thousands of MAC units
-	\ite key figure: \textbf{TOPS} (tera operations per second) and TOPS/W -- a peak value, real models reach only a part of it
-	\ite microcontroller class (mW, kB--MB models): Arm Ethos-U55/U65/U85 next to Cortex-M55/M85 (e.g.\ Alif Ensemble, Infineon PSoC Edge), STM32N6 (Neural-ART, about 0.6 TOPS), NXP MCX N (eIQ Neutron)
-	\ite application processor class (W, models with millions of parameters): i.MX 8M Plus (2.3 TOPS), i.MX 95, Rockchip RK3588 (6 TOPS), Raspberry Pi AI HAT+ (Hailo, 13--26 TOPS)
-	\ite software: model trained in PyTorch or TensorFlow, quantised to INT8, compiled for the target (LiteRT for Microcontrollers, CMSIS-NN, vendor tools such as STM32Cube.AI or eIQ)
-	\ite more about AI in embedded systems in the introduction chapter
+	\ite inference = mostly INT8 multiply-accumulate $\Rightarrow$ NPUs with hundreds to thousands of MAC units; figure of merit \textbf{TOPS} and TOPS/W (peak values)
+	\ite \textbf{MCU class} (mW, models of kB--MB): Arm Ethos-U55/U85 next to Cortex-M55/M85 (Alif Ensemble, Infineon PSoC Edge), STM32N6 (about 0.6 TOPS), NXP MCX N
+	\ite \textbf{application class} (W): i.MX 8M Plus (2.3 TOPS), RK3588 (6 TOPS), Raspberry Pi AI HAT+ (13--26 TOPS)
+	\ite \textbf{use case}: keyword spotting on a Cortex-M55 at a few mW; person detection in a camera with an NPU
 \ei
 \os{\newpage}
 \end{description}
@@ -1040,8 +1192,8 @@ shows where they meet.}
 \end{figure}
 \bi
 	\ite a 4- or 6-input \textbf{look-up table} (LUT) realises any logic function of its inputs; thousands to millions of them
-	\ite programmable routing, \textbf{block RAM}, \textbf{DSP slices} (hardware multipliers), clock managers (PLL), fast transceivers
-	\ite the configuration is loaded from flash at power-up (SRAM-based FPGAs) or stored on chip (flash-based, e.g.\ Microchip PolarFire)
+	\ite plus programmable routing, \textbf{block RAM}, \textbf{DSP slices}, PLLs, fast transceivers
+	\ite configuration loaded from flash at power-up (SRAM-based) or stored on chip (flash-based, e.g.\ Microchip PolarFire)
 \ei
 \os{\newpage}
 
@@ -1063,7 +1215,7 @@ endmodule
 \end{lstlisting}
 \bi
 	\ite 100 such counters on the MCU: 100 times slower; on the FPGA: 100 copies of the circuit, all at full speed
-	\ite the Verilog (or VHDL) code is synthesised into LUTs and flip-flops -- it is a hardware description, not a program
+	\ite Verilog/VHDL is synthesised into LUTs and flip-flops -- a hardware description, not a program
 \ei
 \os{\newpage}
 
@@ -1086,25 +1238,43 @@ change after delivery & firmware update & reconfiguration (also a firmware updat
 \end{tabularx}}
 \end{center}
 \bi
-	\ite FPGA where the MCU is too slow or too irregular: image processing at line rate, high-speed ADC interfaces, many parallel PWM or encoder channels, protocol bridges, real-time Ethernet (TSN, EtherCAT)
-	\ite and as a prototype for an ASIC
+	\ite \textbf{use cases for FPGAs}: image processing at line rate, high-speed ADC interfaces, many parallel PWM/encoder channels, protocol bridges, EtherCAT/TSN, ASIC prototypes
+\ei
+\os{\newpage}
+
+\item[{\rot\bf Decision: MCU, PIO or FPGA?}]~\\[-\lblskip]
+\begin{center}
+\adjustbox{max width=\linewidth,max totalheight=0.62\textheight}{%
+\begin{tikzpicture}[font=\sffamily\small,>=Stealth,
+	dec/.style={draw,thick,diamond,aspect=2.8,fill=yellow!15,align=center,inner sep=0pt,text width=32mm},
+	res/.style={draw,very thick,rounded corners,fill=#1,align=center,text width=32mm,minimum height=12mm}]
+	\node[dec] (d1) at (0,0) {reaction $<$ 1\,$\mu$s or cycle-exact I/O?};
+	\node[res=rwucyan!15] (r1) at (0,-3) {\textbf{MCU}\\{\scriptsize timers, DMA, interrupts}};
+	\node[dec] (d2) at (6.6,0) {few channels, simple logic?};
+	\node[res=rwucyan!30] (r2) at (6.6,-3) {\textbf{MCU with PIO}\\{\scriptsize or timer/CLB hardware}};
+	\node[dec] (d3) at (13.2,0) {also Linux or complex software?};
+	\node[res=orange!20] (r3) at (13.2,-3) {\textbf{SoC-FPGA}\\{\scriptsize Zynq, PolarFire SoC}};
+	\node[res=green!20] (r4) at (18.6,0) {\textbf{FPGA}\\{\scriptsize + MCU or soft core}};
+	\draw[->,thick] (d1) -- node[left]{no} (r1);
+	\draw[->,thick] (d1) -- node[above]{yes} (d2);
+	\draw[->,thick] (d2) -- node[left]{yes} (r2);
+	\draw[->,thick] (d2) -- node[above]{no} (d3);
+	\draw[->,thick] (d3) -- node[left]{yes} (r3);
+	\draw[->,thick] (d3) -- node[above]{no} (r4);
+\end{tikzpicture}}
+\end{center}
+\bi
+	\ite \textbf{example}: 20\,kHz motor PWM $\rightarrow$ MCU; 8 WS2812 LED strips $\rightarrow$ RP2040 PIO; 64-channel ultrasound at 40\,MHz $\rightarrow$ FPGA
 \ei
 \os{\newpage}
 
 \item[{\rot\bf Where microcontroller and FPGA meet}]~\\[-\lblskip]
 \bi
-	\ite \textbf{programmable I/O in MCUs}: RP2040/RP2350 PIO -- small state machines that bit-bang protocols (VGA, WS2812, DShot) cycle-exactly; also configurable logic cells (CCL in AVR, CLB in some PIC and TI C2000)
-	\ite \textbf{soft cores}: a processor built from FPGA logic
-	\bi
-		\ite AMD MicroBlaze V and Altera Nios V -- both RISC-V since 2023; open source: VexRiscv, NEORV32, PicoRV32
-	\ei
-	\ite \textbf{SoC-FPGAs}: hard processor cores plus FPGA fabric on one chip
-	\bi
-		\ite AMD Zynq-7000 (2 $\times$ Cortex-A9), Zynq UltraScale+ MPSoC (Cortex-A53 + R5F), Versal (with AI engines)
-		\ite Altera Agilex 5 and Cyclone V SoC, Microchip PolarFire SoC (5 RISC-V cores, Linux-capable)
-	\ei
-	\ite \textbf{small FPGAs with open toolchains}: Lattice iCE40/ECP5 and Gowin with Yosys + nextpnr -- easy start for students
-	\ite rule of thumb: start with an MCU; use an FPGA (or PIO) only for the part that the MCU cannot do in time
+	\ite \textbf{programmable I/O in MCUs}: RP2040/RP2350 PIO state machines (VGA, WS2812, DShot); configurable logic cells (CCL in AVR, CLB in PIC and TI C2000)
+	\ite \textbf{soft cores}: AMD MicroBlaze V and Altera Nios V (both RISC-V); open source VexRiscv, NEORV32, PicoRV32
+	\ite \textbf{SoC-FPGAs}: AMD Zynq-7000 (Cortex-A9), Zynq UltraScale+ (A53 + R5F), Versal (AI engines); Altera Agilex 5, Cyclone V SoC; Microchip PolarFire SoC (5 RISC-V cores)
+	\ite \textbf{small FPGAs with open toolchains}: Lattice iCE40/ECP5, Gowin with Yosys + nextpnr
+	\ite rule of thumb: start with an MCU; use an FPGA (or PIO) only for the part the MCU cannot do in time
 \ei
 \os{\newpage}
 \end{description}
@@ -1112,21 +1282,44 @@ change after delivery & firmware update & reconfiguration (also a firmware updat
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Choosing a Processor}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\nsl{The last part of this chapter summarises the selection criteria in a
-checklist and gives exercises that use the examples of this chapter.}
+\nsl{The last part of this chapter summarises the selection as a decision
+tree and a checklist and gives exercises that use the examples of this
+chapter.}
 
 \begin{description}
+\item[{\rot\bf A first decision tree}]~\\[-\lblskip]
+\begin{center}
+\adjustbox{max width=\linewidth,max totalheight=0.74\textheight}{%
+\begin{tikzpicture}[font=\sffamily\small,>=Stealth,
+	dec/.style={draw,thick,diamond,aspect=4.5,fill=yellow!15,align=center,inner sep=0pt,text width=60mm},
+	res/.style={draw,very thick,rounded corners,fill=#1,align=left,text width=66mm,minimum height=10mm,anchor=west}]
+	\node[dec] (d1) at (0,0)    {Linux, GUI, camera, GBs of data?};
+	\node[dec] (d2) at (0,-2.5) {radio (Wi-Fi, BLE, Thread)?};
+	\node[dec] (d3) at (0,-5.0) {ASIL\,C/D or hard real time at $>$\,300\,MHz?};
+	\node[dec] (d4) at (0,-7.5) {signal processing, float, AI?};
+	\node[res=rwucyan!10,anchor=north,align=center] (r5) at (0,-9.0) {\textbf{Cortex-M0+ / small RISC-V / 8 bit}};
+	\node[res=orange!20]    (r1) at (6.8,0)    {\textbf{application processor} (Cortex-A, + M core for real time)};
+	\node[res=rwucyan!30]   (r2) at (6.8,-2.5) {\textbf{wireless MCU} (ESP32, nRF, EFR32)};
+	\node[res=rwuviolet!20] (r3) at (6.8,-5.0) {\textbf{Cortex-R / TriCore} (lock-step)};
+	\node[res=rwucyan!20]   (r4) at (6.8,-7.5) {\textbf{Cortex-M4/M7/M33/M55} (+ NPU)};
+	\foreach \i in {1,2,3,4} \draw[->,thick] (d\i.east) -- node[above]{yes} (r\i.west);
+	\draw[->,thick] (d1) -- node[right,xshift=1mm]{no} (d2); \draw[->,thick] (d2) -- node[right,xshift=1mm]{no} (d3);
+	\draw[->,thick] (d3) -- node[right,xshift=1mm]{no} (d4); \draw[->,thick] (d4) -- node[right,xshift=1mm]{no} (r5);
+\end{tikzpicture}}
+\end{center}
+\os{\newpage}
+
 \item[{\rot\bf Choosing a processor: checklist}]~\\[-\lblskip]
 \bi
-	\ite \textbf{function}: required peripherals (number of UARTs, ADC resolution, CAN, USB, Ethernet, radio)
-	\ite \textbf{performance}: computing power, FPU or DSP needed? Real-time requirements, interrupt latency, determinism?
-	\ite \textbf{memory}: flash and RAM with reserve for later updates (rule of thumb: start with 50\,\% usage at most)
-	\ite \textbf{energy}: battery or mains? Sleep current, wake-up time
-	\ite \textbf{environment}: temperature range, automotive or industrial qualification, safety certification
-	\ite \textbf{security}: secure boot, TrustZone, crypto accelerators, update capability (Cyber Resilience Act)
-	\ite \textbf{software}: compilers, SDK, RTOS and Rust support, example code, community
-	\ite \textbf{business}: price at the planned quantity, availability for 10+ years, second source
-	\ite in practice the software ecosystem and the availability decide more often than the core itself
+	\ite \textbf{function}: peripherals (UARTs, ADC resolution, CAN, USB, Ethernet, radio)
+	\ite \textbf{performance}: FPU or DSP? interrupt latency, determinism?
+	\ite \textbf{memory}: flash and RAM with reserve (start with at most 50\,\% usage)
+	\ite \textbf{energy}: battery or mains? sleep current, wake-up time
+	\ite \textbf{environment and safety}: temperature range, qualification, certification
+	\ite \textbf{security}: secure boot, TrustZone, crypto, update capability (Cyber Resilience Act)
+	\ite \textbf{software}: SDK, RTOS and Rust support, examples, community
+	\ite \textbf{business}: price at the planned quantity, 10+ years availability, second source
+	\ite in practice the ecosystem and the availability decide more often than the core
 \ei
 \os{\newpage}
 
@@ -1136,8 +1329,8 @@ checklist and gives exercises that use the examples of this chapter.}
 	\ite Change the type of \texttt{s} to \texttt{uint16\_t}. Which processor profits most, and why?
 	\ite Compile \texttt{dot.c} for the Cortex-M55 with and without \texttt{-ffast-math}. Why does the result of \texttt{dot\_f32} possibly change in the last bits?
 	\ite Rewrite \texttt{dot\_q15} with the CMSIS intrinsic \texttt{\_\_SMLAD} so that two products are computed per instruction on the Cortex-M4. What must be true for the arrays?
-	\ite A data cache has 32\,KB, 4 ways and 64 byte lines. How many sets does it have, and how many bits are used for tag, index and offset of a 32 bit address?
+	\ite A data cache has 32\,KB, 4 ways and 64 byte lines. How many sets does it have, and how many bits are used for tag, index and offset? Continue the cache example table with the addresses 0x44 and 0x00.
 	\ite Estimate the battery lifetime of a sensor that wakes up every minute for 50\,ms at 20\,mA and sleeps at 5\,$\mu$A (battery 1000\,mAh).
-	\ite Choose a processor (MCU, MPU or FPGA) for: (a) a battery-powered weather station with Wi-Fi, (b) a 3-phase motor inverter with 20\,kHz PWM, (c) a camera with person detection, (d) a 64-channel ultrasound front end sampling at 40\,MHz. Justify your choice with the checklist.
+	\ite Use the decision tree for: (a) a weather station with Wi-Fi, (b) a 3-phase inverter with 20\,kHz PWM, (c) a camera with person detection, (d) a 64-channel ultrasound front end. Justify with the checklist.
 \ei
 \end{description}
