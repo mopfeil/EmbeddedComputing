@@ -288,10 +288,118 @@ def G():
     c.scope([("desd", 3, 0.05), ("desd2", 3, 0.05)], f=1, sp=6)
     return c
 
+# ---- design task (section 8): one circuit per signal, with the values of the sample solution ----
+
+def H():
+    c = Circ(ts=2e-9, mts=1e-9); gpio_models(c)
+    c.model('mm', nm="bss138", f=0, vt=1.3, be=0.1, sb=0, dsy=0, bd=1, bt=0, sbd=0)
+    title(c, "H: Design task (a): 5 V I2C sensor behind a BSS138 level shifter",
+          "Device 1 (3.3 V MCU, open drain) sends the 400 kHz clock; the sensor (5 V, open drain) can hold the line low.",
+          "R_P and C_bus on the 5 V side (cable) are sliders. Scope 1: SDA_5V and SDA_3V3. Scope 2: current in R_P.")
+    c.add('R', 96, 416, 48, 416, name="clk", wf=2, fr=4e5, maxv=1.65, bias=1.65)
+    c.w((96, 416), (128, 416))
+    c.add('I', 128, 416, 176, 416, sl=0.5, hi=3.3)
+    c.w((176, 416), (240, 416))
+    c.add('f', 240, 416, 304, 416, name="N1", f=0, mo="gpio-nmos")
+    c.add('g', 304, 432, 304, 464)
+    c.add('x', 208, 512, 0, 0, si=14, te="MCU (3.3 V)")
+    c.w((304, 400), (304, 352), (336, 352), (368, 352), (432, 352), (464, 352))
+    label(c, 432, 352, 432, 384, "SDA_3V3")
+    c.add('R', 336, 256, 336, 224, wf=0, maxv=3.3)
+    c.add('r', 336, 256, 336, 352, name="r3", r=4700)
+    c.add('c', 368, 352, 368, 432, name="c3", c=2e-11)
+    c.add('g', 368, 432, 368, 464)
+    # level shifter: gate at 3.3 V, source on the 3.3 V side, drain on the 5 V side
+    c.add('f', 400, 320, 464, 320, name="M", f=0, mo="bss138")
+    c.w((464, 336), (464, 352))
+    c.w((400, 320), (400, 288)); c.add('R', 400, 288, 400, 256, wf=0, maxv=3.3)
+    c.add('x', 368, 512, 0, 0, si=14, te="BSS138")
+    c.w((464, 304), (464, 256), (528, 256), (624, 256), (752, 256), (816, 256))
+    label(c, 624, 256, 624, 224, "SDA_5V")
+    c.add('R', 528, 160, 528, 128, wf=0, maxv=5)
+    c.add('r', 528, 160, 528, 256, name="rp", r=1200)
+    c.add('c', 816, 256, 816, 336, name="cb", c=2.5e-10)
+    c.add('g', 816, 336, 816, 368)
+    c.add('x', 800, 400, 0, 0, si=14, te="cable")
+    c.add('L', 592, 320, 544, 320, name="in2", p=1, hi=5, lo=0)
+    c.add('I', 592, 320, 640, 320, sl=0.5, hi=5)
+    c.w((640, 320), (688, 320))
+    c.add('f', 688, 320, 752, 320, name="N2", f=0, mo="gpio-nmos")
+    c.w((752, 304), (752, 256))
+    c.add('g', 752, 336, 752, 368)
+    c.add('x', 608, 512, 0, 0, si=14, te="sensor (5 V)")
+    c.adj("rp", "Resistance (ohms)", "Pull-up R_P to 5 V", 220, 47000, log=True)
+    c.adj("cb", "Capacitance (F)", "Bus capacitance C_bus (5 V side)", 1e-11, 1e-9, log=True)
+    c.adj("clk", "Frequency (Hz)", "Clock frequency", 1e4, 1e6, log=True)
+    c.scope([("SDA_5V", 0, 5), ("SDA_3V3", 0, 5)], f=2, sp=8)
+    c.scope([("rp", 3, 0.005)], f=1, sp=8)
+    return c
+
+def I():
+    c = Circ(ts=1e-6, mts=1e-7)
+    c.model('dm', nm="zener-24V", f=0, **{"is": 1.7143528192808883e-7}, rs=0, n=2, bv=24)
+    c.model('mm', nm="logic-nmos-60V", f=0, vt=1.5, be=1, sb=0, dsy=0, bd=1, bt=0, sbd=0)
+    title(c, "I: Design task (b): 24 V / 50 mA solenoid valve at 10 Hz",
+          "The 3.3 V GPIO drives a logic-level N-MOSFET through R_G; R_PD keeps the valve off while the pin is an input (reset).",
+          "Flyback diode closed by default; open 'bypass' to add the 24 V zener (faster switch-off). Valve inductance is a slider.")
+    c.add('R', 400, 128, 400, 96, wf=0, maxv=24)
+    c.w((400, 128), (464, 128))
+    c.add('Ammeter', 400, 128, 400, 176, name="icoil", f=3, me=0, sc=0)
+    c.add('l', 400, 176, 400, 240, name="coil", f=2, l=0.3)
+    c.add('r', 400, 240, 400, 304, name="rcoil", r=480)
+    c.w((400, 176), (336, 176)); c.w((336, 304), (400, 304))
+    c.add('c', 336, 176, 336, 304, name="cpar", f=2, c=1e-9)
+    c.add('x', 192, 240, 0, 0, si=14, te="solenoid valve")
+    c.add('x', 192, 264, 0, 0, si=14, te="0.3 H, 480 Ohm")
+    c.w((400, 304), (464, 304))
+    c.add('d', 464, 304, 464, 240, mo="1N4148")
+    c.add('z', 464, 176, 464, 240, name="zd", mo="zener-24V")
+    c.w((464, 240), (528, 240)); c.w((528, 176), (464, 176))
+    c.add('s', 528, 240, 528, 176, name="bypass", p=0, mo=0)
+    c.add('x', 544, 216, 0, 0, si=14, te="bypass")
+    c.add('s', 464, 176, 464, 128, name="flyback", p=0, mo=0)
+    c.add('x', 480, 168, 0, 0, si=14, te="flyback")
+    c.w((400, 304), (400, 320), (400, 336))
+    label(c, 400, 320, 464, 320, "D")
+    c.add('f', 336, 352, 400, 352, name="q", f=0, mo="logic-nmos-60V")
+    c.add('g', 400, 368, 400, 400)
+    c.add('R', 160, 352, 112, 352, name="gpio", wf=2, fr=10, maxv=1.65, bias=1.65)
+    c.add('r', 160, 352, 240, 352, name="rg", r=100)
+    c.w((240, 352), (304, 352), (336, 352))
+    c.add('r', 240, 352, 240, 432, name="rpd", r=100000)
+    c.add('g', 240, 432, 240, 464)
+    c.add('c', 304, 352, 304, 432, name="cgs", c=5e-10)
+    c.add('g', 304, 432, 304, 464)
+    c.add('x', 144, 400, 0, 0, si=14, te="R_G, R_PD")
+    c.add('x', 280, 496, 0, 0, si=14, te="C_GS")
+    c.adj("coil", "Inductance (H)", "Valve inductance", 0.01, 2, log=True)
+    c.adj("gpio", "Frequency (Hz)", "Switching frequency", 1, 100, log=True)
+    c.scope([("D", 0, 50)], f=2, sp=256, p=0)
+    c.scope([("icoil", 3, 0.05)], f=1, sp=256)
+    return c
+
+def J():
+    c = G()                            # same circuit, new texts and values (element indices unchanged)
+    texts = iter(["J: Design task (c): 10 MHz SPI clock over a 10 cm trace to a flash",
+          "Trace 0.67 ns (10 cm on FR4), receiver 5 pF plus ESD diodes. Output in the 12 mA setting (R_on about 31-46 Ohm),",
+          "slew rate 0.5 V/ns, series resistor 33 Ohm at the MCU. Sliders: R_S, slew rate. Scope: PIN and RX (SCK at the flash).",
+          "flash SCK input"])
+    for t, a in c.elms:
+        if t == 'x': a['te'] = next(texts)
+    for t, a in c.elms:
+        if a.get('mo', '').endswith('-fast'): a['mo'] = a['mo'][:-5]
+    c.models = [m for m in c.models if not m[1]['nm'].endswith('-fast')]; gpio_models(c)
+    c.elms[c.names['tl']][1]['de'] = 6.7e-10
+    c.elms[c.names['rs']][1]['r'] = 33
+    c.elms[c.names['drv']][1]['sl'] = 0.5
+    c.scopes[0][0]['sp'] = 16; c.scopes[1][0]['sp'] = 16
+    return c
+
 CIRCUITS = {
     "A": "A_pushpull_characteristic", "B": "B_pushpull_capacitive_load",
     "C": "C_bus_contention", "D": "D_open_drain_bus", "E": "E_open_drain_overvoltage",
     "F": "F_open_collector_inductive", "G": "G_transmission_line",
+    "H": "H_design_i2c_5V", "I": "I_design_solenoid_valve", "J": "J_design_spi_clock",
 }
 HERE = os.path.dirname(os.path.abspath(__file__))
 LECTURE = os.path.normpath(os.path.join(HERE, "..", "..", ".."))

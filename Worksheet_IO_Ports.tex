@@ -1119,7 +1119,16 @@ A possible solution (other justified solutions are equally valid):
                 choose \SI{1.2}{k\ohm}: $t_r=\SI{254}{ns}$); a rise-time accelerator or bus buffer; or
                 Standard-mode at \SI{100}{kHz} ($R_{P,max}=\SI{4.7}{k\ohm}$, choose
                 \SI{1.8}{k\ohm}\ldots\SI{4.7}{k\ohm}). On the short \SI{3.3}{V} side \SI{4.7}{k\ohm} is enough.
-          \item Simulation: part~4 with a \SI{5}{V} pull-up and \SI{250}{pF}; check $t_r$ and $V_{OL}$.
+          \item Simulation: circuit~H, \circuitlink{\linkH}{H\_design\_i2c\_5V.txt}. A BSS138 connects the
+                \SI{3.3}{V} open-drain MCU pin (\SI{4.7}{k\ohm} pull-up) to the \SI{5}{V} line with
+                $R_P=\SI{1.2}{k\ohm}$ and $C_b=\SI{250}{pF}$ at \SI{400}{kHz}.
+                \schematic[0.7]{H}
+                Results: $t_r=\SI{252}{ns}$ (\SIrange{30}{70}{\percent} of \SI{5}{V}). When the MCU pulls low,
+                $V_{OL}=\SI{171}{mV}$ at \SI{4.0}{mA} on the \SI{5}{V} side. When the sensor pulls low,
+                $V_{OL}=\SI{59}{mV}$, and the MCU side follows through the body diode and the channel (\SI{54}{mV}).
+                With \SI{1.5}{k\ohm} the rise time is \SI{316}{ns} (too slow). With \SI{4.7}{k\ohm} the line only
+                reaches \SI{3.24}{V} within a half period, below $V_{IH}=\SI{3.5}{V}$. In Standard-mode
+                (\SI{100}{kHz}) \SI{1.8}{k\ohm} gives \SI{376}{ns}, well within the \SI{1000}{ns} limit.
           \item Risk: the capacitance is only an estimate; measure $t_r$ on the real board.
         \end{steps}
   \item Solenoid valve \SI{24}{V}/\SI{50}{mA} at \SI{10}{Hz}:
@@ -1132,7 +1141,15 @@ A possible solution (other justified solutions are equally valid):
           \item Free-wheeling: diode + \SI{24}{V} Zener if the valve must close quickly; then
                 $V_{DS,max}\ge24+24+1\approx\SI{50}{V}$, choose a \SI{60}{V} MOSFET. Otherwise a diode alone
                 ($V_{DS}\ge\SI{40}{V}$ with margin).
-          \item Simulation: part~6 with \SI{24}{V}, \SI{480}{\ohm} and the valve inductance.
+          \item Simulation: circuit~I, \circuitlink{\linkI}{I\_design\_solenoid\_valve.txt}, with an assumed
+                valve inductance of \SI{0.3}{H}.
+                \schematic[0.5]{I}
+                Results: when on, \SI{49.9}{mA} flows and $V_{DS}=\SI{28}{mV}$ (\SI{1.4}{mW}, no heat sink
+                needed). With the diode alone, $V_{DS,max}=\SI{24.8}{V}$ at switch-off and the current falls below
+                \SI{10}{\percent} after \SI{1.3}{ms}. With diode and Zener, $V_{DS,max}=\SI{48.9}{V}$ and the
+                current falls in \SI{0.37}{ms}. Without any free-wheeling path the drain voltage rises to about
+                \SI{830}{V} (a real MOSFET goes into avalanche breakdown). At \SI{10}{Hz} (\SI{50}{ms} per half
+                period) both variants are fast enough; even \SI{1}{H} only needs \SI{4.3}{ms} with the diode alone.
           \item Risk: the valve inductance is unknown without a data sheet; measure the kick-back on the board.
         \end{steps}
   \item SPI clock \SI{10}{MHz} over \SI{10}{cm}:
@@ -1143,7 +1160,14 @@ A possible solution (other justified solutions are equally valid):
           \item Edge budget: the half period is \SI{50}{ns}, so an edge of a few ns is entirely sufficient.
           \item Configuration: moderate drive strength and slow slew rate, plus a series resistor
                 $R_S=Z_0-R_{on}$ (e.g.\ \SI{33}{\ohm}) close to the MCU.
-          \item Simulation: part~7 with the trace delay changed to \SI{0.67}{ns}.
+          \item Simulation: circuit~J, \circuitlink{\linkJ}{J\_design\_spi\_clock.txt}: the circuit of part~7
+                with a \SI{0.67}{ns} trace, the \SI{12}{mA} setting, \SI{0.5}{V/ns} and $R_S=\SI{33}{\ohm}$.
+                Results: at the flash the clock stays between \SI{0.00}{V} and \SI{3.30}{V} (no overshoot) with
+                $t_r=\SI{3.7}{ns}$, far below the \SI{50}{ns} half period. For comparison, the fastest setting of
+                part~7 without $R_S$ overshoots to \SI{3.92}{V}, undershoots to \SI{-0.64}{V} and drives up to
+                \SI{40}{mA} into the ESD diodes; with \SI{33}{\ohm} this drops to \SI{3.32}{V}/\SI{-0.12}{V}. In the
+                \SI{12}{mA} setting ($R_{on}\approx\SIrange{31}{46}{\ohm}$) the line is already almost matched:
+                even without $R_S$ the undershoot is only \SI{-0.20}{V}.
           \item Risk: ringing at the flash causes double clocking and corrupted data.
         \end{steps}
 \end{enumerate}

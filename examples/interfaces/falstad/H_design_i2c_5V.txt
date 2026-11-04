@@ -1,0 +1,58 @@
+<cir f="1" ts="2e-09" ic="10.2" cb="50" pb="50" vr="5" mts="1e-09">
+  <mm nm="gpio-nmos" f="0" vt="0.6" be="0.012" sb="0" dsy="0" bd="1" bt="0" sbd="0"/>
+  <mm nm="gpio-pmos" f="0" vt="0.6" be="0.008" sb="0" dsy="0" bd="1" bt="0" sbd="0"/>
+  <mm nm="bss138" f="0" vt="1.3" be="0.1" sb="0" dsy="0" bd="1" bt="0" sbd="0"/>
+  <x x="48 32 0 0" f="0" si="20" te="H: Design task (a): 5 V I2C sensor behind a BSS138 level shifter"/>
+  <x x="48 64 0 0" f="0" si="14" te="Device 1 (3.3 V MCU, open drain) sends the 400 kHz clock; the sensor (5 V, open drain) can hold the line low."/>
+  <x x="48 88 0 0" f="0" si="14" te="R_P and C_bus on the 5 V side (cable) are sliders. Scope 1: SDA_5V and SDA_3V3. Scope 2: current in R_P."/>
+  <R x="96 416 48 416" f="0" wf="2" fr="400000.0" maxv="1.65" bias="1.65"/>
+  <w x="96 416 128 416" f="0"/>
+  <I x="128 416 176 416" f="0" sl="0.5" hi="3.3"/>
+  <w x="176 416 240 416" f="0"/>
+  <f x="240 416 304 416" f="0" mo="gpio-nmos"/>
+  <g x="304 432 304 464" f="0"/>
+  <x x="208 512 0 0" f="0" si="14" te="MCU (3.3 V)"/>
+  <w x="304 400 304 352" f="0"/>
+  <w x="304 352 336 352" f="0"/>
+  <w x="336 352 368 352" f="0"/>
+  <w x="368 352 432 352" f="0"/>
+  <w x="432 352 464 352" f="0"/>
+  <ln x="432 352 432 384" f="4" te="SDA_3V3"/>
+  <R x="336 256 336 224" f="0" wf="0" maxv="3.3"/>
+  <r x="336 256 336 352" f="0" r="4700"/>
+  <c x="368 352 368 432" f="0" c="2e-11"/>
+  <g x="368 432 368 464" f="0"/>
+  <f x="400 320 464 320" f="0" mo="bss138"/>
+  <w x="464 336 464 352" f="0"/>
+  <w x="400 320 400 288" f="0"/>
+  <R x="400 288 400 256" f="0" wf="0" maxv="3.3"/>
+  <x x="368 512 0 0" f="0" si="14" te="BSS138"/>
+  <w x="464 304 464 256" f="0"/>
+  <w x="464 256 528 256" f="0"/>
+  <w x="528 256 624 256" f="0"/>
+  <w x="624 256 752 256" f="0"/>
+  <w x="752 256 816 256" f="0"/>
+  <ln x="624 256 624 224" f="4" te="SDA_5V"/>
+  <R x="528 160 528 128" f="0" wf="0" maxv="5"/>
+  <r x="528 160 528 256" f="0" r="1200"/>
+  <c x="816 256 816 336" f="0" c="2.5e-10"/>
+  <g x="816 336 816 368" f="0"/>
+  <x x="800 400 0 0" f="0" si="14" te="cable"/>
+  <L x="592 320 544 320" f="0" p="1" hi="5" lo="0"/>
+  <I x="592 320 640 320" f="0" sl="0.5" hi="5"/>
+  <w x="640 320 688 320" f="0"/>
+  <f x="688 320 752 320" f="0" mo="gpio-nmos"/>
+  <w x="752 304 752 256" f="0"/>
+  <g x="752 336 752 368" f="0"/>
+  <x x="608 512 0 0" f="0" si="14" te="sensor (5 V)"/>
+  <adj e="32" ei="0" en="Resistance (ohms)" mn="220" mx="47000" st="Pull-up R_P to 5 V" log="1"/>
+  <adj e="33" ei="0" en="Capacitance (F)" mn="1e-11" mx="1e-09" st="Bus capacitance C_bus (5 V side)" log="1"/>
+  <adj e="3" ei="0" en="Frequency (Hz)" mn="10000.0" mx="1000000.0" st="Clock frequency" log="1"/>
+  <o en="30" sp="8" f="2" p="0">
+    <p v="0" sc="5"/>
+    <p e="15" v="0" sc="5"/>
+  </o>
+  <o en="32" sp="8" f="1" p="1">
+    <p v="3" sc="0.005"/>
+  </o>
+</cir>

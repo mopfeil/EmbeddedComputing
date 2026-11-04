@@ -1,0 +1,49 @@
+<cir f="1" ts="1e-06" ic="10.2" cb="50" pb="50" vr="5" mts="1e-07">
+  <dm nm="zener-24V" f="0" is="1.7143528192808883e-07" rs="0" n="2" bv="24"/>
+  <mm nm="logic-nmos-60V" f="0" vt="1.5" be="1" sb="0" dsy="0" bd="1" bt="0" sbd="0"/>
+  <x x="48 32 0 0" f="0" si="20" te="I: Design task (b): 24 V / 50 mA solenoid valve at 10 Hz"/>
+  <x x="48 64 0 0" f="0" si="14" te="The 3.3 V GPIO drives a logic-level N-MOSFET through R_G; R_PD keeps the valve off while the pin is an input (reset)."/>
+  <x x="48 88 0 0" f="0" si="14" te="Flyback diode closed by default; open 'bypass' to add the 24 V zener (faster switch-off). Valve inductance is a slider."/>
+  <R x="400 128 400 96" f="0" wf="0" maxv="24"/>
+  <w x="400 128 464 128" f="0"/>
+  <Ammeter x="400 128 400 176" f="3" me="0" sc="0"/>
+  <l x="400 176 400 240" f="2" l="0.3"/>
+  <r x="400 240 400 304" f="0" r="480"/>
+  <w x="400 176 336 176" f="0"/>
+  <w x="336 304 400 304" f="0"/>
+  <c x="336 176 336 304" f="2" c="1e-09"/>
+  <x x="192 240 0 0" f="0" si="14" te="solenoid valve"/>
+  <x x="192 264 0 0" f="0" si="14" te="0.3 H, 480 Ohm"/>
+  <w x="400 304 464 304" f="0"/>
+  <d x="464 304 464 240" f="0" mo="1N4148"/>
+  <z x="464 176 464 240" f="0" mo="zener-24V"/>
+  <w x="464 240 528 240" f="0"/>
+  <w x="528 176 464 176" f="0"/>
+  <s x="528 240 528 176" f="0" p="0" mo="0"/>
+  <x x="544 216 0 0" f="0" si="14" te="bypass"/>
+  <s x="464 176 464 128" f="0" p="0" mo="0"/>
+  <x x="480 168 0 0" f="0" si="14" te="flyback"/>
+  <w x="400 304 400 320" f="0"/>
+  <w x="400 320 400 336" f="0"/>
+  <ln x="400 320 464 320" f="4" te="D"/>
+  <f x="336 352 400 352" f="0" mo="logic-nmos-60V"/>
+  <g x="400 368 400 400" f="0"/>
+  <R x="160 352 112 352" f="0" wf="2" fr="10" maxv="1.65" bias="1.65"/>
+  <r x="160 352 240 352" f="0" r="100"/>
+  <w x="240 352 304 352" f="0"/>
+  <w x="304 352 336 352" f="0"/>
+  <r x="240 352 240 432" f="0" r="100000"/>
+  <g x="240 432 240 464" f="0"/>
+  <c x="304 352 304 432" f="0" c="5e-10"/>
+  <g x="304 432 304 464" f="0"/>
+  <x x="144 400 0 0" f="0" si="14" te="R_G, R_PD"/>
+  <x x="280 496 0 0" f="0" si="14" te="C_GS"/>
+  <adj e="6" ei="0" en="Inductance (H)" mn="0.01" mx="2" st="Valve inductance" log="1"/>
+  <adj e="27" ei="0" en="Frequency (Hz)" mn="1" mx="100" st="Switching frequency" log="1"/>
+  <o en="24" sp="256" f="2" p="0">
+    <p v="0" sc="50"/>
+  </o>
+  <o en="5" sp="256" f="1" p="1">
+    <p v="3" sc="0.05"/>
+  </o>
+</cir>

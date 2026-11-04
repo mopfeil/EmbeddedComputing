@@ -1,7 +1,7 @@
 """Run the worksheet circuits headless on falstad.com and print the values used
 in the solutions; 'figures' exports the schematics as PDF.
 
-    python3 check_circuits.py [A B C D E F G figures]
+    python3 check_circuits.py [A ... J] [figures [A ... J]]
 """
 import os, re, sys, time
 import numpy as np
@@ -42,8 +42,11 @@ def figures(keys):
         pg = browser().new_page(); pg.goto(url(c.xml()))
         pg.wait_for_function("window.CircuitJS1 !== undefined", timeout=60000)
         time.sleep(1.5); pg.evaluate("CircuitJS1.setSimRunning(false)")
-        pg.click("text=Options"); pg.click("text=White Background")
-        pg.click("text=Options"); pg.click("text=Show Voltage")
+        # menu entries carry a check mark in front of the text, the Options entry holds its whole submenu
+        menu = lambda t: pg.locator("td.gwt-MenuItem, li.menuItem").filter(has_text=re.compile(t + "$")).locator("visible=true").first.click()
+        opts = lambda: pg.locator("td.gwt-MenuItem").filter(has_text=re.compile("^Options")).first.click()
+        opts(); menu("White Background")
+        opts(); menu("Show Voltage")
         pg.evaluate("window.svgout=null; CircuitJS1.onsvgrendered=function(s,svg){window.svgout=svg}; CircuitJS1.getCircuitAsSVG()")
         pg.wait_for_function("window.svgout !== null", timeout=30000)
         svg = pg.evaluate("svgout")
@@ -66,8 +69,9 @@ def window(r, t0, t1): return r[(r[:,0] >= t0) & (r[:,0] < t1)]
 def avg(r, col, t0, t1):
     w = window(r, t0, t1); t = w[:,0]; return np.trapezoid(w[:,col], t) / (t[-1]-t[0])
 V = 3.3
-which = sys.argv[1:] or list("ABCDEFG")
-if "figures" in which: figures(gen.CIRCUITS)
+which = sys.argv[1:] or list(gen.CIRCUITS)
+if "figures" in which:              # "figures" alone: all schematics; "figures H I": only these
+    figures(which[which.index("figures")+1:] or gen.CIRCUITS); which = which[:which.index("figures")]
 if 'A' in which:
     for p in (1, 0):
         c = gen.A(); setp(c, 'in', p=p)
@@ -118,3 +122,38 @@ if 'G' in which:
         r = run(c.xml(), 1.2e-7, ['PIN', 'RX'], [c.names['desd'], c.names['desd2']])
         w = window(r, 4e-8, 1.2e-7)
         print(f"G R_S={rs} slew={sl}: RX max={w[:,2].max():.2f} min={w[:,2].min():.2f}  PIN max={w[:,1].max():.2f} min={w[:,1].min():.2f}  I_esd max={w[:,3].max()*1e3:.1f}/{w[:,4].max()*1e3:.1f} mA", flush=True)
+if 'H' in which:
+    for rp, cb, f, in2 in [(1200, 2.5e-10, 4e5, 1), (1500, 2.5e-10, 4e5, 1), (4700, 2.5e-10, 4e5, 1),
+                           (4700, 2.5e-10, 1e5, 1), (1800, 2.5e-10, 1e5, 1), (1200, 2.5e-10, 4e5, 0)]:
+        c = gen.H(); setp(c, 'rp', r=rp); setp(c, 'cb', c=cb); setp(c, 'clk', fr=f); setp(c, 'in2', p=in2)
+        T = 1/f; r = run(c.xml(), 2.05*T, ['SDA_5V', 'SDA_3V3'], [c.names['rp']], every=2)
+        t = r[:,0]
+        tr = edge(t, r[:,1], 1.5, 3.5, True, 0.8*T); tf = edge(t, r[:,1], 1.5, 3.5, False, 1.2*T)
+        tr3 = edge(t, r[:,2], 0.99, 2.31, True, 0.8*T)
+        lo, hi = window(r, 1.84*T, 1.96*T), window(r, 1.36*T, 1.48*T)
+        print(f"H R_P={rp} C={cb:.0e} f={f:.0e} sensor={'released' if in2 else 'low'}: tr5(30-70)={tr*1e9:.0f} ns (0.8473RC={0.8473*rp*cb*1e9:.0f})"
+              f" tf5={tf*1e9:.1f} ns tr3={tr3*1e9:.0f} ns  low: 5V={lo[:,1].mean()*1e3:.0f} mV 3V3={lo[:,2].mean()*1e3:.0f} mV I={lo[:,3].mean()*1e3:.2f} mA"
+              f"  high: 5V={hi[:,1].mean():.2f} 3V3={hi[:,2].mean():.2f} V", flush=True)
+if 'I' in which:
+    for name, fly, byp, L in [("diode", 0, 0, 0.3), ("diode+zener", 0, 1, 0.3), ("none", 1, 0, 0.3), ("diode, L=1H", 0, 0, 1.0)]:
+        c = gen.I(); setp(c, 'flyback', p=fly); setp(c, 'bypass', p=byp); setp(c, 'coil', l=L)
+        r = run(c.xml(), 0.06, ['D'], [c.names['icoil'], c.names['q']], every=5)
+        on = window(r, 0.045, 0.0495); off = window(r, 0.05, 0.06)
+        i0 = abs(on[:,2]).mean(); k = np.argmax(np.abs(off[:,2]) < 0.1*i0)
+        print(f"I {name}: on: I={i0*1e3:.1f} mA V_DS={on[:,1].mean()*1e3:.1f} mV; off: V_D max={off[:,1].max():.1f} V,"
+              f" current < 10 % after {(off[k,0]-0.05)*1e3:.2f} ms", flush=True)
+if 'J' in which:
+    for rs, sl in [(33, 0.5), (0.1, 0.5), (0.1, 5), (33, 5), (15, 0.5)]:
+        c = gen.J(); setp(c, 'rs', r=rs); setp(c, 'drv', sl=sl)
+        r = run(c.xml(), 1.2e-7, ['PIN', 'RX'], [c.names['desd'], c.names['desd2']])
+        w = window(r, 4e-8, 1.2e-7); t = r[:,0]
+        tr = edge(t, r[:,2], 0.33, 2.97, True, 9e-8)
+        print(f"J R_S={rs} slew={sl}: RX max={w[:,2].max():.2f} min={w[:,2].min():.2f} tr(10-90)={tr*1e9:.1f} ns"
+              f"  I_esd max={w[:,3].max()*1e3:.1f}/{w[:,4].max()*1e3:.1f} mA", flush=True)
+    for rs, sl in [(0.1, 5), (33, 5), (33, 0.5)]:      # fastest drive setting (models of part G) on the same trace
+        c = gen.G(); setp(c, 'tl', de=6.7e-10); setp(c, 'rs', r=rs); setp(c, 'drv', sl=sl)
+        r = run(c.xml(), 1.2e-7, ['PIN', 'RX'], [c.names['desd'], c.names['desd2']])
+        w = window(r, 4e-8, 1.2e-7); t = r[:,0]
+        tr = edge(t, r[:,2], 0.33, 2.97, True, 9e-8)
+        print(f"J fast drive R_S={rs} slew={sl}: RX max={w[:,2].max():.2f} min={w[:,2].min():.2f} tr(10-90)={tr*1e9:.1f} ns"
+              f"  I_esd max={w[:,3].max()*1e3:.1f}/{w[:,4].max()*1e3:.1f} mA", flush=True)
