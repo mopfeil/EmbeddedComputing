@@ -36,6 +36,7 @@ publish: all worksheet
 	cp slides.pdf pdf/EmbeddedComputing_Slides.pdf
 	$(PPTXPY) tools/pdf2pptx.py slides.pdf pdf/EmbeddedComputing_Slides.pptx
 	cp Worksheet_IO_Ports.pdf pdf/EmbeddedComputing_Worksheet_IO_Ports.pdf
+	cp Worksheet_IO_Ports_Solutions.pdf pdf/EmbeddedComputing_Worksheet_IO_Ports_Solutions.pdf
 
 clean:
 	latexmk -c docu.tex slides.tex Worksheet_IO_Ports.tex
