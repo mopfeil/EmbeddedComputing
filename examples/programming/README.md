@@ -8,7 +8,7 @@
 | `c/register_struct.c` | register access with a struct overlay, bit fields | compile only |
 | `micropython` | MicroPython: LED, button interrupt, ADC/PWM, `mem32` register access | Pico in Wokwi (browser, MicroPython project) |
 | `python/decode_mpu6050.py` | Python 3 on the PC: binary data with `struct` | PC / Replit |
-| `languages/` | VS Code workspace: inline assembly speed-up, C vs. Rust memory safety, Python FFT analysis (see its README) | PC (VS Code) |
+| `languages/` | VS Code workspace: inline assembly speed-up, C vs. Rust memory safety, Python FFT analysis (see its README) | PC (VS Code) and Pico / Pico 2 in Wokwi |
 
 The Pico examples use the circuit of chapter 6 (`diagram.json`).
 

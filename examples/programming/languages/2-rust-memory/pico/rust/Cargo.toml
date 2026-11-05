@@ -1,0 +1,15 @@
+[package]
+name = "pico-memory"
+version = "0.1.0"
+edition = "2024"
+description = "The dangling pointer example on the Raspberry Pi Pico (Wokwi): Rust rejects it"
+
+[dependencies]
+cortex-m = "0.7.7"
+cortex-m-rt = "0.7.5"
+embedded-alloc = "0.6"        # a heap for alloc::vec::Vec on the microcontroller
+panic-halt = "1.0.0"
+rp-pico = "0.9.0"
+
+[profile.release]
+debug = 2            # keep symbols for the debugger

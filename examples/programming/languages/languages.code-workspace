@@ -4,10 +4,14 @@
   "folders": [
     { "name": "1 · inline assembly (C)", "path": "1-inline-asm" },
     { "name": "2 · memory safety (C vs. Rust)", "path": "2-rust-memory" },
-    { "name": "3 · what Python makes easy", "path": "3-python" }
+    { "name": "3 · what Python makes easy", "path": "3-python" },
+    { "name": "1p · inline assembly on the Pico 2 (Wokwi)", "path": "1-inline-asm/pico" },
+    { "name": "2p · C on the Pico (Wokwi)", "path": "2-rust-memory/pico/c" },
+    { "name": "2p · Rust on the Pico (Wokwi)", "path": "2-rust-memory/pico/rust" },
+    { "name": "3p · MicroPython on the Pico (Wokwi)", "path": "3-python/pico" }
   ],
   "settings": {
-    "files.exclude": { "**/target": true, "**/.venv": true, "**/__pycache__": true },
+    "files.exclude": { "**/target": true, "**/.venv": true, "**/__pycache__": true, "**/pico": true },
     "rust-analyzer.cargo.allTargets": true,
     "python.defaultInterpreterPath": "${workspaceFolder:3 · what Python makes easy}/.venv/bin/python"
   },
@@ -17,7 +21,8 @@
       "ms-vscode.makefile-tools",
       "rust-lang.rust-analyzer",
       "ms-python.python",
-      "ms-python.debugpy"
+      "ms-python.debugpy",
+      "wokwi.wokwi-vscode"
     ]
   }
 }

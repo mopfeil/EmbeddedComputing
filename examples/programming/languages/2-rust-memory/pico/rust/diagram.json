@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "author": "Embedded Computing lecture",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "wokwi-pi-pico", "id": "pico", "top": 0, "left": 0, "attrs": {} }
+  ],
+  "connections": [
+    [ "pico:GP0", "$serialMonitor:RX", "", [] ],
+    [ "pico:GP1", "$serialMonitor:TX", "", [] ]
+  ],
+  "dependencies": {}
+}

@@ -299,13 +299,15 @@ MicroPython & interpreter, compiler, garbage collector & $\approx$\,256\,KB flas
 experiment, each with tasks (Terminal $\rightarrow$ Run Task) and debug
 configurations. They run on the PC (Linux, macOS or Windows with WSL); the
 assembly example supports x86-64 and 64 bit ARM CPUs, such as Apple Silicon
-Macs. The first experiment shows why assembly is still needed, the second
+Macs. Each experiment also exists for the Raspberry Pi Pico in Wokwi, in the
+folders marked ``p'': built with a task, then started with the Wokwi
+extension. The first experiment shows why assembly is still needed, the second
 why Rust is gaining ground, and the third why Python is the standard
 language for tools.}
 
 \item[{\rot\bf Three experiments in VS Code}]~\\[-\lblskip]
 \bi
-	\ite open \texttt{examples/programming/languages/languages.code-workspace}; the recommended extensions are suggested automatically (C/C++, rust-analyzer, Python)
+	\ite open \texttt{examples/programming/languages/languages.code-workspace}; the recommended extensions are suggested automatically (C/C++, rust-analyzer, Python, Wokwi)
 	\ite Terminal $\rightarrow$ Run Task:
 \ei
 \begin{center}
@@ -315,13 +317,16 @@ language for tools.}
 \textbf{folder} & \textbf{shows} & \textbf{tasks} \\
 \hline
 \texttt{1-inline-asm} & one line of assembly: 90$\times$ faster & build, run, show machine code \\
+\quad \texttt{pico} & Pico 2: FIR filter with \texttt{smlad}, 1.9$\times$ faster & build, Wokwi \\
 \texttt{2-rust-memory} & a dangling pointer: C runs it, Rust rejects it & C, C with sanitizer, Rust (error), Rust (fixed) \\
+\quad \texttt{pico/c}, \texttt{pico/rust} & Pico: a false alarm in C, rejected in Rust & build, Wokwi \\
 \texttt{3-python} & vibration analysis with FFT in 10 lines & set up \texttt{.venv}, create data, analyse, speed \\
+\quad \texttt{pico} & Pico: the spectrum in MicroPython, and its price & build \texttt{main.uf2}, Wokwi \\
 \hline
 \end{tabular}}
 \end{center}
 \bi
-	\ite everything runs on the PC; the assembly example on x86-64 and on 64 bit ARM (Apple Silicon, Raspberry Pi)
+	\ite PC: x86-64 and 64 bit ARM (Apple Silicon, Raspberry Pi); Pico: Wokwi in VS Code or on \url{https://wokwi.com}
 \ei
 \os{\newpage}
 
@@ -363,6 +368,42 @@ asm      crc = 0x75CCF12B      0.108 ms per MiB      9728 MB/s    91.4x faster
 \ei
 \os{\newpage}
 
+\nsl{On the microcontroller the same idea applies to signal processing. The
+Cortex-M33 of the Raspberry Pi Pico 2 has DSP instructions: SMLAD
+multiplies two pairs of 16 bit values and adds both products to an
+accumulator. An FIR filter, the basis of every digital filter, consists of
+exactly these multiply-accumulate operations. The compiler translates the
+C loop into SMLABB, which handles one pair; one line of inline assembly
+handles two pairs and halves the number of loop iterations. In Wokwi the
+filter runs 1.9 times faster with identical results. CMSIS offers the same
+instruction as the intrinsic \texttt{\_\_SMLAD()}, and the CMSIS-DSP library
+uses it in its filter functions.}
+
+\item[{\rot\bf Experiment 1 on the Pico 2: a DSP instruction}]~\\[-\lstskip]
+\begin{lstlisting}[language=C]
+static int32_t dot_asm(const int16_t *a, const int16_t *b, int n)   // fir_smlad.ino
+{
+    int32_t s = 0;
+    for (int i = 0; i < n; i += 2) {
+        uint32_t va, vb;
+        memcpy(&va, a + i, 4);    // two samples in one 32 bit register
+        memcpy(&vb, b + i, 4);    // two coefficients
+        __asm__("smlad %0, %1, %2, %0" : "+r"(s) : "r"(va), "r"(vb));  // 2 MACs
+    }
+    return s;
+}
+\end{lstlisting}
+\begin{lstlisting}[language={}]
+FIR filter, 32 taps, 1024 samples, 150 MHz          (Pico 2 in Wokwi)
+C        3278 us per block                          compiler: smlabb, 1 MAC per loop
+smlad    1735 us per block   1.9x faster            2 MACs per instruction
+results identical
+\end{lstlisting}
+\bi
+	\ite RP2040 (Cortex-M0+) has no DSP instructions -- the Pico 2 (RP2350, Cortex-M33) does; in Wokwi: board \texttt{board-pi-pico-2}
+\ei
+\os{\newpage}
+
 \nsl{The second experiment shows a dangling pointer, one of the most
 common memory errors. A data logger collects readings in a buffer that
 grows when it is full. The program keeps a pointer to the first reading;
@@ -393,6 +434,40 @@ error[E0502]: cannot borrow `log` as mutable because it is also borrowed as immu
 \end{lstlisting}
 \bi
 	\ite Rust: rejected at compile time, marked while typing (rust-analyzer); fix: copy the value (\texttt{let first = log[0];}) or keep an index
+\ei
+\os{\newpage}
+
+\nsl{On the microcontroller the same error is more dangerous. There is no
+AddressSanitizer and no operating system that stops the program. In the
+Pico version another part of the firmware allocates a message buffer, so
+the log cannot grow in place and is moved. The freed block is handed out
+again to a report string that contains ``OK''. The old pointer now reads
+the two characters as the number 19279, that is 1927.9\,degC, and the
+firmware raises an alarm. The Rust version with a heap (\texttt{embedded-alloc})
+is rejected by the compiler with the same error as on the PC; the corrected
+version prints the right value.}
+
+\item[{\rot\bf Experiment 2 on the Pico: a false alarm}]~\\[-\lstskip]
+\begin{lstlisting}[language={}]
+first reading: 215 (address 0x20002488)                  <- C
+logger running, message at 0x20002498
+buffer is now at        0x200024c0
+first reading: 19279   <- read through the old pointer (0x4B4F = "OK")
+alarm (first reading > 30.0 degC): YES
+\end{lstlisting}
+\begin{lstlisting}[language={}]
+$ cargo build --release --example dangling               <- Rust, as in C
+error[E0502]: cannot borrow `log` as mutable because it is also borrowed ...
+\end{lstlisting}
+\begin{lstlisting}[language={}]
+first reading: 215 (buffer at 0x20000000)                <- Rust, corrected
+buffer is now at 0x20000108
+first reading: 215 (OK)
+alarm (first reading > 30.0 degC): no
+\end{lstlisting}
+\bi
+	\ite C on the MCU: no sanitizer, no OS -- the wrong value becomes a wrong decision
+	\ite Rust: \texttt{alloc::vec::Vec} on the Pico with a 16\,KB heap, the same compile-time check as on the PC
 \ei
 \os{\newpage}
 
@@ -448,6 +523,50 @@ C, \texttt{gcc -O2} (for comparison) & 0.14\,ms & 0.14\,ns \\
 \end{center}
 \bi
 	\ite Python: fast to write, slow to run -- the heavy work belongs in libraries written in C (NumPy, PyTorch)
+\ei
+\os{\newpage}
+
+\nsl{MicroPython runs the same analysis on the Pico itself. There is no
+NumPy, but the discrete Fourier transform can be written as one expression
+with complex numbers. It finds the same three frequencies. The price is
+clearly visible in the simulated run times: the short version needs 14
+seconds, a loop that avoids the exponential function 1.9 seconds. For the
+mean of 10000 ADC values the interpreted loop needs 40\,ms, the C version
+0.65\,ms. The decorator \texttt{@micropython.native} hardly helps here,
+because every addition still works on Python objects; \texttt{@micropython.viper}
+uses machine integers and a raw pointer and is ten times faster -- at the
+price of Python's safety checks.}
+
+\item[{\rot\bf Experiment 3 on the Pico: MicroPython}]~\\[-\lstskip]
+\begin{lstlisting}[language=Python]
+def spectrum(x, fmax):                         # main.py: the DFT in one expression
+    w = -2j * cmath.pi / len(x)
+    return [abs(sum(v * cmath.exp(w * k * n) for n, v in enumerate(x))) * 2 / len(x)
+            for k in range(fmax * len(x) // FS)]
+
+@micropython.viper                             # machine integers, raw pointer
+def mean_viper(d, n: int) -> int:
+    p = ptr16(d)
+    s = 0
+    for i in range(n):
+        s += p[i]
+    return s // n
+\end{lstlisting}
+\begin{center}
+\resizebox{0.8\textwidth}{!}{%
+\begin{tabular}{|l|r||l|r|}
+\hline
+\textbf{spectrum 0--200\,Hz, 500 samples} & \textbf{time} & \textbf{mean of 10000 values} & \textbf{time} \\
+\hline
+\texttt{spectrum()} (one expression) & 14.4\,s & Python loop & 39.6\,ms \\
+\texttt{dft\_loop()} (no \texttt{exp}) & 1.9\,s & \texttt{sum()} / \texttt{@native} & 24.4 / 25.8\,ms \\
+ & & \texttt{@viper} & 3.8\,ms \\
+ & & C (\texttt{-Os}) & 0.65\,ms \\
+\hline
+\end{tabular}}
+\end{center}
+\bi
+	\ite RP2040 at 125\,MHz in Wokwi (simulated time, C built for the same clock); all variants find 24, 50 and 138\,Hz
 \ei
 \os{\newpage}
 \end{description}
@@ -1131,6 +1250,7 @@ pc$    $GDB ./sensor_avg
 \item[{\rot\bf Exercises: the language experiments}]~\\[-\lblskip]
 \bi
 	\ite Experiment 1: replace the inline assembly by the intrinsic \texttt{\_mm\_crc32\_u64()} (\texttt{\#include <nmmintrin.h>}, option \texttt{-msse4.2}). Is it as fast? Look at the machine code with \texttt{make asm}.
+	\ite Experiment 1 on the Pico 2: process four samples per loop iteration (two \texttt{smlad}). How much faster does the filter get, and why?
 	\ite Experiment 2: write a C program that writes one element past the end of an array and a Rust program that does the same. What happens in each case -- at compile time and at run time?
 	\ite Experiment 3: add a 300\,Hz component to \texttt{make\_data.py} with an amplitude of 0.02\,g. Does the analysis still find it? What limits the highest frequency that can be found?
 \ei

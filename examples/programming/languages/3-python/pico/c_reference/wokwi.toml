@@ -1,0 +1,4 @@
+[wokwi]
+version = 1
+firmware = "build/mean_c.ino.uf2"
+elf = "build/mean_c.ino.elf"

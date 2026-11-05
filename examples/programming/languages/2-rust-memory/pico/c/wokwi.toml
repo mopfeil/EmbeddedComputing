@@ -1,0 +1,5 @@
+# Wokwi for VS Code: build first (Run Task "2p: C - build for Pico"), then F1 -> "Wokwi: Start Simulator"
+[wokwi]
+version = 1
+firmware = "build/dangling.ino.uf2"
+elf = "build/dangling.ino.elf"

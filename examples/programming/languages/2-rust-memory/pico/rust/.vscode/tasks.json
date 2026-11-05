@@ -1,0 +1,8 @@
+{
+  // After the build: F1 -> "Wokwi: Start Simulator", output in the serial monitor.
+  "version": "2.0.0",
+  "tasks": [
+    { "label": "2p: Rust - compile the dangling version (rejected)", "type": "shell", "command": "cargo build --release --example dangling", "problemMatcher": ["$rustc"] },
+    { "label": "2p: Rust - build the corrected firmware", "type": "shell", "command": "cargo build --release", "group": { "kind": "build", "isDefault": true }, "problemMatcher": ["$rustc"] }
+  ]
+}

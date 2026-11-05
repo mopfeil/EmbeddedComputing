@@ -1,0 +1,6 @@
+# Wokwi for VS Code: build first (Terminal > Run Task > "1p: build for Pico 2"),
+# then F1 -> "Wokwi: Start Simulator". Output in the serial monitor.
+[wokwi]
+version = 1
+firmware = "build/fir_smlad.ino.uf2"
+elf = "build/fir_smlad.ino.elf"

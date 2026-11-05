@@ -1,0 +1,9 @@
+{
+  // Needs arduino-cli with the arduino-pico core (see ../../README.md).
+  // After the build: F1 -> "Wokwi: Start Simulator", output in the serial monitor.
+  "version": "2.0.0",
+  "tasks": [
+    { "label": "1p: build for Pico 2", "type": "shell", "command": "arduino-cli compile -b rp2040:rp2040:rpipico2 --output-dir build fir_smlad", "group": { "kind": "build", "isDefault": true }, "problemMatcher": ["$gcc"] },
+    { "label": "1p: show machine code of dot_c and dot_asm", "type": "shell", "command": "arm-none-eabi-objdump -d --no-show-raw-insn build/fir_smlad.ino.elf | awk '/<_ZL5dot_c|<_ZL7dot_asm/,/^$/'", "problemMatcher": [] }
+  ]
+}

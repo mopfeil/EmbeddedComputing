@@ -1,2 +1,4 @@
 numpy
 matplotlib
+littlefs-python   # pico/make_uf2.py: file system for MicroPython in Wokwi
+mpremote          # pico: send main.py to the simulated Pico
