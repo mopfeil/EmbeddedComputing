@@ -1,0 +1,23 @@
+{
+  // Open with: code languages.code-workspace  (or File > Open Workspace from File)
+  // Each folder has its own tasks: Terminal > Run Task...
+  "folders": [
+    { "name": "1 · inline assembly (C)", "path": "1-inline-asm" },
+    { "name": "2 · memory safety (C vs. Rust)", "path": "2-rust-memory" },
+    { "name": "3 · what Python makes easy", "path": "3-python" }
+  ],
+  "settings": {
+    "files.exclude": { "**/target": true, "**/.venv": true, "**/__pycache__": true },
+    "rust-analyzer.cargo.allTargets": true,
+    "python.defaultInterpreterPath": "${workspaceFolder:3 · what Python makes easy}/.venv/bin/python"
+  },
+  "extensions": {
+    "recommendations": [
+      "ms-vscode.cpptools",
+      "ms-vscode.makefile-tools",
+      "rust-lang.rust-analyzer",
+      "ms-python.python",
+      "ms-python.debugpy"
+    ]
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    { "name": "3: analyse.py", "type": "debugpy", "request": "launch", "program": "${workspaceFolder}/analyse.py", "cwd": "${workspaceFolder}", "preLaunchTask": "3a: create vibration.csv" },
+    { "name": "3: speed.py", "type": "debugpy", "request": "launch", "program": "${workspaceFolder}/speed.py", "cwd": "${workspaceFolder}" }
+  ]
+}

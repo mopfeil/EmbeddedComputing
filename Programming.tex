@@ -1,8 +1,456 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Chapter: Programming
 % Examples: examples/programming (assembly on the Pico in C and Rust, a
-% host-tested Rust library, MicroPython, Python, C register access)
+% host-tested Rust library, MicroPython, Python, C register access,
+% languages/: VS Code workspace with three language experiments on the PC)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Programming Languages: Then and Now}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\nsl{Before we look at the tools and at the individual languages, this
+section gives an overview. It shows how programming languages developed
+from the first computers until today and which languages are used for
+which tasks in embedded systems. It also compares them by speed, memory and
+energy. Three small experiments in a VS Code workspace make the main
+differences visible: one line of assembly that makes a program much faster,
+a memory error that C accepts and Rust rejects, and a measurement analysis
+that takes only a few lines in Python.}
+
+\begin{description}
+\item[{\rot\bf Seventy years of programming languages}]~\\[-\lblskip]
+\begin{center}
+\adjustbox{max width=\linewidth,max totalheight=0.62\textheight}{%
+\begin{tikzpicture}[font=\sffamily\footnotesize,>=Stealth,
+	y={(0,1cm)},
+	ev/.style={draw,thick,rounded corners=2pt,fill=#1,align=center,inner sep=2pt,text width=20mm}]
+	% axis: x = (year - 1945) * 0.3 cm
+	\draw[->,very thick,gray] (-0.3,0) -- (25.0,0);
+	\foreach \y in {1950,1960,1970,1980,1990,2000,2010,2020} {
+		\pgfmathsetmacro{\x}{(\y-1945)*0.3}
+		\draw[thick,gray] (\x,-0.12) -- (\x,0.12);
+		\node[below,gray,font=\sffamily\scriptsize] at (\x,-0.12) {\y};
+	}
+	% events: {year}{height}{colour}{text}
+	\foreach \yr/\h/\c/\t in {
+		1949/1.4/gray!20/{\textbf{assembly}\\ mnemonics instead of bits},
+		1957/3.2/rwucyan!15/{\textbf{FORTRAN}\\ formulas, first compiler},
+		1964/1.4/rwucyan!15/{\textbf{BASIC}\\ interactive, for beginners},
+		1972/3.2/rwucyan!15/{\textbf{C}\\ Unix, portable},
+		1983/1.4/rwucyan!15/{\textbf{Ada}\\ safety, US DoD},
+		1985/-1.6/rwucyan!15/{\textbf{C++}\\ classes, templates},
+		1991/3.2/rwuviolet!15/{\textbf{Python}\\ readable, batteries included},
+		1995/-1.6/rwuviolet!15/{\textbf{Java}\\ VM, garbage collector},
+		2005/-1.6/rwucyan!15/{\textbf{Arduino}\\ C++ for makers},
+		2014/-1.6/rwuviolet!15/{\textbf{MicroPython}\\ Python on the MCU},
+		2015/1.4/rwucyan!15/{\textbf{Rust 1.0}\\ memory safe, no GC},
+		2022/-1.6/rwucyan!15/{\textbf{Rust in Linux}\\ kernel 6.1}} {
+		\pgfmathsetmacro{\x}{(\yr-1945)*0.3}
+		\fill[rwuviolet] (\x,0) circle (0.08);
+		\draw[thin,gray] (\x,0) -- (\x,\h);
+		\node[ev=\c] at (\x,\h) {\t};
+	}
+	\node[font=\sffamily\scriptsize,align=left,anchor=west] at (-0.3,-2.8)
+		{\textcolor{gray!50}{\rule{2mm}{2mm}} assembly \quad
+		 \textcolor{rwucyan!60}{\rule{2mm}{2mm}} compiled to machine code \quad
+		 \textcolor{rwuviolet!50}{\rule{2mm}{2mm}} interpreted or virtual machine};
+\end{tikzpicture}}
+\end{center}
+\bi
+	\ite each new language moved one more task from the programmer to the tool: registers, portability, memory management, memory safety
+\ei
+\os{\newpage}
+
+\nsl{The first computers were programmed in binary machine code. Assembly
+replaced the bit patterns by names, and FORTRAN (1957) showed that a
+compiler can translate mathematical formulas into code that is almost as
+fast as hand-written assembly. C (1972) was designed to write the Unix
+operating system, so that Unix could be moved to new computers by
+recompiling it. This portability made C the language of operating systems
+and, later, of microcontrollers. Since then the main goal has shifted
+several times: from saving machine time to saving developer time, and
+today to avoiding expensive errors.}
+
+\item[{\rot\bf What drove the development}]~\\[-\lblskip]
+\begin{center}
+\adjustbox{max width=\linewidth,max totalheight=0.42\textheight}{%
+\begin{tikzpicture}[font=\sffamily\small,>=Stealth,
+	era/.style={draw,thick,rounded corners,fill=#1,text width=58mm,minimum height=26mm,align=left,inner sep=5pt}]
+	\node[era=gray!12] (a) at (0,0) {\textbf{1950--1980: the computer is expensive}\\[1mm] every instruction and every byte counts\\ assembly, FORTRAN, C};
+	\node[era=rwucyan!12] (b) at (7.0,0) {\textbf{1980--2010: the developer is expensive}\\[1mm] productivity, reuse, large teams\\ C++, Java, Python, libraries};
+	\node[era=rwuviolet!15] (c) at (14.0,0) {\textbf{since 2010: errors are expensive}\\[1mm] security, safety, connected devices\\ Rust, MISRA, Ada/SPARK};
+	\draw[->,ultra thick,rwuviolet] (a) -- (b);
+	\draw[->,ultra thick,rwuviolet] (b) -- (c);
+\end{tikzpicture}}
+\end{center}
+\bi
+	\ite about 70\,\% of the security vulnerabilities in large C/C++ code bases (Microsoft, Chromium) are memory safety errors
+	\ite since 2022 security agencies (NSA 2022, CISA 2023) recommend memory safe languages for new code \cite{nsa2022}
+	\ite but: on microcontrollers C is still the standard -- billions of lines of existing code, vendor SDKs, certified compilers, trained developers
+\ei
+\os{\newpage}
+
+\nsl{A language can be executed in three ways. A compiler translates the
+program into machine code before it runs (C, C++, Rust, Ada). Nothing of
+the compiler is needed on the target, and the CPU executes the program
+directly. A virtual machine executes an intermediate code (bytecode); a
+just-in-time compiler translates frequently used parts into machine code
+at run time (Java, C\#, JavaScript in browsers). An interpreter reads the
+bytecode instruction by instruction and calls a C function for each one
+(CPython, MicroPython, Lua). The second and third way need a run-time
+system on the target and a garbage collector that frees unused memory.
+This costs flash, RAM and computing time, and the garbage collector makes
+the timing less predictable.}
+
+\item[{\rot\bf How a program is executed}]~\\[-\lblskip]
+\begin{center}
+\adjustbox{max width=\linewidth,max totalheight=0.5\textheight}{%
+\begin{tikzpicture}[font=\sffamily\small,>=Stealth,
+	b/.style={draw,thick,rounded corners,minimum height=9mm,text width=26mm,align=center,fill=#1}]
+	\node[font=\sffamily\bfseries] at (0,1.2) {compiled};
+	\node[font=\sffamily\bfseries] at (5.5,1.2) {virtual machine / JIT};
+	\node[font=\sffamily\bfseries] at (11,1.2) {interpreted};
+	\node[b=gray!10] (s1) at (0,0) {source (.c .rs)};
+	\node[b=rwucyan!12] (c1) at (0,-1.5) {compiler on the PC};
+	\node[b=green!12] (m1) at (0,-3) {machine code};
+	\node[b=gray!10] (s2) at (5.5,0) {source (.java)};
+	\node[b=rwucyan!12] (c2) at (5.5,-1.5) {bytecode};
+	\node[b=rwuviolet!15] (m2) at (5.5,-3) {VM + JIT + GC};
+	\node[b=gray!10] (s3) at (11,0) {source (.py)};
+	\node[b=rwucyan!12] (c3) at (11,-1.5) {bytecode (on the MCU)};
+	\node[b=rwuviolet!15] (m3) at (11,-3) {interpreter + GC};
+	\foreach \i in {1,2,3} { \draw[->,thick] (s\i) -- (c\i); \draw[->,thick] (c\i) -- (m\i); }
+	\draw[thick,fill=gray!20] (-1.6,-5.0) rectangle (12.6,-4.3);
+	\node at (5.5,-4.65) {CPU};
+	\draw[->,thick] (m1) -- (0,-4.3); \draw[->,thick] (m2) -- (5.5,-4.3); \draw[->,thick] (m3) -- (11,-4.3);
+\end{tikzpicture}}
+\end{center}
+\bi
+	\ite compiled: no run-time system on the target, fastest code, timing predictable
+	\ite VM / interpreter: the program is independent of the CPU and can be changed at run time -- but flash, RAM and CPU time for the run-time system, and pauses caused by the garbage collector (GC)
+\ei
+\os{\newpage}
+
+\item[{\rot\bf Languages in embedded systems today}]~\\[-\lblskip]
+\begin{center}
+\adjustbox{max width=\linewidth,max totalheight=0.78\textheight}{%
+\begin{tabularx}{\linewidth}{|>{\raggedright}p{30mm}|L|>{\raggedright\arraybackslash}p{50mm}|}
+\hline
+\textbf{language} & \textbf{used for} & \textbf{examples} \\
+\hline
+assembly & start-up code, context switch, special instructions, a few hot loops & vector table, RTOS port, DSP kernels \\
+C & firmware on microcontrollers, drivers, RTOS, kernels -- \textbf{the standard} & Pico SDK, ESP-IDF, STM32Cube, Zephyr, FreeRTOS, Linux \\
+C++ & larger firmware, GUIs, applications on embedded Linux & Arduino, AUTOSAR Adaptive, Qt, ROS\,2 \\
+Rust & new firmware and drivers, security-relevant parts, growing fast & Embassy, esp-hal, Linux and Android drivers, Ferrocene (ISO\,26262) \\
+Ada / SPARK & avionics, rail, space -- SPARK proves the absence of run-time errors & flight control, signalling systems \\
+model-based & control algorithms; C code is generated from the model & MATLAB/Simulink, SCADE (automotive, aerospace) \\
+Python & tools, test automation, data analysis, AI training on the PC & pytest, pyserial, NumPy, PyTorch \\
+MicroPython & prototypes, teaching, simple devices & Pico, ESP32, BBC micro:bit \\
+others & scripting in devices, web UIs, smart cards, hardware & Lua, JavaScript, Java Card, VHDL/Verilog (FPGA) \\
+\hline
+\end{tabularx}}
+\end{center}
+\os{\newpage}
+
+\item[{\rot\bf Which language for which job?}]~\\[-\lblskip]
+\begin{center}
+\adjustbox{max width=\linewidth,max totalheight=0.75\textheight}{%
+\begin{tikzpicture}[font=\sffamily\footnotesize,
+	card/.style={draw,thick,rounded corners,fill=#1,text width=40mm,minimum height=31mm,align=left,inner sep=4pt}]
+	\node[card=rwucyan!8]  at (0,0)    {\textbf{battery sensor node}\\[1mm] C or Rust, bare metal or RTOS\\ every $\mu$A counts\\ assembly only for start-up};
+	\node[card=rwuviolet!15] at (4.8,0)  {\textbf{brake, airbag, flight control}\\[1mm] MISRA C, Ada/SPARK, Rust (Ferrocene), C generated from Simulink};
+	\node[card=rwucyan!20] at (9.6,0)  {\textbf{motor control, audio, DSP}\\[1mm] C with intrinsics, a few lines of assembly in the hot loop};
+	\node[card=orange!15] at (14.4,0) {\textbf{gateway, HMI on Linux}\\[1mm] C++ or Rust for services, Python for scripts, Qt or web UI};
+	\node[card=green!12] at (0,-3.6)   {\textbf{test bench, production test}\\[1mm] Python: pytest, pyserial, instrument control, reports};
+	\node[card=green!12] at (4.8,-3.6) {\textbf{data analysis, AI models}\\[1mm] Python (NumPy, PyTorch) on the PC; the model runs in C/C++ on the device};
+	\node[card=green!12] at (9.6,-3.6)  {\textbf{prototype, teaching, maker}\\[1mm] MicroPython, Arduino (C++)\\ results in minutes};
+	\node[card=gray!12] at (14.4,-3.6) {\textbf{FPGA logic}\\[1mm] VHDL, Verilog, high-level synthesis from C++\\ describes hardware, not a program};
+	\node[anchor=west,font=\sffamily\scriptsize] at (-2.1,-5.6) {\textcolor{rwucyan}{\rule{2mm}{2mm}} firmware \quad \textcolor{rwuviolet!60}{\rule{2mm}{2mm}} safety-critical \quad \textcolor{orange!60}{\rule{2mm}{2mm}} embedded Linux \quad \textcolor{green!50}{\rule{2mm}{2mm}} on the PC / quick results};
+\end{tikzpicture}}
+\end{center}
+\bi
+	\ite a typical product uses several: C or Rust on the device, Python on the test bench, maybe C++ on the gateway
+\ei
+\os{\newpage}
+
+\nsl{How do languages differ in speed, memory and energy? A frequently
+cited study by Pereira et al.\ ran the same ten benchmark programs in 27
+languages on a PC and measured time, peak memory and energy
+\cite{pereira2017}. The figure shows a selection, relative to the best
+language. Compiled languages without garbage collector are close together;
+Java and Go are about two to three times slower; the interpreted languages
+need 50 to 80 times as much time and energy. These numbers depend on the
+benchmarks and the implementations and should not be read as exact
+factors. A later analysis showed that the energy follows almost entirely
+from the run time and the number of cores in use: a language does not make
+the CPU draw more power, it only keeps it busy for longer
+\cite{vankempen2024}.}
+
+\item[{\rot\bf Speed, memory, energy: a benchmark}]~\\[-\lblskip]
+\begin{center}
+\adjustbox{max width=\linewidth,max totalheight=0.6\textheight}{%
+\begin{tikzpicture}[font=\sffamily\small]
+	% x = log10(value) * 4 cm
+	\node[font=\sffamily\bfseries,anchor=west] at (0,0.8) {energy (bar) and time (line), relative to C};
+	\node[font=\sffamily\bfseries] at (12.8,0.8) {memory};
+	\foreach \v/\l in {1/1,2/2,5/5,10/10,20/20,50/50,100/100} {
+		\pgfmathsetmacro{\x}{log10(\v)*4}
+		\draw[gray!40] (\x,0.4) -- (\x,-8.3);
+		\node[gray,font=\sffamily\footnotesize] at (\x,-8.6) {\l};
+	}
+	\foreach \n/\lang/\e/\t/\m/\c in {
+		0/C/1.00/1.00/1.17/rwucyan,
+		1/Rust/1.03/1.04/1.54/rwucyan,
+		2/C++/1.34/1.56/1.34/rwucyan,
+		3/Ada/1.70/1.85/1.47/rwucyan,
+		4/Java/1.98/1.89/6.01/rwuviolet!70,
+		5/Go/3.23/2.83/1.05/rwucyan,
+		6/JavaScript/4.45/6.52/4.59/rwuviolet!70,
+		7/Lua/45.98/82.91/6.72/rwuviolet!70,
+		8/Python/75.88/71.90/2.80/rwuviolet!70} {
+		\pgfmathsetmacro{\y}{-\n*0.9}
+		\pgfmathsetmacro{\xe}{max(log10(\e)*4,0.05)}
+		\pgfmathsetmacro{\xt}{log10(\t)*4}
+		\node[anchor=east] at (-0.1,\y) {\lang};
+		\fill[\c] (0,\y-0.25) rectangle (\xe,\y+0.25);
+		\draw[very thick] (\xt,\y-0.33) -- (\xt,\y+0.33);
+		\node[anchor=west,font=\sffamily\footnotesize] at (\xe+0.1,\y) {\e};
+		\node[font=\sffamily\footnotesize] at (12.8,\y) {\m};
+	}
+	\draw[thick] (0,0.4) -- (0,-8.3);
+	\node[anchor=west,font=\sffamily\footnotesize] at (0,-9.2) {\textcolor{rwucyan}{\rule{2mm}{2mm}} compiled \quad \textcolor{rwuviolet!70}{\rule{2mm}{2mm}} VM / interpreted \quad \rule[-0.5mm]{0.6pt}{3mm} time};
+\end{tikzpicture}}
+\end{center}
+\bi
+	\ite source: 10 benchmark programs on a PC \cite{pereira2017} -- a trend, not exact factors; energy follows run time \cite{vankempen2024}
+\ei
+\os{\newpage}
+
+\nsl{On a microcontroller the run time is even more important, because the
+CPU can sleep when it has nothing to do. The energy of one task is the
+active power times the active time; the rest of the time only the sleep
+current flows. The example assumes a sensor node that measures once per
+second. With 10\,mA active current and 10\,$\mu$A in sleep mode, a task of
+1\,ms in C gives an average current of about 20\,$\mu$A. The same task in
+MicroPython takes about 50\,ms, and the average current rises to about
+0.5\,mA. A 1000\,mAh battery then lasts about three months instead of
+several years. If the device spends most of its active time waiting for a
+sensor or the radio, the difference becomes smaller: the language matters
+where the CPU computes, not where it waits.}
+
+\item[{\rot\bf On the microcontroller: energy = power $\times$ time}]~\\[-\lblskip]
+\begin{center}
+\adjustbox{max width=\linewidth,max totalheight=0.38\textheight}{%
+\begin{tikzpicture}[font=\sffamily\small,>=Stealth]
+	\foreach \y/\w/\l in {0/0.12/{C, Rust: 1\,ms}, -2.2/2.0/{MicroPython: 50\,ms}} {
+		\draw[->,thick] (0,\y) -- (14.5,\y) node[right] {$t$};
+		\draw[->,thick] (0,\y) -- (0,\y+1.7) node[above left] {$I$};
+		\foreach \s in {0.6,7.2} {
+			\fill[rwuviolet!40] (\s,\y) rectangle (\s+\w,\y+1.2);
+			\draw[thick,rwuviolet] (\s,\y+0.05) -- (\s,\y+1.2) -- (\s+\w,\y+1.2) -- (\s+\w,\y+0.05);
+		}
+		\draw[thick,rwucyan] (0,\y+0.05) -- (14.2,\y+0.05);
+		\node[anchor=west] at (9.8,\y+0.9) {\l};
+	}
+	\draw[<->] (0.6,-2.6) -- (7.2,-2.6) node[midway,below,font=\sffamily\scriptsize] {1\,s};
+\end{tikzpicture}}
+\end{center}
+\begin{center}
+\resizebox{0.85\textwidth}{!}{%
+\begin{tabular}{|l|c|c|c|}
+\hline
+ & \textbf{active per second} & \textbf{average current} & \textbf{1000\,mAh battery} \\
+\hline
+C / Rust & 1\,ms at 10\,mA & 10\,$\mu$A + 10\,$\mu$A sleep = 20\,$\mu$A & years (self-discharge limits) \\
+MicroPython (50$\times$ slower) & 50\,ms at 10\,mA & 500\,$\mu$A + 10\,$\mu$A = 0.51\,mA & about 80 days \\
+\hline
+\end{tabular}}
+\end{center}
+\bi
+	\ite slower code = longer active time = more energy (``race to sleep'')
+	\ite but: while the CPU waits for a sensor or the radio, the language does not matter
+\ei
+\os{\newpage}
+
+\item[{\rot\bf What a language needs on the target}]~\\[-\lblskip]
+\begin{center}
+\adjustbox{max width=\linewidth,max totalheight=0.66\textheight}{%
+\begin{tabularx}{\linewidth}{|>{\raggedright}p{24mm}|L|>{\raggedright}p{36mm}|>{\raggedright}p{22mm}|>{\raggedright\arraybackslash}p{36mm}|}
+\hline
+\textbf{language} & \textbf{run-time system} & \textbf{smallest program} & \textbf{timing} & \textbf{memory errors} \\
+\hline
+assembly & none & bytes & exactly known & possible everywhere \\
+C & start-up code & $<$\,1\,KB (blink on the Arduino Uno) & predictable & possible, not detected \\
+C++ & start-up code, constructors; often without exceptions and RTTI & a few KB & predictable & possible; fewer with modern C++ \\
+Rust (\texttt{no\_std}) & start-up code, panic handler & 3.7\,KB (our blink, next section) & predictable & prevented outside \texttt{unsafe} \\
+MicroPython & interpreter, compiler, garbage collector & $\approx$\,256\,KB flash, 16\,KB RAM & GC pauses & detected at run time (exception) \\
+\hline
+\end{tabularx}}
+\end{center}
+\bi
+	\ite the same blink program with the Arduino core on the Pico: about 314\,KB -- frameworks cost more than the language itself
+	\ite memory safety in Rust costs (almost) nothing at run time: most checks are done by the compiler
+\ei
+\os{\newpage}
+
+\nsl{The three experiments are in the folder
+\texttt{examples/programming/languages}. Open the file
+\texttt{languages.code-workspace} in VS Code: it contains one folder per
+experiment, each with tasks (Terminal $\rightarrow$ Run Task) and debug
+configurations. They run on the PC (Linux, macOS or Windows with WSL); the
+assembly example supports x86-64 and 64 bit ARM CPUs, such as Apple Silicon
+Macs. The first experiment shows why assembly is still needed, the second
+why Rust is gaining ground, and the third why Python is the standard
+language for tools.}
+
+\item[{\rot\bf Three experiments in VS Code}]~\\[-\lblskip]
+\bi
+	\ite open \texttt{examples/programming/languages/languages.code-workspace}; the recommended extensions are suggested automatically (C/C++, rust-analyzer, Python)
+	\ite Terminal $\rightarrow$ Run Task:
+\ei
+\begin{center}
+\resizebox{0.9\textwidth}{!}{%
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{folder} & \textbf{shows} & \textbf{tasks} \\
+\hline
+\texttt{1-inline-asm} & one line of assembly: 90$\times$ faster & build, run, show machine code \\
+\texttt{2-rust-memory} & a dangling pointer: C runs it, Rust rejects it & C, C with sanitizer, Rust (error), Rust (fixed) \\
+\texttt{3-python} & vibration analysis with FFT in 10 lines & set up \texttt{.venv}, create data, analyse, speed \\
+\hline
+\end{tabular}}
+\end{center}
+\bi
+	\ite everything runs on the PC; the assembly example on x86-64 and on 64 bit ARM (Apple Silicon, Raspberry Pi)
+\ei
+\os{\newpage}
+
+\nsl{A bootloader checks the firmware image with a checksum before it starts
+it. The function \texttt{crc32c\_bitwise} is a typical C implementation:
+eight shift and XOR steps per byte. A table with 256 entries processes one
+byte per step and is about four times faster. Many CPUs have an instruction
+that computes the CRC of eight bytes at once. The compiler does not use it,
+because it must produce code that also runs on older CPUs of the same
+family without this instruction. One line of inline assembly tells the
+compiler to use the instruction anyway. The cleaner way is an intrinsic
+function together with a compiler option for the CPU, but the effect is
+the same: on the test PC the checksum is computed 90 times faster than
+with the bitwise version and 20 times faster than with the table.}
+
+\item[{\rot\bf Experiment 1: one line of assembly}]~\\[-\lstskip]
+\begin{lstlisting}[language=C]
+static uint32_t crc32c_asm(const uint8_t *p, size_t n)      // file crc32c.c
+{
+    uint64_t crc = 0xFFFFFFFFu;
+    for (; n >= 8; p += 8, n -= 8) {
+        uint64_t v;
+        memcpy(&v, p, 8);
+        __asm__("crc32q %1, %0" : "+r"(crc) : "rm"(v));   // x86-64: 8 bytes at once
+        // AArch64:  __asm__("crc32cx %w0, %w0, %x1" : "+r"(crc) : "r"(v));
+    }
+    ...
+\end{lstlisting}
+\begin{lstlisting}[language={}]
+$ make run                       # AMD EPYC 9354P, gcc -O2
+CRC-32C of a 1 MiB image (mean of 20 runs)
+bitwise  crc = 0x75CCF12B      9.855 ms per MiB       106 MB/s
+table    crc = 0x75CCF12B      2.303 ms per MiB       455 MB/s     4.3x faster
+asm      crc = 0x75CCF12B      0.108 ms per MiB      9728 MB/s    91.4x faster
+\end{lstlisting}
+\bi
+	\ite the compiler must assume the oldest CPU of the family -- the CRC instruction is optional there
+	\ite cleaner: intrinsic + compiler option (\texttt{\_mm\_crc32\_u64()} with \texttt{-msse4.2}); on Cortex-M4/M33 the same idea for the DSP instructions (\texttt{\_\_SMLAD}, \texttt{\_\_USAT})
+\ei
+\os{\newpage}
+
+\nsl{The second experiment shows a dangling pointer, one of the most
+common memory errors. A data logger collects readings in a buffer that
+grows when it is full. The program keeps a pointer to the first reading;
+when the buffer grows, \texttt{realloc} moves the data and frees the old
+memory. C compiles the program without a warning, and it prints a wrong
+value. Only the AddressSanitizer, a run-time check for tests on the PC,
+detects the error. Rust rejects the same program at compile time, because
+the reference \texttt{first} still points into the vector while
+\texttt{push} may move it. The corrected version copies the value or keeps
+an index; its machine code is as fast as the C version.}
+
+\item[{\rot\bf Experiment 2: C runs it, Rust rejects it}]~\\[-\lstskip]
+\begin{lstlisting}[language=C]
+int16_t *first = &log.data[0];          // remember the first reading
+for (int i = 0; i < 100; i++)
+    log_push(&log, (int16_t)(220 + i)); // buffer full: realloc() moves it
+printf("first reading: %d\n", *first);  // use after free
+\end{lstlisting}
+\bi
+	\ite C: no warning, prints \texttt{first reading: 10968} instead of 215; only the AddressSanitizer (\texttt{make asan}) reports \texttt{heap-use-after-free}
+\ei
+\begin{lstlisting}[language={}]
+$ cargo run --example dangling
+error[E0502]: cannot borrow `log` as mutable because it is also borrowed as immutable
+14 |     let first = &log[0];    --- immutable borrow occurs here
+18 |         log.push(220 + i);  ^^^ mutable borrow occurs here
+21 |     println!("{first}");    --- immutable borrow later used here
+\end{lstlisting}
+\bi
+	\ite Rust: rejected at compile time, marked while typing (rust-analyzer); fix: copy the value (\texttt{let first = log[0];}) or keep an index
+\ei
+\os{\newpage}
+
+\nsl{The third experiment analyses a log of an acceleration sensor on an
+electric motor. The script reads the CSV file, computes the frequency
+spectrum with the fast Fourier transform and prints the strongest
+frequencies: the rotation of the motor, the mains hum and the small peak
+of a damaged bearing, which is not visible in the time signal. The whole
+analysis including the plot takes about ten lines, because NumPy and
+Matplotlib provide everything. This is why Python is the standard language
+for test benches, measurement evaluation and AI. The price is speed: a
+loop written in Python is more than 100 times slower than the same loop
+in C. NumPy avoids this by running its inner loops in compiled C code.}
+
+\item[{\rot\bf Experiment 3: what Python makes easy}]~\\[-\lstskip]
+\begin{lstlisting}[language=Python]
+t_ms, raw = np.loadtxt("vibration.csv", delimiter=",", skiprows=1, unpack=True)
+fs = 1000 / np.mean(np.diff(t_ms))             # sample rate from the time stamps
+a = raw / 16384                                # raw -> g (+-2 g range)
+
+spectrum = np.abs(np.fft.rfft(a - a.mean())) * 2 / len(a)   # amplitude in g
+freq = np.fft.rfftfreq(len(a), 1 / fs)
+
+for i in np.argsort(spectrum)[-3:][::-1]:       # the three highest peaks
+    print(f"{freq[i]:6.1f} Hz   {spectrum[i]:.3f} g")
+
+fig, (ax1, ax2) = plt.subplots(2, 1)
+ax1.plot(t_ms[:300], a[:300]);  ax2.plot(freq, spectrum)
+\end{lstlisting}
+\begin{lstlisting}[language={}]
+  24.5 Hz   0.301 g          <- imbalance of the motor (1470 rpm)
+  50.0 Hz   0.087 g          <- mains hum
+ 137.0 Hz   0.076 g          <- damaged bearing: invisible in the time signal
+\end{lstlisting}
+\os{\newpage}
+
+\item[{\rot\bf Experiment 3: the result and the price}]~\\[-\lblskip]
+\begin{center}
+\includegraphics[width=0.75\textwidth,height=0.48\textheight,keepaspectratio]{figures/programming_vibration.png}
+\end{center}
+\begin{center}
+\resizebox{0.7\textwidth}{!}{%
+\begin{tabular}{|l|r|r|}
+\hline
+\textbf{mean of 1 million values} (\texttt{speed.py}) & \textbf{time} & \textbf{per value} \\
+\hline
+Python loop & 20.4\,ms & 20\,ns \\
+built-in \texttt{sum()} & 3.5\,ms & 3.5\,ns \\
+NumPy (loop in C) & 0.9\,ms & 0.9\,ns \\
+C, \texttt{gcc -O2} (for comparison) & 0.14\,ms & 0.14\,ns \\
+\hline
+\end{tabular}}
+\end{center}
+\bi
+	\ite Python: fast to write, slow to run -- the heavy work belongs in libraries written in C (NumPy, PyTorch)
+\ei
+\os{\newpage}
+\end{description}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{From Source Code to Firmware}
@@ -11,9 +459,9 @@
 processor: it is cross-compiled. The toolchain translates the source code
 into machine code for the target, the linker places code and data at the
 addresses of the target's memory, and a programming tool writes the result
-into the flash. This chapter starts with these steps. Then it looks at the
-languages used in this lecture, from assembly through C and Rust to
-MicroPython, and ends with systematic debugging. Several examples run on the
+into the flash. This section explains these steps. The following sections
+look at the languages used in this lecture, from assembly through C and Rust
+to MicroPython, and the chapter ends with systematic debugging. Several examples run on the
 Raspberry Pi Pico in Wokwi again.
 \newpage}
 
@@ -677,6 +1125,14 @@ pc$    $GDB ./sensor_avg
 	\ite functions: halt, single step, read and write registers and memory, hardware breakpoints and watchpoints, programming the flash
 	\ite probes: Raspberry Pi Debug Probe and other CMSIS-DAP probes, SEGGER J-Link, ST-LINK; the ESP32-C3 has a USB-JTAG unit built in
 	\ite software: OpenOCD or \texttt{probe-rs} as GDB server
+\ei
+\os{\newpage}
+
+\item[{\rot\bf Exercises: the language experiments}]~\\[-\lblskip]
+\bi
+	\ite Experiment 1: replace the inline assembly by the intrinsic \texttt{\_mm\_crc32\_u64()} (\texttt{\#include <nmmintrin.h>}, option \texttt{-msse4.2}). Is it as fast? Look at the machine code with \texttt{make asm}.
+	\ite Experiment 2: write a C program that writes one element past the end of an array and a Rust program that does the same. What happens in each case -- at compile time and at run time?
+	\ite Experiment 3: add a 300\,Hz component to \texttt{make\_data.py} with an amplitude of 0.02\,g. Does the analysis still find it? What limits the highest frequency that can be found?
 \ei
 \os{\newpage}
 

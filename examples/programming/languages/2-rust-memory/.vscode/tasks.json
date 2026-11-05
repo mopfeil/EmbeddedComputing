@@ -1,0 +1,9 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    { "label": "2a: C - run (wrong value, no warning)", "type": "shell", "command": "make -C c run", "problemMatcher": ["$gcc"] },
+    { "label": "2b: C - run with AddressSanitizer", "type": "shell", "command": "make -C c asan", "problemMatcher": ["$gcc"] },
+    { "label": "2c: Rust - compile the same program (rejected)", "type": "shell", "command": "cargo run --example dangling", "problemMatcher": ["$rustc"] },
+    { "label": "2d: Rust - corrected version", "type": "shell", "command": "cargo run", "group": { "kind": "build", "isDefault": true }, "problemMatcher": ["$rustc"] }
+  ]
+}

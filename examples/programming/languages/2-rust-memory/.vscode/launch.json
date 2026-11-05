@@ -1,0 +1,14 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "2: debug c/dangling (GDB)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/c/dangling",
+      "cwd": "${workspaceFolder}/c",
+      "MIMode": "gdb",
+      "preLaunchTask": "2a: C - run (wrong value, no warning)"
+    }
+  ]
+}

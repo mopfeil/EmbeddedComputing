@@ -1,0 +1,8 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    { "label": "1: build", "type": "shell", "command": "make", "group": { "kind": "build", "isDefault": true }, "problemMatcher": ["$gcc"] },
+    { "label": "1: run (measure the three CRC versions)", "type": "shell", "command": "make run", "problemMatcher": ["$gcc"] },
+    { "label": "1: show machine code of the loops", "type": "shell", "command": "make asm", "problemMatcher": [] }
+  ]
+}

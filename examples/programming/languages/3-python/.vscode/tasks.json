@@ -1,0 +1,9 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    { "label": "3: set up .venv (once)", "type": "shell", "command": "python3 -m venv .venv && .venv/bin/pip install -r requirements.txt", "windows": { "command": "py -3 -m venv .venv; .venv\\Scripts\\pip install -r requirements.txt" }, "problemMatcher": [] },
+    { "label": "3a: create vibration.csv", "type": "shell", "command": "${command:python.interpreterPath} make_data.py", "problemMatcher": [] },
+    { "label": "3b: analyse vibration", "type": "shell", "command": "${command:python.interpreterPath} analyse.py", "dependsOn": "3a: create vibration.csv", "problemMatcher": [] },
+    { "label": "3c: speed: loop vs. sum() vs. NumPy", "type": "shell", "command": "${command:python.interpreterPath} speed.py", "problemMatcher": [] }
+  ]
+}
