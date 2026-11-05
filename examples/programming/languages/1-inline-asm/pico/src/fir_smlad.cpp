@@ -77,8 +77,9 @@ void setup()
     Serial1.printf("FIR filter, %d taps, %d samples, %lu MHz\n", TAPS, N,
                    (unsigned long)(rp2040.f_cpu() / 1000000));
     Serial1.printf("C      %6lu us per block\n", (unsigned long)t_c);
-    Serial1.printf("smlad  %6lu us per block   %.1fx faster\n",
-                   (unsigned long)t_asm, (double)t_c / t_asm);
+    unsigned long f10 = (20ul * t_c / t_asm + 1) / 2;   // speed-up in tenths, rounded (no float printf)
+    Serial1.printf("smlad  %6lu us per block   %lu.%lux faster\n",
+                   (unsigned long)t_asm, f10 / 10, f10 % 10);
     Serial1.printf("results %s\n", memcmp(y_c, y_asm, sizeof y_c) == 0 ? "identical" : "DIFFERENT");
 }
 

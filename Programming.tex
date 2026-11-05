@@ -2,7 +2,8 @@
 % Chapter: Programming
 % Examples: examples/programming (assembly on the Pico in C and Rust, a
 % host-tested Rust library, MicroPython, Python, C register access,
-% languages/: VS Code workspace with three language experiments on the PC)
+% languages/: three language experiments on the PC, and on the Pico
+% in Wokwi via languages.code-workspace)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -294,20 +295,21 @@ MicroPython & interpreter, compiler, garbage collector & $\approx$\,256\,KB flas
 \os{\newpage}
 
 \nsl{The three experiments are in the folder
-\texttt{examples/programming/languages}. Open the file
-\texttt{languages.code-workspace} in VS Code: it contains one folder per
-experiment, each with tasks (Terminal $\rightarrow$ Run Task) and debug
-configurations. They run on the PC (Linux, macOS or Windows with WSL); the
-assembly example supports x86-64 and 64 bit ARM CPUs, such as Apple Silicon
-Macs. Each experiment also exists for the Raspberry Pi Pico in Wokwi, in the
-folders marked ``p'': built with a task, then started with the Wokwi
-extension. The first experiment shows why assembly is still needed, the second
+\texttt{examples/programming/languages}. Each folder is opened in VS Code
+(File $\rightarrow$ Open Folder) and has tasks (Terminal $\rightarrow$ Run
+Task) and debug configurations. They run on the PC (Linux, macOS or Windows
+with WSL); the assembly example supports x86-64 and 64 bit ARM CPUs, such as
+Apple Silicon Macs. Each experiment also exists for the Raspberry Pi Pico in
+its \texttt{pico} subfolder. The workspace file
+\texttt{languages.code-workspace} opens all Pico versions together: the C
+examples are PlatformIO projects, Rust is built with cargo, MicroPython with a
+script. After the build, the Wokwi extension starts the simulation. The first experiment shows why assembly is still needed, the second
 why Rust is gaining ground, and the third why Python is the standard
 language for tools.}
 
 \item[{\rot\bf Three experiments in VS Code}]~\\[-\lblskip]
 \bi
-	\ite open \texttt{examples/programming/languages/languages.code-workspace}; the recommended extensions are suggested automatically (C/C++, rust-analyzer, Python, Wokwi)
+	\ite PC: open a folder of \texttt{examples/programming/languages} in VS Code; Pico: open \texttt{languages.code-workspace} (Wokwi, PlatformIO)
 	\ite Terminal $\rightarrow$ Run Task:
 \ei
 \begin{center}
@@ -317,7 +319,7 @@ language for tools.}
 \textbf{folder} & \textbf{shows} & \textbf{tasks} \\
 \hline
 \texttt{1-inline-asm} & one line of assembly: 90$\times$ faster & build, run, show machine code \\
-\quad \texttt{pico} & Pico 2: FIR filter with \texttt{smlad}, 1.9$\times$ faster & build, Wokwi \\
+\quad \texttt{pico} & Pico 2: FIR filter with \texttt{smlad}, 1.9$\times$ faster & build (PlatformIO), Wokwi \\
 \texttt{2-rust-memory} & a dangling pointer: C runs it, Rust rejects it & C, C with sanitizer, Rust (error), Rust (fixed) \\
 \quad \texttt{pico/c}, \texttt{pico/rust} & Pico: a false alarm in C, rejected in Rust & build, Wokwi \\
 \texttt{3-python} & vibration analysis with FFT in 10 lines & set up \texttt{.venv}, create data, analyse, speed \\

@@ -1,10 +1,10 @@
 # Three language experiments (chapter Programming, section "Programming Languages: Then and Now")
 
-Open `languages.code-workspace` in VS Code. Each folder has its own tasks
-(Terminal > Run Task) and debug configurations. The folders 1-3 run on the PC:
+The folders 1-3 run on the PC; open each with File > Open Folder in VS Code. Each has its own tasks
+(Terminal > Run Task) and debug configurations. They run on
 Linux, macOS, or Windows with WSL. You need `gcc`, `make`, Rust (`rustup`) and Python 3.
-The folders 1p-3p are the same experiments on the Raspberry Pi Pico in the
-Wokwi simulator for VS Code (extension "Wokwi Simulator", free licence via
+The `pico` folders (1p-3p) are the same experiments on the Raspberry Pi Pico in the
+Wokwi simulator for VS Code; `languages.code-workspace` opens all of them at once (extension "Wokwi Simulator", free licence via
 F1 > "Wokwi: Request a New License"). The C examples are PlatformIO projects
 (extension "PlatformIO IDE"). Build, then F1 > "Wokwi: Start Simulator" while a
 file of that folder is open. The output appears in the serial monitor of the simulator.
@@ -40,7 +40,7 @@ Setup (once):
   `platformio.ini` uses the community platform `https://github.com/maxgerhardt/platform-raspberrypi.git`,
   because the official `raspberrypi` platform has neither the arduino-pico core nor the Pico 2.
 * Rust: `rustup target add thumbv6m-none-eabi`.
-* MicroPython: the `.venv` of `3-python` (task "3: set up .venv"); `make_uf2.py` needs `littlefs-python`.
+* MicroPython: the task "3p: set up .venv (once)" creates `3-python/.venv`; `make_uf2.py` needs `littlefs-python`.
 
 Without VS Code, all of them also run on https://wokwi.com: paste the `.cpp` from `src/` into the
 `.ino` of a new Pico (or Pico 2) Arduino project, or `main.py` into a new MicroPython Pico project.
@@ -55,4 +55,4 @@ Without VS Code, all of them also run on https://wokwi.com: paste the `.cpp` fro
 * Pico / Wokwi, C: the first reading is printed as 19279 (0x4B4F = "OK"), so the alarm is wrongly raised. Rust: `--example dangling` fails with E0502. The corrected firmware prints 215 and no alarm.
 * Pico / Wokwi, MicroPython 1.29: all variants find 24, 50 and 138 Hz. `spectrum()` (comprehension with `exp`) takes 14.4 s and `dft_loop` 1.9 s. Mean of 10000 values: Python loop 39.6 ms, `sum()` 24.4 ms, `@native` 25.8 ms, `@viper` 3.8 ms; C (`c_reference`, -Os, built for 125 MHz like MicroPython) takes 0.65 ms. Wokwi reports the same 0.65 ms for a 200 MHz build, so the simulated RP2040 apparently does not speed up with the clock setting.
 * Checked only with wokwi-cli, not inside the VS Code extension: the `rfc2217ServerPort`/mpremote route and the Wokwi web projects.
-* PlatformIO projects (2026-11-05): `diagram.json`/`wokwi.toml` checked in wokwi-cli with the same sources built by arduino-cli and copied to `.pio/build/<env>/` (same results as above). The `pio run` build itself has not been run here yet.
+* PlatformIO projects (2026-11-05): `diagram.json`/`wokwi.toml` checked in wokwi-cli with the same sources built by arduino-cli and copied to `.pio/build/<env>/` (same results as above). Then built with `pio run` (platform maxgerhardt/platform-raspberrypi, first build about 3 min) and run again in wokwi-cli: same output. The newlib of this build has no float `printf`, so the speed-up is printed with integers.
