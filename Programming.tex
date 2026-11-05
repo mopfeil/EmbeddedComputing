@@ -381,7 +381,7 @@ uses it in its filter functions.}
 
 \item[{\rot\bf Experiment 1 on the Pico 2: a DSP instruction}]~\\[-\lstskip]
 \begin{lstlisting}[language=C]
-static int32_t dot_asm(const int16_t *a, const int16_t *b, int n)   // fir_smlad.ino
+static int32_t dot_asm(const int16_t *a, const int16_t *b, int n)   // fir_smlad.cpp
 {
     int32_t s = 0;
     for (int i = 0; i < n; i += 2) {

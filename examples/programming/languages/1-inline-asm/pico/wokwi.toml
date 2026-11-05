@@ -1,6 +1,6 @@
-# Wokwi for VS Code: build first (Terminal > Run Task > "1p: build for Pico 2"),
-# then F1 -> "Wokwi: Start Simulator". Output in the serial monitor.
+# Wokwi for VS Code: build with PlatformIO, then F1 -> "Wokwi: Start Simulator".
+# Output in the serial monitor (Serial1 on GP0/GP1, 115200 baud).
 [wokwi]
 version = 1
-firmware = "build/fir_smlad.ino.uf2"
-elf = "build/fir_smlad.ino.elf"
+firmware = ".pio/build/pico2/firmware.uf2"
+elf = ".pio/build/pico2/firmware.elf"

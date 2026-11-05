@@ -11,7 +11,7 @@
  * system that stops the program: it silently continues with a wrong value.
  * Here that value decides whether an alarm is raised.
  *
- * Board: Raspberry Pi Pico (arduino-pico core), Wokwi. Output on Serial1.
+ * Board: Raspberry Pi Pico (arduino-pico core via PlatformIO), Wokwi. Output on Serial1.
  */
 #include <Arduino.h>
 #include <stdlib.h>

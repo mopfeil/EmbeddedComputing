@@ -1,7 +1,8 @@
 {
+  // PlatformIO (VS Code extension "PlatformIO IDE", it puts `pio` on the PATH).
   // After the build: F1 -> "Wokwi: Start Simulator", output in the serial monitor.
   "version": "2.0.0",
   "tasks": [
-    { "label": "2p: C - build for Pico", "type": "shell", "command": "arduino-cli compile -b rp2040:rp2040:rpipico --output-dir build dangling", "group": { "kind": "build", "isDefault": true }, "problemMatcher": ["$gcc"] }
+    { "label": "2p: C - build for Pico", "type": "shell", "command": "pio run", "group": { "kind": "build", "isDefault": true }, "problemMatcher": ["$gcc"] }
   ]
 }

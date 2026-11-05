@@ -12,7 +12,7 @@
  * this one instruction as inline assembly. (CMSIS offers the same as the
  * intrinsic __SMLAD(); CMSIS-DSP's arm_fir_q15() uses it internally.)
  *
- * Board: Raspberry Pi Pico 2 (arduino-pico core), simulated in Wokwi.
+ * Board: Raspberry Pi Pico 2 (arduino-pico core via PlatformIO), simulated in Wokwi.
  * Output on Serial1 (GP0/GP1, 115200 baud).
  */
 #include <Arduino.h>

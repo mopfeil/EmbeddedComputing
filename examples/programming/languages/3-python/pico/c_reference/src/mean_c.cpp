@@ -1,7 +1,7 @@
 /*
  * C reference for the speed test in ../main.py: the mean of 10000 ADC
  * values (12 bit) on the Raspberry Pi Pico. Output on Serial1 (GP0/GP1).
- * Build for 125 MHz like MicroPython: -b rp2040:rp2040:rpipico:freq=125
+ * Built for 125 MHz like MicroPython (board_build.f_cpu in platformio.ini).
  */
 #include <Arduino.h>
 

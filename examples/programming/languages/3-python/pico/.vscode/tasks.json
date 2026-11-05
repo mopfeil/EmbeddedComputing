@@ -6,7 +6,6 @@
   "version": "2.0.0",
   "tasks": [
     { "label": "3p: build main.uf2 (MicroPython + main.py)", "type": "shell", "command": "../.venv/bin/python make_uf2.py", "windows": { "command": "..\\.venv\\Scripts\\python make_uf2.py" }, "group": { "kind": "build", "isDefault": true }, "problemMatcher": [] },
-    { "label": "3p: run main.py in the running simulation (mpremote)", "type": "shell", "command": "../.venv/bin/mpremote connect port:rfc2217://localhost:4000 run main.py", "problemMatcher": [] },
-    { "label": "3p: C reference - build", "type": "shell", "command": "arduino-cli compile -b rp2040:rp2040:rpipico:freq=125 --output-dir c_reference/build c_reference/mean_c", "problemMatcher": ["$gcc"] }
+    { "label": "3p: run main.py in the running simulation (mpremote)", "type": "shell", "command": "../.venv/bin/mpremote connect port:rfc2217://localhost:4000 run main.py", "problemMatcher": [] }
   ]
 }

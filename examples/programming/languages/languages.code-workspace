@@ -1,6 +1,8 @@
 {
   // Open with: code languages.code-workspace  (or File > Open Workspace from File)
   // Each folder has its own tasks: Terminal > Run Task...
+  // Pico folders (1p-3p): build (PlatformIO, cargo or make_uf2.py), then
+  // F1 -> "Wokwi: Start Simulator" while a file of that folder is open.
   "folders": [
     { "name": "1 · inline assembly (C)", "path": "1-inline-asm" },
     { "name": "2 · memory safety (C vs. Rust)", "path": "2-rust-memory" },
@@ -8,16 +10,18 @@
     { "name": "1p · inline assembly on the Pico 2 (Wokwi)", "path": "1-inline-asm/pico" },
     { "name": "2p · C on the Pico (Wokwi)", "path": "2-rust-memory/pico/c" },
     { "name": "2p · Rust on the Pico (Wokwi)", "path": "2-rust-memory/pico/rust" },
-    { "name": "3p · MicroPython on the Pico (Wokwi)", "path": "3-python/pico" }
+    { "name": "3p · MicroPython on the Pico (Wokwi)", "path": "3-python/pico" },
+    { "name": "3p · C reference on the Pico (Wokwi)", "path": "3-python/pico/c_reference" }
   ],
   "settings": {
-    "files.exclude": { "**/target": true, "**/.venv": true, "**/__pycache__": true, "**/pico": true },
+    "files.exclude": { "**/target": true, "**/.venv": true, "**/__pycache__": true, "**/pico": true, "**/c_reference": true, "**/.pio": true },
     "rust-analyzer.cargo.allTargets": true,
     "python.defaultInterpreterPath": "${workspaceFolder:3 · what Python makes easy}/.venv/bin/python"
   },
   "extensions": {
     "recommendations": [
       "ms-vscode.cpptools",
+      "platformio.platformio-ide",
       "ms-vscode.makefile-tools",
       "rust-lang.rust-analyzer",
       "ms-python.python",

@@ -12,4 +12,4 @@ panic-halt = "1.0.0"
 rp-pico = "0.9.0"
 
 [profile.release]
-debug = 2            # keep symbols for the debugger
+debug = false        # small ELF: Wokwi loads it quickly (symbols stay for GDB)

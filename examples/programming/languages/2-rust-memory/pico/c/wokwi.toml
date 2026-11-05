@@ -1,5 +1,6 @@
-# Wokwi for VS Code: build first (Run Task "2p: C - build for Pico"), then F1 -> "Wokwi: Start Simulator"
+# Wokwi for VS Code: build with PlatformIO, then F1 -> "Wokwi: Start Simulator".
+# Output in the serial monitor (Serial1 on GP0/GP1, 115200 baud).
 [wokwi]
 version = 1
-firmware = "build/dangling.ino.uf2"
-elf = "build/dangling.ino.elf"
+firmware = ".pio/build/pico/firmware.uf2"
+elf = ".pio/build/pico/firmware.elf"

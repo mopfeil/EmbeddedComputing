@@ -1,0 +1,8 @@
+{
+  // PlatformIO (VS Code extension "PlatformIO IDE", it puts `pio` on the PATH).
+  // After the build: F1 -> "Wokwi: Start Simulator", output in the serial monitor.
+  "version": "2.0.0",
+  "tasks": [
+    { "label": "3p: C reference - build for Pico (125 MHz)", "type": "shell", "command": "pio run", "group": { "kind": "build", "isDefault": true }, "problemMatcher": ["$gcc"] }
+  ]
+}
