@@ -1,0 +1,186 @@
+%************************************************************************
+% Lab task 2: programming the ET1 robot (C, MicroPython or Rust) in the
+% Wokwi simulator for VS Code. Workspace: Lab/2-programming/
+%
+%   make lab2      builds Lab_2_Programming.pdf (students) and, if
+%                  Lab/2-programming/solutions/ exists,
+%                  Lab_2_Programming_Solutions.pdf (lecturer)
+%************************************************************************
+\documentclass[a4paper,11pt]{article}
+\input{preamble}
+\usepackage[colorlinks=true,pdfpagemode=UseNone]{hyperref}
+\hypersetup{linkcolor=rwuviolet,citecolor=rwucyandark,urlcolor=rwucyandark}
+\usepackage[a4paper,top=22mm,bottom=25mm,left=22mm,right=22mm]{geometry}
+\usepackage{titlesec}
+\titleformat*{\section}{\sffamily\Large\bfseries\color{rwuviolet}}
+\titleformat*{\subsection}{\sffamily\large\bfseries\color{rwucyandark}}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\color{rwugray}\small Embedded Computing -- Lab task 2: programming the ET1 robot\ifdefined\solutions\ (solutions)\fi}
+\fancyhead[R]{\color{rwugray}\small RWU}
+\fancyfoot[C]{\color{rwugray}\small\thepage}
+\renewcommand{\headrulewidth}{0pt}
+\usepackage{booktabs,enumitem,needspace,tabularx,siunitx}
+\usepackage[most]{tcolorbox}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.5ex}
+\setlist{itemsep=0.3ex,topsep=0.5ex}
+
+\newcounter{task}
+\newcommand{\task}[1]{\par\needspace{9\baselineskip}\medskip\refstepcounter{task}%
+  {\sffamily\bfseries\color{rwuviolet}Task \thetask}\ {\sffamily\small\color{rwucyandark}#1}\par\nopagebreak}
+\newtcolorbox{infobox}[1]{colback=rwucyan40!25,colframe=rwucyan,fonttitle=\sffamily\bfseries,title=#1,boxrule=0.6pt,arc=1mm}
+\newtcolorbox{checkbox}{colback=rwuviolet!6,colframe=rwuviolet,fonttitle=\sffamily\bfseries,title=Done when,boxrule=0.6pt,arc=1mm}
+\newcommand{\code}[1]{\texttt{#1}}
+
+\begin{document}
+
+\begin{center}
+  \rwulogo\\[6mm]
+  {\sffamily\bfseries\LARGE\color{rwuviolet} Lab Task 2: Programming the ET1 Robot}\\[2mm]
+  {\sffamily\Large\color{rwucyandark} Motor driver, debouncing, driving sequences and an emergency stop -- in C, MicroPython or Rust}\\[3mm]
+  {\sffamily Embedded Computing -- Master of Engineering -- Lab\ifdefined\solutions\ with solutions\fi}
+\end{center}
+
+\section*{Overview}
+
+You program the ET1 robot of the lab: a START button, a red LED and two DC motors behind an H-bridge.
+The robot is a model in the Wokwi simulator, so you need no hardware. A Raspberry Pi Pico controls it.
+Choose one language: \textbf{C}, \textbf{MicroPython} or \textbf{Rust}. Each language folder holds the same
+frame: wiring, set-up and empty functions with numbered \code{TODO} comments. You only write code, there are no
+questions to answer.
+
+\textbf{Organisation.} About 4 hours, in teams of two. Hand in your source file and, for every task, a screenshot
+of the robot display with the track and of the serial monitor.
+
+\textbf{Material.} The folder
+\href{https://github.com/mopfeil/EmbeddedComputing/tree/main/Lab/2-programming}{\code{Lab/2-programming/}}
+of the lecture repository. Its \code{README.md} repeats the set-up steps.
+
+%======================================================================
+\section{Set-up}
+%======================================================================
+\begin{enumerate}
+  \item Install VS Code and the extension \emph{Wokwi Simulator}. Get the free licence with F1 $\rightarrow$
+        \emph{Wokwi: Request a New License}.
+  \item Open \code{Lab/2-programming/et1.code-workspace} (\emph{File $\rightarrow$ Open Workspace from File}).
+        VS Code then offers the other extensions it recommends.
+  \item Install the tools for your language:\\[1mm]
+        {\small\renewcommand{\arraystretch}{1.2}%
+        \begin{tabularx}{\linewidth}{@{}lXl@{}}
+          \toprule
+          \sffamily Language & \sffamily Needs & \sffamily Build \\
+          \midrule
+          C & extension \emph{PlatformIO IDE}; the first build downloads the Pico core (a few minutes) & \code{pio run} \\
+          MicroPython & Python 3; run the task \emph{Python: set up .venv (once)} & \code{python make\_uf2.py} \\
+          Rust & \code{rustup target add thumbv6m-none-eabi}, extension \emph{rust-analyzer} & \code{cargo build -{}-release} \\
+          \bottomrule
+        \end{tabularx}}
+  \item Build with \emph{Terminal $\rightarrow$ Run Build Task}. Open a file of the same folder and start the
+        simulation with F1 $\rightarrow$ \emph{Wokwi: Start Simulator}. Your output and the robot's messages
+        (``ET1 stopped at \dots'') appear in the serial monitor.
+\end{enumerate}
+After every change: build again, then restart the simulator. (MicroPython has a faster way: while the
+simulation runs, the task \emph{Python: run main.py in the running simulation} sends \code{main.py} to it.)
+
+\begin{infobox}{The simulated hardware}
+\begin{minipage}[t]{0.6\linewidth}\vspace{0pt}
+{\small\renewcommand{\arraystretch}{1.15}%
+\begin{tabular}{@{}lll@{}}
+  \toprule
+  \sffamily Pico pin & \sffamily Connected to & \\
+  \midrule
+  GP7 & red LED & high = on \\
+  GP5 & START button to GND & pull-up: low = pressed \\
+  GP18 / 17 / 16 & ENA / IN1 / IN2 & left motor \\
+  GP19 / 20 / 21 & ENB / IN3 / IN4 & right motor \\
+  GP0 / GP1 & serial monitor & C, Rust (Python: USB) \\
+  \bottomrule
+\end{tabular}}
+
+\medskip
+\textbf{H-bridge:} \code{IN1 IN2} = \code{1 0} forward, \code{0 1} backward, \code{0 0} brake. The speed is
+the PWM duty cycle on ENA (right motor: IN3, IN4, ENB). Up to \SI{12}{\percent} duty cycle a motor does
+not turn. Top speed \SI{0.25}{m/s}, wheel distance \SI{14}{cm}.
+
+\medskip
+\textbf{Display of the ET1 chip:} a \SI{2}{m} $\times$ \SI{2}{m} floor (grid \SI{0.5}{m}), the robot
+(the white line points forward) and its track. Start: centre, facing up. \code{X}, \code{Y}: position in m;
+\code{H}: heading in degrees (+ = turned left); \code{D}: distance from the start; \code{L}, \code{R}: wheel
+speeds in \%. Click the chip to set ``Left motor weaker by (\%)''.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.33\linewidth}\vspace{0pt}\centering
+\includegraphics[width=\linewidth]{figures/lab2/et1_display}\\[1mm]
+{\small The ET1 display at the start}
+\end{minipage}
+\end{infobox}
+
+%======================================================================
+\section{Tasks}
+%======================================================================
+Work through the \code{TODO}s in the order of their numbers. At the top of the file, set \code{TASK} to the
+task you are working on; the main loop then runs that task again and again.
+
+\task{Motor driver -- \code{motor(side, speed)}}
+Write the driver for one motor: \code{speed} goes from $-100$ (full speed backward) via 0 (brake) to $+100$
+(full speed forward).
+\begin{enumerate}[label=\alph*)]
+  \item Limit \code{speed} to $-100 \dots 100$.
+  \item Select the PWM output and the two direction pins of the requested side.
+  \item Set the direction pins from the sign of \code{speed}.
+  \item Write $|\code{speed}|$ as duty cycle to the PWM output.
+\end{enumerate}
+You test the driver in tasks 3 and 4: \code{L} and \code{R} on the display show what the wheels do.
+
+\task{Button and LED -- \code{button\_clicked()}, \code{task2()}}
+\begin{enumerate}[label=\alph*)]
+  \item \code{button\_clicked()} returns \emph{true} exactly once per press, at the change from released to
+        pressed. Keep the previous state between calls.
+  \item The contacts bounce: ignore every change that comes less than \SI{30}{ms} after the last accepted one.
+  \item \code{task2()}: every click toggles the LED and prints ``LED on'' or ``LED off''.
+\end{enumerate}
+\begin{checkbox}
+Each click toggles the LED once. Holding the button down does not toggle it again.
+\end{checkbox}
+
+\task{Turning -- \code{task3()}}
+After a click: LED on. Only the left wheel drives forward at \SI{50}{\percent} for \SI{10}{s}; the right wheel
+brakes. Then only the right wheel drives for \SI{10}{s}. Then stop, LED off, and print how long the sequence took.
+\begin{checkbox}
+The track shows two circles, one around each wheel, and the printed time is \SI{20}{s}.
+\end{checkbox}
+
+\task{Accelerate and brake -- \code{ramp(dir)}, \code{task4()}}
+\begin{enumerate}[label=\alph*)]
+  \item \code{ramp(dir)}: speed 10, 20, \dots, \SI{80}{\percent}, each step for \SI{0.5}{s}, then back down
+        70, 60, \dots, \SI{0}{\percent}, each for \SI{0.5}{s}. \code{dir} $= +1$ drives forward, $-1$ backward.
+  \item \code{task4()}: after a click, LED on, \code{ramp(+1)}, a pause of \SI{1}{s}, \code{ramp(-1)}, LED off.
+  \item Real motors are never equal. Set ``Left motor weaker by'' on the ET1 chip to \SI{10}{\percent}: ET1 now
+        drives a curve. In \code{motor()}, add a trim factor for the left side (a constant at the top of the
+        file) and find its value by trying.
+\end{enumerate}
+\begin{checkbox}
+Without the weaker motor, ET1 ends where it started: \code{D} shows 0.00. With ``Left motor weaker by''
+at \SI{10}{\percent} and your trim factor, \code{H} stays within $\pm\SI{5}{\degree}$ at the far end of
+\code{ramp(+1)}.
+\end{checkbox}
+
+\task{Emergency stop -- \code{wait\_ms(ms)}}
+\begin{enumerate}[label=\alph*)]
+  \item Replace the plain delay in \code{wait\_ms()} by a loop that runs for \code{ms} milliseconds and calls
+        \code{button\_clicked()} every millisecond. On a click it stops the motors, prints ``EMERGENCY STOP'' and
+        returns \emph{false} at once; otherwise it returns \emph{true}.
+  \item Use \code{wait\_ms()} for every wait in tasks 3 and 4. When it returns \emph{false}, end the whole
+        sequence at once (motors off, LED off).
+\end{enumerate}
+\begin{checkbox}
+A second click while ET1 drives (task 3 or 4) stops the robot immediately and prints ``EMERGENCY STOP''. The next
+click starts the sequence again from the beginning.
+\end{checkbox}
+
+\ifdefined\solutions
+  \IfFileExists{Lab/2-programming/solutions/solutions.tex}{\input{Lab/2-programming/solutions/solutions.tex}}{}
+\fi
+
+\end{document}

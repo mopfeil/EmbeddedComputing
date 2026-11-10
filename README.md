@@ -19,7 +19,8 @@ with kind permission of Prof. Dr.-Ing. Franz Brümmer).
 - [Slides (A5 landscape)](pdf/EmbeddedComputing_Slides.pdf), also as [PPTX](pdf/EmbeddedComputing_Slides.pptx) for presenting (one image per slide)
 - [Worksheet: GPIO output stages in Falstad CircuitJS](pdf/EmbeddedComputing_Worksheet_IO_Ports.pdf)
   (circuits in [`examples/interfaces/falstad/`](examples/interfaces/falstad/))
-- [Lab task 2: programming the ET1 robot in C, MicroPython or Rust](Lab/2-programming/) (Wokwi for VS Code)
+- [Lab task 2: programming the ET1 robot in C, MicroPython or Rust](pdf/EmbeddedComputing_Lab_2_Programming.pdf)
+  (Wokwi workspace in [`Lab/2-programming/`](Lab/2-programming/))
 
 ## Build
 
@@ -28,6 +29,7 @@ make            builds docu.pdf (script) and slides.pdf (slides)
 make script     only the script
 make slides     only the slides
 make worksheet  builds the worksheet (student version and solutions)
+make lab2       builds the lab task 2 sheet (solutions only on branch lab2-solutions)
 make publish    builds everything and copies script, slides and the
                 student worksheet into pdf/
 make clean      removes LaTeX build artifacts
