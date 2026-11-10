@@ -1,0 +1,12 @@
+# Wokwi for VS Code: build main.uf2 (Run Build Task "Python: build main.uf2"),
+# then F1 -> "Wokwi: Start Simulator". MicroPython's REPL is in the serial
+# monitor (USB) and on rfc2217 port 4000 (mpremote task).
+[wokwi]
+version = 1
+firmware = "build/main.uf2"
+elf = "build/main.uf2"
+rfc2217ServerPort = 4000
+
+[[chip]]
+name = "et1"
+binary = "../chip/et1.chip.wasm"

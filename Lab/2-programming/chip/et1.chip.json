@@ -1,0 +1,9 @@
+{
+  "name": "ET1 robot",
+  "author": "Embedded Computing lecture",
+  "pins": ["ENA", "IN1", "IN2", "ENB", "IN3", "IN4", "GND", "VCC"],
+  "controls": [
+    { "id": "weak", "label": "Left motor weaker by (%)", "type": "range", "min": 0, "max": 20, "step": 1 }
+  ],
+  "display": { "width": 128, "height": 164 }
+}

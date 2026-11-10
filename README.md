@@ -9,6 +9,7 @@ with kind permission of Prof. Dr.-Ing. Franz Brümmer).
 | `*.tex`     | LaTeX sources of script and slides (WS 2026/27)          |
 | `examples/` | Runnable examples for each chapter, in C and Rust        |
 | `fonts/`    | Barlow Semi Condensed, the RWU font (SIL OFL)            |
+| `Lab/`      | Lab tasks in the Wokwi simulator (VS Code workspaces)    |
 | `Lab-2021/` | The earlier lab with the ET1 robot (see below)           |
 | `archive/`  | Older scripts (2020), instruction set notes, print orders |
 
@@ -18,6 +19,7 @@ with kind permission of Prof. Dr.-Ing. Franz Brümmer).
 - [Slides (A5 landscape)](pdf/EmbeddedComputing_Slides.pdf), also as [PPTX](pdf/EmbeddedComputing_Slides.pptx) for presenting (one image per slide)
 - [Worksheet: GPIO output stages in Falstad CircuitJS](pdf/EmbeddedComputing_Worksheet_IO_Ports.pdf)
   (circuits in [`examples/interfaces/falstad/`](examples/interfaces/falstad/))
+- [Lab task 2: programming the ET1 robot in C, MicroPython or Rust](Lab/2-programming/) (Wokwi for VS Code)
 
 ## Build
 

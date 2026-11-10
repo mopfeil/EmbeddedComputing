@@ -1,0 +1,10 @@
+# Wokwi for VS Code: cargo build --release (Run Build Task), then
+# F1 -> "Wokwi: Start Simulator". Output in the serial monitor (UART0 on GP0/GP1).
+[wokwi]
+version = 1
+firmware = "target/thumbv6m-none-eabi/release/et1"
+elf = "target/thumbv6m-none-eabi/release/et1"
+
+[[chip]]
+name = "et1"
+binary = "../chip/et1.chip.wasm"

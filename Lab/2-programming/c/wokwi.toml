@@ -1,0 +1,10 @@
+# Wokwi for VS Code: build with PlatformIO, then F1 -> "Wokwi: Start Simulator".
+# Output in the serial monitor (Serial1 on GP0/GP1, 115200 baud).
+[wokwi]
+version = 1
+firmware = ".pio/build/pico/firmware.uf2"
+elf = ".pio/build/pico/firmware.elf"
+
+[[chip]]
+name = "et1"
+binary = "../chip/et1.chip.wasm"

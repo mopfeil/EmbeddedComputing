@@ -1,0 +1,25 @@
+{
+  // Lab task 2: programming the ET1 robot in the Wokwi simulator.
+  // Open with: code et1.code-workspace  (or File > Open Workspace from File).
+  // Pick ONE language folder. Build it (Terminal > Run Build Task), then
+  // F1 -> "Wokwi: Start Simulator" while a file of that folder is open.
+  // The robot model (custom chip) is in chip/; all three folders use it.
+  "folders": [
+    { "name": "C (Arduino-Pico, PlatformIO)", "path": "c" },
+    { "name": "MicroPython", "path": "python" },
+    { "name": "Rust (rp-pico)", "path": "rust" },
+    { "name": "ET1 robot model (given)", "path": "chip" }
+  ],
+  "settings": {
+    "files.exclude": { "**/target": true, "**/.pio": true, "**/.venv": true, "**/build": true, "**/*.wasm": true },
+    "python.defaultInterpreterPath": "${workspaceFolder:MicroPython}/.venv/bin/python"
+  },
+  "extensions": {
+    "recommendations": [
+      "wokwi.wokwi-vscode",
+      "platformio.platformio-ide",
+      "rust-lang.rust-analyzer",
+      "ms-python.python"
+    ]
+  }
+}

@@ -1,0 +1,11 @@
+{
+  // "set up .venv" once, then build main.uf2 (MicroPython + main.py) after
+  // every change of main.py, then F1 -> "Wokwi: Start Simulator".
+  // Faster while the simulation runs: the mpremote task sends main.py to it.
+  "version": "2.0.0",
+  "tasks": [
+    { "label": "Python: set up .venv (once)", "type": "shell", "command": "python3 -m venv .venv && .venv/bin/pip install -r requirements.txt", "windows": { "command": "py -3 -m venv .venv; .venv\\Scripts\\pip install -r requirements.txt" }, "problemMatcher": [] },
+    { "label": "Python: build main.uf2", "type": "shell", "command": ".venv/bin/python make_uf2.py", "windows": { "command": ".venv\\Scripts\\python make_uf2.py" }, "group": { "kind": "build", "isDefault": true }, "problemMatcher": [] },
+    { "label": "Python: run main.py in the running simulation (mpremote)", "type": "shell", "command": ".venv/bin/mpremote connect port:rfc2217://localhost:4000 run main.py", "windows": { "command": ".venv\\Scripts\\mpremote connect port:rfc2217://localhost:4000 run main.py" }, "problemMatcher": [] }
+  ]
+}

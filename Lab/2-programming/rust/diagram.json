@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "author": "Embedded Computing lecture",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "wokwi-pi-pico", "id": "pico", "top": 0, "left": 0, "attrs": {} },
+    { "type": "chip-et1", "id": "et1", "top": -20, "left": 200, "attrs": {} },
+    { "type": "wokwi-pushbutton", "id": "btn", "top": 200, "left": -150, "attrs": { "color": "green", "label": "START" } },
+    { "type": "wokwi-led", "id": "led", "top": 60, "left": -130, "attrs": { "color": "red" } },
+    { "type": "wokwi-resistor", "id": "r1", "top": 140, "left": -110, "rotate": 90, "attrs": { "value": "330" } }
+  ],
+  "connections": [
+    [ "pico:GP0", "$serialMonitor:RX", "", [] ],
+    [ "pico:GP1", "$serialMonitor:TX", "", [] ],
+    [ "pico:GP18", "et1:ENA", "orange", [] ],
+    [ "pico:GP17", "et1:IN1", "blue", [] ],
+    [ "pico:GP16", "et1:IN2", "violet", [] ],
+    [ "pico:GP19", "et1:ENB", "orange", [] ],
+    [ "pico:GP20", "et1:IN3", "blue", [] ],
+    [ "pico:GP21", "et1:IN4", "violet", [] ],
+    [ "pico:GND.8", "et1:GND", "black", [] ],
+    [ "pico:VBUS", "et1:VCC", "red", [] ],
+    [ "pico:GP7", "r1:1", "green", [] ],
+    [ "r1:2", "led:A", "green", [] ],
+    [ "led:C", "pico:GND.2", "black", [] ],
+    [ "pico:GP5", "btn:1.r", "green", [] ],
+    [ "btn:2.r", "pico:GND.1", "black", [] ]
+  ],
+  "dependencies": {}
+}

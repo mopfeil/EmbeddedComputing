@@ -1,0 +1,8 @@
+{
+  // Needs: rustup target add thumbv6m-none-eabi
+  // After the build: F1 -> "Wokwi: Start Simulator".
+  "version": "2.0.0",
+  "tasks": [
+    { "label": "Rust: build for the Pico", "type": "shell", "command": "cargo build --release", "group": { "kind": "build", "isDefault": true }, "problemMatcher": ["$rustc"] }
+  ]
+}

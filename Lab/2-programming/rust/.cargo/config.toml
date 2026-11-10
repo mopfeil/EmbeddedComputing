@@ -1,0 +1,5 @@
+[build]
+target = "thumbv6m-none-eabi"      # Cortex-M0+ (RP2040)
+
+[target.thumbv6m-none-eabi]
+rustflags = ["-C", "link-arg=--nmagic", "-C", "link-arg=-Tlink.x"]
