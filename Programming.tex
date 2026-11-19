@@ -332,6 +332,51 @@ language for tools.}
 \ei
 \os{\newpage}
 
+\nsl{Only the C folders of the Pico versions are PlatformIO projects, and
+each of them has exactly one environment in \texttt{platformio.ini}. The
+environment selects the board and therefore the processor: \texttt{pico2}
+builds for the RP2350 with its Cortex-M33, \texttt{pico} for the RP2040 with
+its Cortex-M0+. It must match the board in \texttt{diagram.json} and the
+firmware path in \texttt{wokwi.toml}. The Rust folder is built with cargo and
+the MicroPython folder with a Python script; they need no PlatformIO at all.
+Every folder has a \texttt{README.md} with the complete expected output and a
+table of typical errors. The most common problem is an empty serial monitor:
+the firmware has not been built, or firmware and board do not match. A
+firmware for the RP2350 does not start on the RP2040 board, and the other
+way round, without any error message.}
+
+\item[{\rot\bf The Pico versions: who needs what}]~\\[-\lblskip]
+\begin{center}
+{\small%
+\begin{tabularx}{\linewidth}{|L|>{\raggedright}p{46mm}|>{\raggedright\arraybackslash}p{50mm}|}
+\hline
+\textbf{workspace folder} & \textbf{board (\texttt{diagram.json})} & \textbf{build with} \\
+\hline
+1p \texttt{1-inline-asm/pico} (C + asm) & Pico 2 (RP2350, M33) & PlatformIO, env \textbf{\texttt{pico2}} \\
+2p \texttt{2-rust-memory/pico/c} & Pico (RP2040, M0+) & PlatformIO, env \textbf{\texttt{pico}} \\
+2p \texttt{2-rust-memory/pico/rust} & Pico (RP2040) & \textbf{cargo}, no PlatformIO \\
+3p \texttt{3-python/pico} (MicroPython) & Pico (RP2040) & \textbf{\texttt{make\_uf2.py}}, no PlatformIO \\
+3p \texttt{3-python/pico/c\_reference} & Pico, 125\,MHz & PlatformIO, env \textbf{\texttt{pico}} \\
+\hline
+\end{tabularx}}
+\end{center}
+\begin{center}
+\resizebox{0.95\textwidth}{!}{%
+\begin{tikzpicture}[font=\sffamily\small,>=Stealth,
+	b/.style={draw,thick,rounded corners,minimum height=12mm,text width=30mm,align=center}]
+	\node[b,fill=gray!10] (o) at (0,0) {open the\\workspace};
+	\node[b,fill=rwucyan!10] (b) at (3.6,0) {build\\(task, check mark)};
+	\node[b,fill=rwucyan!10] (w) at (7.2,0) {F1 $\rightarrow$ Wokwi:\\Start Simulator};
+	\node[b,fill=green!10] (m) at (10.8,0) {serial monitor:\\compare with README};
+	\draw[->,thick] (o) -- (b); \draw[->,thick] (b) -- (w); \draw[->,thick] (w) -- (m);
+	\node[font=\sffamily\small,align=center,text=red!70!black] at (5.4,-1.3) {empty serial monitor? firmware not built, or firmware and board do not match};
+\end{tikzpicture}}
+\end{center}
+\bi
+	\ite the environment selects the processor: \texttt{smlad} only exists on the Cortex-M33; built with \texttt{board = rpipico}, the assembler stops: \texttt{selected processor does not support `smlad'}
+\ei
+\os{\newpage}
+
 \nsl{A bootloader checks the firmware image with a checksum before it starts
 it. The function \texttt{crc32c\_bitwise} is a typical C implementation:
 eight shift and XOR steps per byte. A table with 256 entries processes one
@@ -406,6 +451,90 @@ results identical
 \ei
 \os{\newpage}
 
+\nsl{An inline assembly statement in GCC has up to four parts separated by
+colons: the instruction text, the outputs, the inputs and the clobbers. In
+the text, \texttt{\%0}, \texttt{\%1}, \ldots{} stand for the operands in the
+order in which they are listed. The constraint before each operand tells the
+compiler where the value has to be: \texttt{r} means in a register. The
+compiler then chooses the registers itself. The modifiers matter: \texttt{=}
+means the value is only written, \texttt{+} means it is read and written.
+SMLAD reads the accumulator and adds to it, so \texttt{s} must be
+\texttt{"+r"}. With \texttt{"=r"} the program still compiles without a warning,
+but the compiler does not load \texttt{s} into the register first; in Wokwi
+the filter then prints \texttt{results DIFFERENT}. The clobber list names
+everything else the instruction changes, for example the flags (\texttt{"cc"})
+or memory (\texttt{"memory"}). \texttt{volatile} keeps the compiler from
+removing or moving a statement whose result seems unused, such as reading
+the stack pointer.}
+
+\item[{\rot\bf Reading an inline assembly line}]~\\[-\lstskip]
+\begin{lstlisting}[language=C]
+__asm__("smlad %0, %1, %2, %0" : "+r"(s) : "r"(va), "r"(vb));
+\end{lstlisting}
+\begin{center}
+\resizebox{0.8\textwidth}{!}{%
+\begin{tikzpicture}[font=\sffamily\small,>=Stealth,
+	h/.style={draw,thick,minimum width=22mm,minimum height=7mm,align=center}]
+	\node[left] at (-0.2,1.2) {\texttt{va} = \%1 (2 samples)};
+	\node[h,fill=rwucyan!10] (x1) at (1.1,1.2) {\texttt{x[i+1]}}; \node[h,fill=rwucyan!10] (x0) at (3.3,1.2) {\texttt{x[i]}};
+	\node[left] at (-0.2,0) {\texttt{vb} = \%2 (2 coefficients)};
+	\node[h,fill=rwuviolet!15] (h1) at (1.1,0) {\texttt{h[i+1]}}; \node[h,fill=rwuviolet!15] (h0) at (3.3,0) {\texttt{h[i]}};
+	\node[font=\scriptsize] at (1.1,1.75) {bits 31..16}; \node[font=\scriptsize] at (3.3,1.75) {bits 15..0};
+	\node[draw,thick,rounded corners,fill=green!10,align=center] (r) at (9.9,0.6) {\texttt{s} = \%0: \texttt{s + x[i]$\cdot$h[i] + x[i+1]$\cdot$h[i+1]}\\two multiply-accumulates in one instruction};
+	\draw[->,thick] (4.4,1.2) -- (r.west); \draw[->,thick] (4.4,0) -- (r.west);
+\end{tikzpicture}}
+\end{center}
+{\small%
+\begin{tabularx}{\linewidth}{|>{\raggedright}p{64mm}|L|}
+\hline
+\textbf{part} & \textbf{meaning} \\
+\hline
+\texttt{"smlad \%0, \%1, \%2, \%0"} & 1. the instruction; \texttt{\%n} = operand number $n$, counted over outputs and inputs \\
+\texttt{: "+r"(s)} & 2. outputs: \texttt{\%0} = \texttt{s}, in a register, \textbf{read and written} (accumulator) \\
+\texttt{: "r"(va), "r"(vb)} & 3. inputs: \texttt{\%1} = \texttt{va}, \texttt{\%2} = \texttt{vb}, in registers \\
+(\texttt{: "cc", "memory"}) & 4. clobbers: what else the instruction changes -- here nothing \\
+\hline
+\texttt{"=r"} \quad \texttt{"rm"} & output only (old value not read) \quad register or memory (\texttt{crc32q} on x86) \\
+\texttt{volatile} & never remove or move the statement (e.g.\ \texttt{mov \%0, sp}) \\
+\hline
+\end{tabularx}}
+\bi
+	\ite a wrong constraint is a silent bug: \texttt{"=r"(s)} compiles without a warning, Wokwi prints \texttt{results DIFFERENT}
+\ei
+\os{\newpage}
+
+\nsl{In Wokwi the experiment prints four lines and then stops, because
+\texttt{loop()} is empty. The program filters the same block once with the C
+function and once with the assembly function, measures both with
+\texttt{micros()} and compares the two result arrays byte by byte. The last
+line is the actual test: only if it says \texttt{identical} is the speed-up
+worth anything. The times are simulated time; they are the same on every
+PC.}
+
+\item[{\rot\bf Experiment 1 in Wokwi: what to look for}]~\\[-\lblskip]
+\bi
+	\ite the program: test signal (500\,Hz tone + noise), FIR filter with 32 equal coefficients (moving average), computed with \texttt{dot\_c()} and with \texttt{dot\_asm()}, time of each, then \texttt{memcmp} of both outputs
+	\ite build: PlatformIO env \texttt{pico2}; board \texttt{board-pi-pico-2}; output on \texttt{Serial1} (GP0/GP1)
+\ei
+\begin{center}
+{\small%
+\begin{tabularx}{\linewidth}{|L|L|}
+\hline
+\textbf{you see} & \textbf{meaning} \\
+\hline
+\texttt{smlad 1735 us per block 1.9x faster}, \texttt{results identical} & correct: same result, half the loop iterations \\
+\texttt{results DIFFERENT} & the assembly computes something else, e.g.\ \texttt{"=r"} instead of \texttt{"+r"}, odd number of taps \\
+about \texttt{1.0x faster} & the \texttt{smlad} line is not used (e.g.\ \texttt{dot\_asm} calls the C loop) \\
+build error \texttt{does not support `smlad'} & built for the RP2040 (\texttt{rpipico}): the Cortex-M0+ has no DSP instructions \\
+empty serial monitor & not built, or \texttt{diagram.json} has the RP2040 board (\texttt{wokwi-pi-pico}) \\
+\hline
+\end{tabularx}}
+\end{center}
+\bi
+	\ite look at the machine code: task ``1p: show machine code'' -- the C loop uses \texttt{smlabb} (one product), the asm loop \texttt{smlad}
+\ei
+\os{\newpage}
+
 \nsl{The second experiment shows a dangling pointer, one of the most
 common memory errors. A data logger collects readings in a buffer that
 grows when it is full. The program keeps a pointer to the first reading;
@@ -471,6 +600,40 @@ alarm (first reading > 30.0 degC): no
 	\ite C on the MCU: no sanitizer, no OS -- the wrong value becomes a wrong decision
 	\ite Rust: \texttt{alloc::vec::Vec} on the Pico with a 16\,KB heap, the same compile-time check as on the PC
 \ei
+\os{\newpage}
+
+\nsl{In this experiment the wrong output of the C version is the expected
+result: the example is meant to show the bug. Three things in the output
+prove it. The buffer address changes, so the buffer was moved. The second
+reading through the old pointer is 19279, which are the bytes of the text
+``OK'' that another part of the firmware wrote into the reused block. And
+the alarm is raised although the temperature was 21.5\,degC. If the second
+reading happens to be 215, the bug is still in the program: the freed block
+was just not reused this time. This is what makes use-after-free errors so
+hard to find in tests. For Rust the expected result of the dangling version
+is a compiler error; only the corrected program produces a firmware.}
+
+\item[{\rot\bf Experiment 2 in Wokwi: what to look for}]~\\[-\lblskip]
+\bi
+	\ite the program: a data logger with a growing buffer (\texttt{realloc}), a pointer to the first reading, another \texttt{malloc} in between, then the alarm decision
+	\ite C: PlatformIO env \texttt{pico}; Rust: cargo, no PlatformIO -- both on the RP2040 board; the addresses depend on the build
+\ei
+\begin{center}
+{\small%
+\begin{tabularx}{\linewidth}{|>{\raggedright}p{10mm}|L|L|}
+\hline
+\textbf{version} & \textbf{you see} & \textbf{meaning} \\
+\hline
+C & buffer address changes, \texttt{first reading: 19279}, \texttt{alarm: YES} & expected: the bug of this example (false alarm) \\
+C & \texttt{first reading: 215}, \texttt{alarm: no} & the bug is still there, only invisible (block not reused) \\
+\hline
+Rust & \texttt{--example dangling}: \texttt{error[E0502]} & expected: rejected at compile time, no firmware \\
+Rust & \texttt{first reading: 215 (OK)}, \texttt{alarm: no}, \texttt{reading 500 does not exist} & expected: corrected firmware \\
+Rust & the dangling example compiles & the source was changed \\
+Rust & output stops & panic, e.g.\ \texttt{log[500]}: \texttt{panic-halt} stops silently \\
+\hline
+\end{tabularx}}
+\end{center}
 \os{\newpage}
 
 \nsl{The third experiment analyses a log of an acceleration sensor on an
@@ -570,6 +733,41 @@ def mean_viper(d, n: int) -> int:
 \bi
 	\ite RP2040 at 125\,MHz in Wokwi (simulated time, C built for the same clock); all variants find 24, 50 and 138\,Hz
 \ei
+\os{\newpage}
+
+\nsl{The MicroPython version is not built with PlatformIO. The script
+\texttt{make\_uf2.py} takes the official MicroPython image and appends a
+small file system that contains \texttt{main.py}; MicroPython runs this file
+after the start. The script must be run again after every change of
+\texttt{main.py}. MicroPython prints on its USB port, so the diagram has no
+serial monitor connection on GP0 and GP1. The simulation is much slower than
+real time: the two spectra take 16 seconds of simulated time, which can be
+several minutes on the PC. The result is correct when both DFT variants find
+the same three peaks and all four mean values agree. The interactive prompt
+at the end only means that \texttt{main.py} has finished.}
+
+\item[{\rot\bf Experiment 3 in Wokwi: what to look for}]~\\[-\lblskip]
+\bi
+	\ite the program: 500 simulated acceleration samples (24\,Hz + 50\,Hz + 138\,Hz + noise), spectrum twice, then the mean of 10000 ADC values in four ways
+	\ite build: task ``3p: set up .venv'' (once), then ``3p: build main.uf2'' after every change of \texttt{main.py} -- no PlatformIO; C reference: env \texttt{pico}
+\ei
+\begin{center}
+{\small%
+\begin{tabularx}{\linewidth}{|L|L|}
+\hline
+\textbf{you see} & \textbf{meaning} \\
+\hline
+\texttt{spectrum} and \texttt{dft\_loop}: \texttt{24 Hz, 50 Hz, 138 Hz} & correct: both find the three sources \\
+four times \texttt{mean = 2042}, \texttt{@viper} about 10$\times$ faster than the loop & correct; the C reference also prints \texttt{mean = 2042} \\
+\texttt{>>>} at the end & normal: \texttt{main.py} is finished, the REPL waits \\
+nothing for a long time after \texttt{spectrum 0..200 Hz} & normal: 14\,s of simulated time take minutes \\
+empty serial monitor & \texttt{main.uf2} not built, or GP0/GP1 wired to the monitor (REPL is on USB) \\
+only \texttt{>>>}, no results & \texttt{main.py} is missing in the image: build again \\
+your change has no effect & the \texttt{.uf2} still contains the old \texttt{main.py} \\
+\texttt{MemoryError} & heap fragmented: allocate big buffers first \\
+\hline
+\end{tabularx}}
+\end{center}
 \os{\newpage}
 \end{description}
 
@@ -720,56 +918,152 @@ call, return & \texttt{bl function} \quad \texttt{bx lr} & call (return address 
 \ei
 \os{\newpage}
 
+\nsl{The function \texttt{asm\_sum} adds \texttt{n} unsigned 16 bit values
+from an array and returns the sum as a 32 bit number; in C it would be
+\texttt{while (n-- > 0) s += *a++;}. The lines starting with a dot are
+directives for the assembler, not instructions: they select the instruction
+set (Thumb for the Cortex-M0+), make the name visible to the linker and mark
+it as a Thumb function, so that its address has bit 0 set. Bit 0 tells the
+CPU to stay in Thumb mode when it branches to the function; the Cortex-M0+
+cannot execute anything else. According to the calling convention the
+pointer arrives in r0, the count in r1, and the result must be in r0 at the
+end. The labels \texttt{1:} and \texttt{2:} are local labels: \texttt{1b}
+means ``label 1 backwards'', \texttt{2f} ``label 2 forwards''. The loop
+counts \texttt{n} down to zero, because \texttt{subs} then sets the Z flag
+and \texttt{bne} can test it directly; counting up would need an additional
+compare in every iteration.}
+
 \item[{\rot\bf Our own assembly function}]~\\[-\lstskip]
 \begin{lstlisting}[language={}]
 @ uint32_t asm_sum(const uint16_t *a, int n)    file sum_m0.S
+@ adds n unsigned 16 bit values and returns the 32 bit sum
 @ AAPCS: a in r0, n in r1, result in r0. Only r0..r3 are used.
-    .syntax unified
-    .cpu cortex-m0plus
-    .thumb
-    .global asm_sum
+    .syntax unified       @ modern ARM syntax (adds, subs, ...)
+    .cpu cortex-m0plus    @ only ARMv6-M instructions are accepted
+    .thumb                @ 16 bit Thumb instructions
+    .global asm_sum       @ the linker may connect C/Rust calls to it
     .type   asm_sum, %function
-    .thumb_func
+    .thumb_func           @ address with bit 0 = 1: stay in Thumb mode
 asm_sum:
-    movs  r2, #0          @ s = 0
-    cmp   r1, #0
-    ble   2f              @ n <= 0: nothing to do
-1:  ldrh  r3, [r0]        @ r3 = *a
-    adds  r0, r0, #2      @ a++ (2 bytes)
-    adds  r2, r2, r3      @ s += r3
-    subs  r1, r1, #1      @ n--, sets the Z flag
-    bne   1b              @ loop while n != 0
-2:  movs  r0, r2          @ return s
-    bx    lr
+    movs  r2, #0          @ r2 = s = 0
+    cmp   r1, #0          @ compare n with 0 (sets the flags)
+    ble   2f              @ n <= 0: jump forward to label 2
+1:  ldrh  r3, [r0]        @ r3 = *a (16 bit load, upper bits = 0)
+    adds  r0, r0, #2      @ a++ : one uint16_t is 2 bytes
+    adds  r2, r2, r3      @ s += r3 (32 bit addition)
+    subs  r1, r1, #1      @ n-- ; Z = 1 when n becomes 0
+    bne   1b              @ Z = 0: jump back to label 1
+2:  movs  r0, r2          @ the return value must be in r0
+    bx    lr              @ return: jump to the address in lr
 \end{lstlisting}
 \bi
 	\ite 5 instructions in the loop instead of 7 from the compiler (chapter Processors): counting down saves the compare
 \ei
 \os{\newpage}
 
+\nsl{The table follows the registers through a call with three values. Each
+row shows the registers after the instructions of one pass through the
+loop. The sum 126535 does not fit into 16 bits; this is why the function
+loads each value with \texttt{ldrh}, which fills the upper 16 bits with
+zeros, and adds in a 32 bit register. The pointer grows by two per
+iteration because each element is two bytes long. After the third pass
+\texttt{subs} produces zero, sets the Z flag, and \texttt{bne} no longer
+branches. The function uses only r0 to r3, which a called function may change
+freely, so it does not need to save anything on the stack.}
+
+\item[{\rot\bf asm\_sum step by step}]~\\[-\lstskip]
+\begin{lstlisting}[language=C]
+uint32_t asm_sum(const uint16_t *a, int n)   // the same in C
+{
+    uint32_t s = 0;
+    while (n-- > 0) s += *a++;
+    return s;
+}
+const uint16_t v[] = {1000, 60000, 65535};   // at 0x20000100, call asm_sum(v, 3)
+\end{lstlisting}
+\begin{center}
+\resizebox{0.9\textwidth}{!}{%
+\begin{tabular}{|l|l|r|r|r|c|l|}
+\hline
+\textbf{after} & \textbf{r0} (a) & \textbf{r1} (n) & \textbf{r2} (s) & \textbf{r3} & \textbf{Z} & \textbf{next} \\
+\hline
+call & 0x20000100 & 3 & ? & ? & ? & \\
+\texttt{movs}, \texttt{cmp}, \texttt{ble} & 0x20000100 & 3 & 0 & ? & 0 & 3 > 0: no jump, into the loop \\
+loop pass 1 & 0x20000102 & 2 & 1000 & 1000 & 0 & \texttt{bne 1b}: back \\
+loop pass 2 & 0x20000104 & 1 & 61000 & 60000 & 0 & \texttt{bne 1b}: back \\
+loop pass 3 & 0x20000106 & 0 & 126535 & 65535 & 1 & Z = 1: continue at \texttt{2:} \\
+\texttt{movs r0, r2} & \textbf{126535} & 0 & 126535 & 65535 & 1 & \texttt{bx lr}: back to the caller \\
+\hline
+\end{tabular}}
+\end{center}
+\bi
+	\ite 126535 > 65535: the sum needs 32 bit -- \texttt{ldrh} zero-extends each value, \texttt{adds} works on 32 bit
+	\ite only r0--r3 (caller-saved): no \texttt{push}/\texttt{pop} needed; using r4 would require \texttt{push \{r4\}} \ldots{} \texttt{pop \{r4\}}
+\ei
+\os{\newpage}
+
 \item[{\rot\bf Calling it from C and from Rust}]~\\[-\lstskip]
 \begin{lstlisting}[language=C]
-extern "C" uint32_t asm_sum(const uint16_t *a, int n);   // C linkage
+extern "C" uint32_t asm_sum(const uint16_t *a, int n);  // "C": no C++ name mangling
 
 const uint16_t data[] = {1, 2, 3, 1000, 60000, 65535};
-Serial1.printf("asm_sum = %lu\n", (unsigned long)asm_sum(data, 6));
+Serial1.printf("asm_sum = %lu\n", (unsigned long)asm_sum(data, 6));  // r0, r1
 
 uint32_t sp;
-asm volatile("mov %0, sp" : "=r"(sp));   // inline assembly (GCC syntax)
+asm volatile("mov %0, sp" : "=r"(sp));   // inline asm: sp = stack pointer
 \end{lstlisting}
 \begin{lstlisting}[language=Rust]
 global_asm!(".global asm_sum", /* ... the same instructions ... */);
-unsafe extern "C" {
+unsafe extern "C" {                  // C calling convention (AAPCS)
     fn asm_sum(a: *const u16, n: i32) -> u32;
 }
 let s_asm = unsafe { asm_sum(data.as_ptr(), data.len() as i32) };
 
-let mut x: u32 = 40;
-unsafe { asm!("adds {0}, {0}, {1}", inout(reg) x, in(reg) 2u32) };
+let mut x: u32 = 40;                 // {0} = x (read + written), {1} = 2
+unsafe { asm!("adds {0}, {0}, {1}", inout(reg) x, in(reg) 2u32) }; // 42
 \end{lstlisting}
 \bi
 	\ite output in Wokwi (both languages): \texttt{asm\_sum = 126541}, identical to the C and Rust versions
 	\ite Rust marks every call into assembly as \texttt{unsafe}: the compiler cannot check it
+\ei
+\os{\newpage}
+
+\nsl{The C version is a Wokwi project in the browser: an Arduino project for
+the Pico with the files \texttt{asm\_sum.ino} and \texttt{sum\_m0.S}. The Rust
+version is built with cargo and simulated in VS Code; PlatformIO is not
+needed. Both programs compute the sum twice, in assembly and in the high
+level language, and print both results. If the two lines agree, the
+assembly function follows the calling convention and computes the right
+value. Typical mistakes when changing the assembly show up in a
+characteristic way: a wrong load instruction gives a wrong sum, an
+unaligned access stops the Cortex-M0+ with a HardFault, and a register r4 to
+r7 changed without saving it breaks the caller after the return.}
+
+\item[{\rot\bf asm\_sum in Wokwi: what to look for}]~\\[-\lblskip]
+\bi
+	\ite C: \texttt{examples/programming/pico-c/asm\_sum} -- Wokwi in the browser (Pico, Arduino project with \texttt{.ino} + \texttt{.S})
+	\ite Rust: \texttt{examples/programming/pico-rust} -- \texttt{cargo build --release}, no PlatformIO; \texttt{wokwi.toml} selects \texttt{asm\_sum} or \texttt{button\_lib}
+\ei
+\begin{lstlisting}[language={}]
+asm_sum  = 126541           1 + 2 + 3 + 1000 + 60000 + 65535
+rust_sum = 126541           (C version: c_sum)  -- both lines must agree
+sp = 0x2003ff98, 40 + 2 = 42
+\end{lstlisting}
+\begin{center}
+{\small%
+\begin{tabularx}{\linewidth}{|L|L|}
+\hline
+\textbf{you see (after changing the assembly)} & \textbf{typical cause} \\
+\hline
+\texttt{asm\_sum} differs from \texttt{rust\_sum} / \texttt{c\_sum} & wrong load, e.g.\ \texttt{ldrb} (only the low byte) instead of \texttt{ldrh} \\
+\texttt{asm\_sum = 0} & loop skipped (\texttt{ble} taken) or result not moved to \texttt{r0} \\
+output stops after the call (HardFault) & unaligned access: \texttt{adds r0, r0, \#1}, or \texttt{ldr} (32 bit) on a 2 byte aligned address \\
+wrong values \emph{after} the call & r4--r7 changed without \texttt{push}/\texttt{pop} (callee-saved), or \texttt{bx lr} missing \\
+\hline
+\end{tabularx}}
+\end{center}
+\bi
+	\ite stopped program? GDB: \texttt{info registers}, \texttt{x/i \$pc} (section Debugging)
 \ei
 \os{\newpage}
 \end{description}
