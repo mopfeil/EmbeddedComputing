@@ -17,13 +17,34 @@ file of that folder is open. The output appears in the serial monitor of the sim
 
 ## On the Pico in Wokwi
 
-| Workspace folder | Board | Shows | Build |
+Who needs what: only the C folders are PlatformIO projects, and each has exactly one
+environment. It must match the board in `diagram.json`. Rust and MicroPython need no PlatformIO.
+
+| Workspace folder | Board (`diagram.json`) | Build with | Shows |
 |---|---|---|---|
-| 1p `1-inline-asm/pico` | Pico 2 (RP2350, Cortex-M33) | FIR filter: one `smlad` instruction (2 multiply-accumulates) instead of the C loop: 1.9x faster | PlatformIO: `pio run` |
-| 2p `2-rust-memory/pico/c` | Pico (RP2040) | the dangling pointer reads the text "OK" from a reused block as 19279 = 1927.9 degC: **false alarm** | PlatformIO: `pio run` |
-| 2p `2-rust-memory/pico/rust` | Pico (RP2040) | the same in Rust with a heap (`embedded-alloc`): rejected (E0502); corrected version prints no alarm | `cargo build --release` / `cargo build --release --example dangling` |
-| 3p `3-python/pico` | Pico (RP2040), MicroPython 1.29 | DFT spectrum in a few lines on the MCU; price of the interpreter, `@micropython.native` and `@viper` | `python make_uf2.py` (MicroPython + file system with `main.py` in one `.uf2`) |
-| 3p `3-python/pico/c_reference` | Pico (RP2040), 125 MHz | C reference for the MicroPython speed test | PlatformIO: `pio run` |
+| 1p `1-inline-asm/pico` | Pico 2 (RP2350, Cortex-M33), `board-pi-pico-2` | PlatformIO env **`pico2`** (`board = rpipico2`) | FIR filter: one `smlad` instruction (2 multiply-accumulates) instead of the C loop: 1.9x faster |
+| 2p `2-rust-memory/pico/c` | Pico (RP2040, Cortex-M0+), `wokwi-pi-pico` | PlatformIO env **`pico`** (`board = rpipico`) | the dangling pointer reads the text "OK" from a reused block as 19279 = 1927.9 degC: **false alarm** |
+| 2p `2-rust-memory/pico/rust` | Pico (RP2040) | **cargo** (`cargo build --release`), no PlatformIO | the same in Rust with a heap (`embedded-alloc`): `--example dangling` is rejected (E0502); the corrected version prints no alarm |
+| 3p `3-python/pico` | Pico (RP2040), MicroPython 1.29 | **`.venv` + `make_uf2.py`**, no PlatformIO | DFT spectrum in a few lines on the MCU; price of the interpreter, `@micropython.native` and `@viper` |
+| 3p `3-python/pico/c_reference` | Pico (RP2040), 125 MHz | PlatformIO env **`pico`** (`f_cpu` 125 MHz) | C reference for the MicroPython speed test |
+
+### Expected behaviour and how to recognise an error
+
+Each folder has a `README.md` with the complete expected output and a table of typical errors.
+In short:
+
+| Folder | Correct | Error |
+|---|---|---|
+| 1p | `smlad ... 1.9x faster`, `results identical` | `results DIFFERENT`; build error `selected processor does not support 'smlad'` = built for the RP2040 |
+| 2p C | second `first reading: 19279`, `alarm ... YES` – the false alarm **is** the bug being shown | `215` and `no`: the bug is still there, only invisible (block not reused) |
+| 2p Rust | `--example dangling` fails with E0502 (on purpose); firmware: `first reading: 215 (OK)`, alarm `no` | the dangling example compiles: the source was changed |
+| 3p | 24, 50, 138 Hz in both lines, four equal means (2042), then `>>>` | empty monitor: `main.uf2` not built or GP0/GP1 wired; `MemoryError`: heap fragmented |
+| 3p C | `C (-Os) ~650 us mean = 2042` | other mean: different data than `main.py` |
+
+For all of them: an **empty serial monitor** usually means the firmware is missing, or the
+firmware and the board in `diagram.json` do not match (RP2350 firmware on the RP2040 board, or the
+other way round, does not start). Times are simulated time: the same on every PC, but the PC needs
+longer (MicroPython: minutes).
 
 Every folder has a `diagram.json` (the board) and a `wokwi.toml` (where the firmware is):
 

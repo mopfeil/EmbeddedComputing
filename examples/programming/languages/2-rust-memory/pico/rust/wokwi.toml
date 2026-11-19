@@ -1,4 +1,7 @@
 # Wokwi for VS Code: cargo build --release, then F1 -> "Wokwi: Start Simulator"
+# Board: Pico (RP2040); built with cargo, no PlatformIO.
+# Expected: "first reading: 215 (OK)", alarm no (see README.md).
+# gdbServerPort: only used with "Start Simulator and Wait for Debugger".
 [wokwi]
 version = 1
 firmware = "target/thumbv6m-none-eabi/release/pico-memory"

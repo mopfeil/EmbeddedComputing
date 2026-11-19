@@ -1,4 +1,4 @@
-//! The C program ../c/dangling/dangling.ino in Rust, on the Pico.
+//! The C program ../c/src/dangling.cpp in Rust, on the Pico.
 //!
 //!     cargo build --release --example dangling
 //!

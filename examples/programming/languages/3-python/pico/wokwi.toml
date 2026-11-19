@@ -1,6 +1,8 @@
 # Wokwi for VS Code: python make_uf2.py (Run Task "3p: build main.uf2"),
 # then F1 -> "Wokwi: Start Simulator". MicroPython's REPL is in the terminal
 # (rfc2217 port 4000, e.g. mpremote connect port:rfc2217://localhost:4000).
+# Board: Pico (RP2040); MicroPython image + main.py, no PlatformIO.
+# Expected: 24, 50, 138 Hz twice, four equal means, then >>> (see README.md).
 [wokwi]
 version = 1
 firmware = "build/main.uf2"

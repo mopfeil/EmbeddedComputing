@@ -1,5 +1,7 @@
 # Wokwi for VS Code: build with PlatformIO, then F1 -> "Wokwi: Start Simulator".
 # Output in the serial monitor (Serial1 on GP0/GP1, 115200 baud).
+# Board: Pico (RP2040), PlatformIO environment pico (125 MHz).
+# Expected: "C (-Os) ... mean = 2042" (see README.md).
 [wokwi]
 version = 1
 firmware = ".pio/build/pico/firmware.uf2"

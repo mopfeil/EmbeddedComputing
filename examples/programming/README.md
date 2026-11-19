@@ -3,12 +3,12 @@
 | Folder | Content | Runs on |
 |---|---|---|
 | `pico-c/asm_sum` | C calls a function written in Thumb assembly (`sum_m0.S`), inline assembly | Pico in Wokwi (browser) |
-| `pico-rust` | `asm_sum`: assembly with `global_asm!` and `asm!`; `button_lib`: uses the `debounce` library | Pico in Wokwi (VS Code) |
+| `pico-rust` | `asm_sum`: assembly with `global_asm!` and `asm!`; `button_lib`: uses the `debounce` library (expected output and typical errors: its `README.md`) | Pico in Wokwi (VS Code, cargo, no PlatformIO) |
 | `debounce` | hardware independent Rust library with unit tests (`cargo test`) | PC / Replit and any microcontroller |
 | `c/register_struct.c` | register access with a struct overlay, bit fields | compile only |
 | `micropython` | MicroPython: LED, button interrupt, ADC/PWM, `mem32` register access | Pico in Wokwi (browser, MicroPython project) |
 | `python/decode_mpu6050.py` | Python 3 on the PC: binary data with `struct` | PC / Replit |
-| `languages/` | VS Code workspace: inline assembly speed-up, C vs. Rust memory safety, Python FFT analysis (see its README) | PC (VS Code) and Pico / Pico 2 in Wokwi |
+| `languages/` | VS Code workspace: inline assembly speed-up, C vs. Rust memory safety, Python FFT analysis (see its README: which folder needs which PlatformIO environment, expected output, typical errors) | PC (VS Code) and Pico / Pico 2 in Wokwi |
 
 The Pico examples use the circuit of chapter 6 (`diagram.json`).
 
