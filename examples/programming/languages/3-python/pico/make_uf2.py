@@ -14,7 +14,21 @@ import struct
 import sys
 import urllib.request
 
-from littlefs import LittleFS
+try:
+    from littlefs import LittleFS
+except ImportError:
+    # Started with a Python that lacks littlefs-python, e.g. with the Run button
+    # of VS Code (system Python): run again with the .venv of the set-up task.
+    me = pathlib.Path(__file__).resolve()
+    for venv in (me.parent / ".venv", me.parent.parent / ".venv"):
+        for py in (venv / "Scripts" / "python.exe", venv / "bin" / "python"):
+            if py.exists() and pathlib.Path(sys.prefix).resolve() != venv.resolve():
+                import subprocess
+                sys.exit(subprocess.call([str(py), str(me)] + sys.argv[1:]))
+    sys.exit("make_uf2.py needs the package littlefs-python, which this Python does not have:\n"
+             f"    {sys.executable}\n"
+             "Run the task \"set up .venv (once)\" (Terminal > Run Task), then build with\n"
+             "Terminal > Run Build Task. Or install it here: python -m pip install littlefs-python")
 
 FIRMWARE_URL = "https://micropython.org/resources/firmware/RPI_PICO-20260824-v1.29.0.uf2"
 FS_START = 0x10000000 + (2048 - 1408) * 1024   # RPI_PICO: last 1408 KB of the 2 MB flash
