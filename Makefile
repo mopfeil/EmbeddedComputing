@@ -9,7 +9,7 @@ else
 LATEXMK = latexmk -lualatex -interaction=nonstopmode -halt-on-error
 endif
 
-.PHONY: all script slides worksheet lab2 publish clean
+.PHONY: all script slides worksheet lab2 lab2-intro publish clean
 
 all: script slides
 
@@ -34,10 +34,14 @@ lab2:
 # Python with python-pptx, for the PPTX copy of the slides (one image per page)
 PPTXPY ?= $(HOME)/.local/share/lecture-tools/venv/bin/python
 
+# MicroPython introduction for lab task 2 (editable PPTX with speaker notes)
+lab2-intro:
+	$(PPTXPY) tools/lab2_micropython_intro.py pdf/EmbeddedComputing_Lab_2_MicroPython_Intro.pptx
+
 # Copy the built PDFs into pdf/, the versioned copies linked from README.md
 # (student version of the worksheet only, the solutions stay local)
 
-publish: all worksheet lab2
+publish: all worksheet lab2 lab2-intro
 	cp docu.pdf pdf/EmbeddedComputing_Script.pdf
 	cp slides.pdf pdf/EmbeddedComputing_Slides.pdf
 	$(PPTXPY) tools/pdf2pptx.py slides.pdf pdf/EmbeddedComputing_Slides.pptx
