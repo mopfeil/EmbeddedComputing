@@ -24,6 +24,34 @@ Each time you change the code: build again, then restart the simulator.
 MicroPython has a faster route: while the simulation runs, the task "Python: run main.py in the running
 simulation (mpremote)" sends `main.py` to it directly.
 
+## MicroPython on Windows, step by step
+
+Once:
+
+1. Open `et1.code-workspace` (File > Open Workspace from File). Install the extensions **Wokwi Simulator** and
+   **Python** if VS Code offers them, and get the Wokwi licence (F1 > "Wokwi: Request a New License").
+2. Terminal > Run Task… > **"Python: set up .venv (once)"**. Wait for "Successfully installed …". This creates
+   `python\.venv` with `littlefs-python` and `mpremote`.
+   If `py` is not found, do the same by hand in a terminal (use the path of your Python installation):
+   ```powershell
+   cd <your clone>\Lab\2-programming\python
+   C:\Python314\python.exe -m venv .venv
+   .venv\Scripts\pip install -r requirements.txt
+   ```
+
+Every time:
+
+3. Ctrl+Shift+B, pick **"Python: build main.uf2"**. The first build downloads the MicroPython firmware. The
+   last line is `build\main.uf2: firmware + … KB file system with main.py`.
+4. Open `main.py` of the folder **MicroPython** (it must be the active file), then F1 > **"Wokwi: Start Simulator"**.
+   The serial monitor shows `ET1 ready, task 2`.
+5. After a change: save, Ctrl+Shift+B, start the simulator again. Or, while the simulation runs: Terminal > Run
+   Task… > "Python: run main.py in the running simulation (mpremote)".
+
+Build with the build task, not with the ▶ "Run Python File" button: that button uses the system Python. If you
+use it anyway, `make_uf2.py` switches to `.venv` by itself, or tells you to create it first
+(`No module named 'littlefs'` in older versions of the script means the same).
+
 ## The simulated hardware
 
 | Pico pin | Connected to | |
